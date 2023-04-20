@@ -12,10 +12,10 @@ Automated, approval based workflow for managing time-bound elevated access to yo
 {: .fs-2 .fw-300}
 
 <span class="fs-4">
-[Get started](#get-started){: .btn .btn-purple }
+[Get started]({% link docs/deployment/index.md %}){: .btn .btn-purple }
 </span>
 <span class="fs-4">
-[View on GitHub](http://example.com/){: .btn }
+[View on GitHub](https://github.com/aws-samples/aws-iam-identity-center-temporary-elevated-access-management){: .btn }
 </span>
 
 TEAM is an open source solution that integrates with AWS IAM Identity Center and allows you to manage and monitor, time-bound elevated access to your multi-account AWS environment at scale.
@@ -23,7 +23,7 @@ TEAM is an open source solution that integrates with AWS IAM Identity Center and
 The solution is a ready-to-deploy custom application that allows users to request access to an AWS account only when it is needed and only for a specific period of time. Once the time period has elapsed, elevated access is automatically removed.
 
 <video width="800" height="500" frameborder="0" autoplay loop allowfullscreen>
-<source src="./docs/assets/images/create-request.mov" type="video/mp4"> 
+<source src="https://d3f99z5n3ls8r1.cloudfront.net/images/architecture/create-request.png" type="video/mp4"> 
 </video>
 
 ## Benefits

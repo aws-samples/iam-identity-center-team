@@ -30,7 +30,6 @@ A TEAM user’s persona is determined by their group memberships in IAM Identity
 
 A typical use case for TEAM is for performing operational tasks that require elevated access to your AWS environment. For example, you might need to fix a broken deployment pipeline or perform some operational tasks as part of a planned change. 
 
-![Solution workflow](/docs/assets/images/workflow.png)
 <img src="https://d3f99z5n3ls8r1.cloudfront.net/images/architecture/workflow.png" alt="Solution worklow">
 
 

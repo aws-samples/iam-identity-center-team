@@ -115,5 +115,5 @@ Go to Amplify console: **AWS Amplify -> All apps -> TEAM-IDC-APP -> Hosting envi
 </video>
 
 
-### 🚀 Next Step: [Integrate with AWS IAM Identity Centre](./integrate_idc.md)
+### 🚀 Next Step: [Configure TEAM Application]({% link docs/deployment/configuration/index.md %})
 {: .no_toc}

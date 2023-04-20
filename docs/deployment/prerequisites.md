@@ -28,4 +28,4 @@ parent: Solution deployment
 
 - Setup named profile for AWS CLI with sufficient permissions for the **AWS account where the TEAM Application would be deployed in**
 
-### 🚀 You can now [Deploy the Application](./deployment_process.md).
+### 🚀 You can now [Deploy the Application]({% link docs/deployment/deployment_process.md %}).
