@@ -9,7 +9,7 @@ parent: Solution overview
 
 Temporary Elevated Access Management (TEAM) solution is a full stack, Single Page Application (SPA) that is based on React JS and powered by AWS serverless services.
 
-![Solution components](/docs/assets/images/archi.png)
+<img src="https://d3f99z5n3ls8r1.cloudfront.net/images/architecture/archi.png" alt="Solution components">
 
 ## Solution components
 
