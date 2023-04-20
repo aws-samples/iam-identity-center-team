@@ -57,7 +57,7 @@ The TEAM orchestration workflow is made up of the step functions listed below:
 The Approval Step Function workflow is invoked when a TEAM request is newly created and the request status is ***pending***. 
 
 <p align="center">
-<img class="img-fluid" src="/docs/assets/images/approval.png" alt="approval" width="50%" height="50%">
+<img class="img-fluid" src="https://d3f99z5n3ls8r1.cloudfront.net/images/architecture/approval.png" alt="approval" width="50%" height="50%">
 </p>
 <!-- ![Solution components](/docs/assets/images/approval.png) -->
 
@@ -69,7 +69,7 @@ The Approval state machine performs the following functions:
 ### Reject workflow 
 The Reject Step Function workflow is invoked when a TEAM request is rejected by a member of an approver group thus changing the request status to ***rejected***. 
 <p align="center">
-<img class="img-fluid" src="/docs/assets/images/reject.png" alt="reject">
+<img class="img-fluid" src="https://d3f99z5n3ls8r1.cloudfront.net/images/architecture/reject.png" alt="reject">
 </p>
 The Reject state machine performs the following functions:
     - Notifies the requester about the request rejection via email
@@ -78,7 +78,7 @@ The Reject state machine performs the following functions:
 The Schedule Step Function workflow is invoked when a TEAM request is approved by a member of an approver group and the request status is ***approved***. 
 
 <p align="center">
-<img class="img-fluid" src="/docs/assets/images/schedule.png" alt="schedule" width="50%" height="50%">
+<img class="img-fluid" src="https://d3f99z5n3ls8r1.cloudfront.net/images/architecture/schedule.png" alt="schedule" width="50%" height="50%">
 </p>
 
 The Schedule state machine performs the following functions:
@@ -91,7 +91,7 @@ The Schedule state machine performs the following functions:
 The Grant Step Function  workflow is invoked by the ***Schedule*** state machine at the session start time. 
 
 <p align="center">
-<img class="img-fluid" src="/docs/assets/images/grant.png" alt="grant" width="50%" height="50%">
+<img class="img-fluid" src="https://d3f99z5n3ls8r1.cloudfront.net/images/architecture/grant.png" alt="grant" width="50%" height="50%">
 </p>
 
 The Grant state machine performs the following functions:
@@ -105,7 +105,7 @@ The Grant state machine performs the following functions:
 The Revoke Step Function workflow is invoked either by the ***Grant*** state machine (when a session duration expires) or when an entity (TEAM requester or approver) revokes an active TEAM session which is **in progress** or **pending**. 
 
 <p align="center">
-<img class="img-fluid" src="/docs/assets/images/revoke.png" alt="revoke" width="70%" height="70%">
+<img class="img-fluid" src="https://d3f99z5n3ls8r1.cloudfront.net/images/architecture/revoke.png" alt="revoke" width="70%" height="70%">
 </p>
 
 The Revoke state machine performs the following functions:
