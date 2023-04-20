@@ -9,7 +9,7 @@ Refer to the [blog post on the AWS Security Blog]() for a background and an over
 
 ![](docs/assets/images/home_page.png)
 ## Getting Started
-Visit our **[Documentation pages]()** to learn more and get started installing and using TEAM.
+Visit our **[Documentation pages](https://aws-samples.github.io/aws-iam-identity-center-temporary-elevated-access-management/)** to learn more and get started installing and using TEAM.
 
 ### Quick links
 - [Deploying the TEAM application]()
