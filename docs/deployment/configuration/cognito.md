@@ -41,5 +41,5 @@ The **cognito.sh** script should be deployed successfully without any errors.
 
 ### The application deployment, configuration and integration is now complete!
 {: .no_toc}
-### 🚀 Next Step: Set up [Eligibility & Approval Policies](./policies.md) to start using TEAM.
+### 🚀 Next Step: Set up [Eligibility & Approval Policies]({% link docs/deployment/configuration/policies.md %}) to start using TEAM.
 {: .no_toc}

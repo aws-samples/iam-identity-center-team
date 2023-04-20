@@ -48,5 +48,5 @@ Each approval policy allows any member of the specified groups to log into TEAM 
 
 Now that the admin persona has defined eligibility and approval policies, TEAM is ready for use.
 
-### 🚀 Next Steps: Follow an [end-to-end TEAM walkthrough](./walkthrough).
+### 🚀 Next Steps: Follow an [end-to-end TEAM walkthrough]({% link docs/guides/walkthrough.md %}).
 {: .no_toc}

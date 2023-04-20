@@ -22,8 +22,8 @@ parent: Solution deployment
 ## Clone TEAM CodeCommit repo
 To clone the TEAM amplify fullstack project, execute the following command inside an empty directory
 
-```
-git clone https://gitlab.aws.dev/awoyt/team-idc-app.git
+```sh
+git clone https://github.com/aws-samples/aws-iam-identity-center-temporary-elevated-access-management.git
 ```
 
 This creates a directory named **team-idc-app** in your current directory.
