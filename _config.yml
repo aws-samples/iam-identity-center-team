@@ -2,7 +2,7 @@ title: TEAM
 description: Documentation for AWS Temporary Elevated Access Management (TEAM)
 theme: just-the-docs
 
-url: https://astrovar.github.io/teams-documentation
+url: https://aws-samples.github.io/aws-iam-identity-center-temporary-elevated-access-management
 
 logo: "docs/assets/images/logo.png"
 
