@@ -22,8 +22,8 @@ TEAM is an open source solution that integrates with AWS IAM Identity Center and
 
 The solution is a ready-to-deploy custom application that allows users to request access to an AWS account only when it is needed and only for a specific period of time. Once the time period has elapsed, elevated access is automatically removed.
 
-<video width="800" height="500" frameborder="0" autoplay loop allowfullscreen>
-<source src="https://d3f99z5n3ls8r1.cloudfront.net/videos/create-request.mov" type="video/mp4"> 
+<video width="800" height="500" frameborder="0" autoplay loop allowfullscreen controls>
+<source src="https://d3f99z5n3ls8r1.cloudfront.net/videos/requestor_guides/create_request.mov" type="video/mp4"> 
 </video>
 
 ## Benefits
