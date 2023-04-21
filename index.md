@@ -48,7 +48,15 @@ The best way to get started with TEAM is to [deploy the solution](./deployment/i
 ## Authors
 TEAM was created by [Taiwo Awoyinfa](http://example.com) and has been enhanced with many contributions from [Varvara Semona](http://example.com) and [James Greenwood](http://example.com).
 
-A list of additional contributors can be seen on GitHub.
+#### Thank you to the GitHub contributors of TEAM!
+
+<ul class="list-style-none">
+{% for contributor in site.github.contributors %}
+  <li class="d-inline-block mr-1">
+     <a href="{{ contributor.html_url }}"><img src="{{ contributor.avatar_url }}" width="32" height="32" alt="{{ contributor.login }}"></a>
+  </li>
+{% endfor %}
+</ul>
 
 ## License
 
