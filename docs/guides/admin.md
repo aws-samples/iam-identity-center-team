@@ -32,8 +32,11 @@ Before TEAM application can be used fully, an administrator is required to confi
    > Where an eligibility policy specifies an OU, TEAM includes all the AWS accounts directly in that OU. It does not include those in its child OUs.
     {: .note}
 8. In *Permissions* dropdown, select all the permission sets that users/groups should be allowed to request for accounts/OUs.
-   > You can either use a predefined permission set provided by Identity Center, or you can create your own permission sets using custom permissions in order to provide least-privilege access for particular operational tasks.
-   {: .note}
+   > TEAM cannot be used to perform the following task:
+    - Grant temporary access to the management account 
+    - Manage permission sets provisioned in the management account
+    Read the [security considerations]({% link docs/overview/security.md %}) section for more information.
+    {: .note}
 9. Use *Approval required* tickbox to specify whether the requests specified by the elgibility policy require approval.
 10. Click on *Add eligibiliy policy*.
 

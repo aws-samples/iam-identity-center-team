@@ -10,13 +10,14 @@ parent: Solution deployment
 ## Prerequisites
 
 - [AWS Organizations](https://aws.amazon.com/organizations/) managed multi account environment with [AWS IAM Identity Center](https://aws.amazon.com/iam/identity-center/) federated account access
-
   > TEAM cannot be used to perform the following task:
     - Grant temporary access to the management account 
     - Manage permission sets provisioned in the management account
     Read the [security considerations]({% link docs/overview/security.md %}) section for more information.
     {: .note}
-
+- [Permission sets](https://docs.aws.amazon.com/singlesignon/latest/userguide/permissionsetsconcept.html) configured in IAM Identity center.    
+  > You can either use a predefined permission set provided by Identity Center, or you can create your own permission sets using custom permissions in order to provide least-privilege access for particular operational tasks.
+   {: .note}
 - Dedicated AWS account for deploying TEAM Application
   > As per AWS best practice, it is not recommended to deploy resources in the organization management account. Designate a dedicated account for deploying the TEAM solution.
   {: .note}
