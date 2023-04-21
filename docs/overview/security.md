@@ -20,9 +20,9 @@ While most of the services that the TEAM app leverages are highly available by d
 The management account is a highly privileged account and to adhere to the principal of least privilege, we highly recommend that you restrict access to the management account to as few people as possible.
 TEAM is designed to be deployed in an account that is a [delegated admin](https://docs.aws.amazon.com/singlesignon/latest/userguide/delegated-admin.html) for IAM Identity Center. The delegated administrator feature is intended to minimize the number of people who require access to the management account. 
 
-The delegated adminstrator account (and TEAM) by design cannot be used to perform the following task:
-- Enable or disable user access in the management account 
-- Manage permission sets provisioned in the management account
+> The delegated adminstrator account (and TEAM) by design cannot be used to perform the following task:
+  - Enable or disable user access in the management account 
+  - Manage permission sets provisioned in the management account
 {: .note}
 
 ## Identity and access management
