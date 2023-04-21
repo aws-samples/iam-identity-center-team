@@ -16,5 +16,14 @@ TEAM solution workflow operates by attaching and removing permission set from a 
 ## Availability
 While most of the services that the TEAM app leverages are highly available by default, Amazon Cognito and AWS IAM Identity Center are regional services. TEAM's dependence on these regional services indicates that it cannot be used as a break glass solution for granting temporary access to your AWS environment in the event of a failure of the region where your IAM Identity center is deployed.
 
+## Management account access
+The management account is a highly privileged account and to adhere to the principal of least privilege, we highly recommend that you restrict access to the management account to as few people as possible.
+TEAM is designed to be deployed in an account that is a [delegated admin](https://docs.aws.amazon.com/singlesignon/latest/userguide/delegated-admin.html) for IAM Identity Center. The delegated administrator feature is intended to minimize the number of people who require access to the management account. 
+
+The delegated adminstrator account (and TEAM) by design cannot be used to perform the following task:
+- Enable or disable user access in the management account 
+- Manage permission sets provisioned in the management account
+{: .note}
+
 ## Identity and access management
 The TEAM solution is not a replacement for proper Identity and Access management. While it has delegated access to manage your AWS IAM Identity Center environment, it does not ensure proper configurations or access controls are implemented; nor does it assume proper controls and configuration of the roles you enable users to request within the TEAM app. Please familiarize yourself with the SLA and product pages for the leveraged AWS services for more information.
