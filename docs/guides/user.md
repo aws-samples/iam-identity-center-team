@@ -1,11 +1,11 @@
 ---
 layout: default
-title: Requestor guides
+title: Requestor guide
 nav_order: 4
 parent: Guides
 ---
 
-# Requestor Guides
+# Requestor Guide
 {: .no_toc}
 
 <details open markdown="block">
@@ -17,7 +17,7 @@ parent: Guides
 {:toc}
 </details>
 
-## Request Elevated Access
+## Request elevated access
 1. Log into the TEAM application.
 2. On the landing page in the top righ corner, choose *Create TEAM request* action and click *Next steps*; or in the left-hand menu go to *Requests* &rarr; *Create request*.
 3. The email field should be pre-populated with your email address.
@@ -31,12 +31,16 @@ parent: Guides
 9. If required, provide a request *Justification*.
 10. Click *Submit*.
 
-## Review/Cancel Requests
+## Review elevated access requests
 1. In the left-hand menu go to *Requests* &rarr; *My request*.
 2. Tick the request you would like to review/cancel.
 3. Click *View details*.
 4. Review the details of the submitted request. Note the *request expires in* field. If you request is not approved/rejected in the time shown, you will need to resubmit your request. (This field value is configured by TEAM administrator).
 5. If you wish to cancel the request, click *Cancel*.
+
+## Cancel elevated access request
+A requester can cancel an elevated access request if it has not been approved and is in the pending state.
+Follow the steps in the previous section to cancel an elevated access request.
 
 ### Request/review/cancel elevated access demo
 {: .no_toc}

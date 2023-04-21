@@ -46,7 +46,7 @@ Temporary Elevated Access Management (TEAM) solution helps to:
 The best way to get started with TEAM is to [deploy the solution](./deployment/index.md) in your environment and follow the [end-to-end example scenario](./guides/walkthrough.md) which will take through all functionalities from requesting access to auditing the session logs.
 
 ## Authors
-TEAM was created by [Taiwo Awoyinfa](http://example.com) and has been enhanced with many contributions from [Varvara Semona](http://example.com) and [James Greenwood](http://example.com).
+TEAM was created by [Taiwo Awoyinfa](http://example.com) and has been enhanced with many contributions from [Varvara Semenova](http://example.com),[James Greenwood](http://example.com),[Jeremy Ware](http://example.com) and [Abhishek Pande](http://example.com).
 
 #### Thank you to the GitHub contributors of TEAM!
 

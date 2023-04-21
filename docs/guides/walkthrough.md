@@ -62,7 +62,7 @@ As a requester, you already belong to a group used in at least one *eligibility 
 > The duration specified in a request determines the time window for which elevated access will be active, if the request is approved. During this time window, the requester can invoke sessions to access the AWS target environment. It does not affect the duration of each session. Session duration is [configured independently for each permission set](https://docs.aws.amazon.com/singlesignon/latest/userguide/howtosessionduration.html) by an Identity Center administrator, and determines the time period for which IAM temporary credentials are valid when any user invokes a session using that permission set. Be aware that sessions invoked just before elevated access ends will remain valid beyond the end of the elevated access period. If this is a concern, consider minimizing the session duration configured in your permission sets, for example by setting them to 1 hour.
 {: .note}
 
-## 🦁 Step 3: Approve Elevated Access
+## 🦁 Step 3: Approve elevated access
 Once you submit your request, approvers are notified by email. Approvers are notified when any request is created which falls within the scope of what they are authorized to approve, based on the *approval policies* defined earlier.
 
 Now we’ll switch to the **approver** persona. As an approver, you access the TEAM application in exactly the same way as the other personas. 
@@ -81,7 +81,7 @@ Once you approve or reject a request, the original requester is notified by emai
 
 Now we’ll switch back to the **requester** persona. As a requester, you can see the status of your open requests in the TEAM application by selecting **My requests** in the left-hand navigation pane. You can see the requests view with one approved request.
 
-## 🦓 Step 4: Activate Elevated Access
+## 🦓 Step 4: Activate elevated access
 After a request is approved, the TEAM application waits until the start date and time specified in the request and then automatically activates access. 
 
 > To activate access, the TEAM orchestration workflow creates a temporary [permission set assignment](https://docs.aws.amazon.com/singlesignon/latest/userguide/useraccess.html), which links the requester’s user identity in Identity Center with the permission set and AWS account specified in their request. Following this, TEAM notifies the requester by email that their request is now active.
@@ -89,7 +89,7 @@ After a request is approved, the TEAM application waits until the start date and
 
 To see all active requests, select **Active access** in the left-hand navigation under **Elevated access**, as shown below. You can choose **View details** to view details for an active request.
 
-## 🦓 Step 5: Access AWS Environment with Elevated Permissions
+## 🦓 Step 5: Access AWS Environment with elevated permissions
 
 During the time period in which elevated access is active, you can invoke sessions to access the AWS target environment with the scope (that is, permission set and AWS account) approved in your request. 
 
@@ -126,7 +126,7 @@ When elevated access ends or is revoked, the TEAM orchestration workflow automat
 
 The requester is then notified by email that their elevated access has ended.
 
-## 🦒 Step 9: View Session Activity
+## 🦒 Step 9: View session activity logs
 
 You can view request details and session activity for current and historical requests from within the TEAM application. Each persona can see the following information:
 - *Requesters* can inspect elevated access requested by them (guide)

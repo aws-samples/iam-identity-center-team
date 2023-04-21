@@ -1,11 +1,11 @@
 ---
 layout: default
-title: Admin guides
+title: Administrator guide
 nav_order: 3
 parent: Guides
 ---
 
-# Administrator Guides
+# Administrator Guide
 {: .no_toc}
 
 <details open markdown="block">
@@ -20,7 +20,7 @@ parent: Guides
 Before TEAM application can be used fully, an administrator is required to configure eligibility and approver policies.
 
 [What are eligibility & approver policies?]({% link docs/deployment/configuration/policies.md %}){: .btn .btn-outline }
-## Configure Eligibility Policies
+## Configure eligibility policy
 
 1. Log into the application as TEAM admin.
 2. In the left-hand menu go to *Administration* &rarr; *Eligibility policy*.
@@ -37,13 +37,13 @@ Before TEAM application can be used fully, an administrator is required to confi
 9. Use *Approval required* tickbox to specify whether the requests specified by the elgibility policy require approval.
 10. Click on *Add eligibiliy policy*.
 
-### Eligibility policies demo
+### Eligibility policy configuration demo
 {: .no_toc}
 <video width="750" height="420" frameborder="0" allowfullscreen controls>
 <source src="https://d3f99z5n3ls8r1.cloudfront.net/videos/admin_guides/eligibility_policy.mov">
 </video>
 
-## Configure Approver Policies
+## Configure approver Policy
 
 1. Log into the application as TEAM admin.
 2. In the left-hand menu go to *Administration* &rarr; *Approver policy*.
@@ -53,26 +53,27 @@ Before TEAM application can be used fully, an administrator is required to confi
 6. Provide a *Ticket No*, used for issue-tracking purposes.
 7. In *Approver Groups* tick the Identity Centre group whose users should be allowed to approve temaporary elevated access requests for the accounts/OUs.
 8. Click *Add approver policy*.
-### Approver policies demo
+
+### Approver policy configuration demo
 {: .no_toc}
 <video width="750" height="420" frameborder="0" allowfullscreen controls>
 <source src="https://d3f99z5n3ls8r1.cloudfront.net/videos/admin_guides/approver_policy.mov">
 </video>
 
-## Change Request Settings
+## Configure TEAM Settings
 
-### Available request settings
+### TEAM application settings
 {: .no_toc}
-Administrator can adjust the overall TEAM application request settings, such as:
+An administrator can configure global TEAM application settings, such as:
 - Timer settings
   - **Maximum request duration**: What is the longest duration of elevated access that can be requested by the users.
-  - **Request expiry timeout**: How long does the request remain active for. If the requets is not approved/rejected by an approver in this time, the request expires and will need to be resubmitted.
+  - **Request expiry timeout**: Determines how long a TEAM request remains in the pending state. If the request is not approved/rejected by an approver in this time, the request expires and will need to be resubmitted.
 - Mandatory fields
-  - **Comments required**: Are the users required to provide a comment explaining why they require elevated access.
-  - **Ticket number required**: Are the users required to provide a ticket number for issue tracking when making an elevated access request.
+  - **Comments required**: Determines if the **Comments** input formfield is mandatory when actioning a TEAM elevated access request
+  - **Ticket number required**: Determines if users are required to provide a ticket number for issue tracking when making an elevated access request or configuring admin policies.
 - Workflow settings
-  - **Approval required**: Are the approvals required fo elevated access request by default.
-    > Approval requirement is also specified as a part of the eligibility policy. CLARIFY 
+  - **Approval required**: Determines if approvals are required for elevated access request by default for all TEAM users.
+    > Approval requirement configured as a part of the eligibility policy for a user or group takes precedence over the global approval settings
 
 ### Step-by-step
 {: .no_toc}
