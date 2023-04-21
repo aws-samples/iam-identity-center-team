@@ -2,7 +2,7 @@ title: TEAM
 description: Documentation for AWS Temporary Elevated Access Management (TEAM)
 theme: just-the-docs
 
-url: https://aws-samples.github.io/aws-iam-identity-center-temporary-elevated-access-management
+url: https://aws-samples.github.io/iam-identity-center-team
 
 logo: "docs/assets/images/logo.png"
 
@@ -14,7 +14,7 @@ enable_copy_code_button: true
 heading_anchors: true
 
 aux_links:
-  TEAM on GitHub: https://github.com/aws-samples/aws-iam-identity-center-temporary-elevated-access-management
+  TEAM on GitHub: https://github.com/aws-samples/iam-identity-center-team
 
 back_to_top: true
 back_to_top_text: "Back to top"
