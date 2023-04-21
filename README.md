@@ -9,10 +9,10 @@ Refer to the [blog post on the AWS Security Blog]() for a background and an over
 
 ![](docs/assets/images/home_page.png)
 ## Getting Started
-Visit our **[Documentation pages](https://aws-samples.github.io/aws-iam-identity-center-temporary-elevated-access-management/)** to learn more and get started installing and using TEAM.
+Visit our **[Documentation pages](https://aws-samples.github.io/iam-identity-center-team/)** to learn more and get started installing and using TEAM.
 
 ### Quick links
-- [Deploying the TEAM application](https://aws-samples.github.io/aws-iam-identity-center-temporary-elevated-access-management/docs/deployment)
-- [Solution architecture and workflows](https://aws-samples.github.io/aws-iam-identity-center-temporary-elevated-access-management/docs/overview)
-- [User guides and walkthrough](https://aws-samples.github.io/aws-iam-identity-center-temporary-elevated-access-management/docs/guides)
-- [Demo](https://aws-samples.github.io/aws-iam-identity-center-temporary-elevated-access-management/docs/demo.html)
+- [Deploying the TEAM application](https://aws-samples.github.io/iam-identity-center-team/docs/deployment)
+- [Solution architecture and workflows](https://aws-samples.github.io/iam-identity-center-team/docs/overview)
+- [User guides and walkthrough](https://aws-samples.github.io/iam-identity-center-team/docs/guides)
+- [Demo](https://aws-samples.github.io/iam-identity-center-team/docs/demo.html)
