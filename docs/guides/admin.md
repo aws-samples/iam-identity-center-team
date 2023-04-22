@@ -24,16 +24,16 @@ Before TEAM application can be used fully, an administrator is required to confi
 
 1. Log into the application as TEAM admin.
 2. In the left-hand menu go to *Administration* &rarr; *Eligibility policy*.
-3. Click on *Create eligibility policy* or tick the eligibility policy you would like edited and choose *Actions* &rarr; *Edit*. 
-4. Choose an entity type: either *User* or *Group*. This will auto-populate the form with users/groups from Identity Centre.
+3. Click on *Create eligibility policy* or tick the eligibility policy you would like edited and choose *Actions* &rarr; *Edit*.
+4. Choose an entity type: either *User* or *Group*. This will auto-populate the form with users/groups from Identity Center.
 5. In the dropdown, tick all the users/groups relevant to the eligibility policy.
 6. Provide a *Ticket No*, used for issue-tracking purposes.
-7. In the dropdowns, tick all the *Accounts* and/or *OUs* that the specified users/groups should be allow to request temporary elevated access to.
+7. In the dropdowns, tick all the *Accounts* and/or *OUs* that the specified users/groups should be allowed to request temporary elevated access to.
    > Where an eligibility policy specifies an OU, TEAM includes all the AWS accounts directly in that OU. It does not include those in its child OUs.
     {: .note}
 8. In *Permissions* dropdown, select all the permission sets that users/groups should be allowed to request for accounts/OUs.
-   > TEAM cannot be used to perform the following task:
-    - Grant temporary access to the management account 
+   > TEAM cannot be used to perform the following tasks:
+    - Grant temporary access to the management account
     - Manage permission sets provisioned in the management account
     Read the [security considerations]({% link docs/overview/security.md %}) section for more information.
     {: .note}
@@ -46,7 +46,7 @@ Before TEAM application can be used fully, an administrator is required to confi
 <source src="https://d3f99z5n3ls8r1.cloudfront.net/videos/admin_guides/eligibility_policy.mov">
 </video>
 
-## Configure approver Policy
+## Configure approver policy
 
 1. Log into the application as TEAM admin.
 2. In the left-hand menu go to *Administration* &rarr; *Approver policy*.
@@ -72,7 +72,7 @@ An administrator can configure global TEAM application settings, such as:
   - **Maximum request duration**: What is the longest duration of elevated access that can be requested by the users.
   - **Request expiry timeout**: Determines how long a TEAM request remains in the pending state. If the request is not approved/rejected by an approver in this time, the request expires and will need to be resubmitted.
 - Mandatory fields
-  - **Comments required**: Determines if the **Comments** input formfield is mandatory when actioning a TEAM elevated access request
+  - **Comments required**: Determines if the **Comments** input form field is mandatory when actioning a TEAM elevated access request
   - **Ticket number required**: Determines if users are required to provide a ticket number for issue tracking when making an elevated access request or configuring admin policies.
 - Workflow settings
   - **Approval required**: Determines if approvals are required for elevated access request by default for all TEAM users.
@@ -85,7 +85,7 @@ An administrator can configure global TEAM application settings, such as:
 3. Review the settings displayed and click *Edit* in the top right.
 4. Make changes to the parameters displayed (outlined above).
 5. Click *Submit*.
-   
+
 ### Request settings demo
 {: .no_toc}
 <video width="750" height="420" frameborder="0" allowfullscreen controls>

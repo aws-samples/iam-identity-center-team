@@ -7,11 +7,11 @@ parent: Solution deployment
 
 # Uninstall TEAM solution
 
-Run the **destroy.sh** bash script the **deployment** folder to uninstall the TEAM application and delete all backend resources.
+Run the **destroy.sh** bash script in the **deployment** folder to uninstall the TEAM application and delete all backend resources.
 
 The **destroy.sh** bash script performs the following actions within the **TEAM_ACCOUNT**:
 
-- Deletes the Amplify backend Cloudformation stack 
+- Deletes the Amplify backend Cloudformation stack
 - Deletes the Amplify App Cloudformation stack
 - Deletes the CodeCommit repository for the team application
 - Deletes Amplify deployment artifacts S3 bucket

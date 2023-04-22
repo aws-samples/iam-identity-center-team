@@ -7,7 +7,7 @@ parent: Guides
 # TEAM Walkthrough
 {: .no_toc}
 
-Go through an end-to-end scenario in which a developer requests and is granted temporary elevated access. The actions taken by the developer are audited after their session expires. 👩‍💻
+Go through an end-to-end scenario in which a developer requests, and is granted temporary elevated access. The actions taken by the developer are audited after the session expires. 👩‍💻
 {: .fs-6 .fw-300 }
 
 <details open markdown="block">
@@ -25,23 +25,23 @@ Go through an end-to-end scenario in which a developer requests and is granted t
 - The admin persona configured an [eligibility and an approver policy](./deployment/policies.md).
 
 In this walkthrough, you will assume 3 different personas:
-- Requestor (typically a developer) 🦓 
+- Requestor (typically a developer) 🦓
 - Approver (project lead/account owner) 🦁
 - Auditor (security) 🦒
 
-[Requestor guide]({% link docs/guides/user.md %}){: .btn .btn-purple } 
+[Requestor guide]({% link docs/guides/user.md %}){: .btn .btn-purple }
 [Approver guide]({% link docs/guides/approver.md %}){: .btn .btn-blue }
 [Auditor guide]({% link docs/guides/auditor.md %}){: .btn .btn-green }
 [Admin guide]({% link docs/guides/admin.md %}){: .btn .btn }
 ## Start the process
-To begin with, imagine yourself a **requester** 🦓. 
+To begin with, imagine yourself a **requester** 🦓.
 
-You need to perform a task that requires temporary elevated access to your AWS target environment. For example, you might need to fix a broken deployment pipeline or perform some operational tasks as part of a planned change. 
+You need to perform a task that requires temporary elevated access to your AWS target environment. For example, you might need to fix a broken deployment pipeline or perform some operational tasks as part of a planned change.
 
-As a requester, you already belong to a group used in at least one *eligibility policy* configured by the admin persona. 
+As a requester, you already belong to a group used in at least one *eligibility policy* configured by the admin persona.
 
 ## 🦓 Step 1: Access the TEAM application
-1. First, access Identity Center’s AWS access portal as described earlier, using the AWS access portal URL. 
+1. First, access Identity Center’s AWS access portal as described earlier, using the AWS access portal URL.
 2. Next, select **TEAM IDC APP** to open the TEAM application as described earlier.
 
 
@@ -51,10 +51,10 @@ As a requester, you already belong to a group used in at least one *eligibility 
    > You can only select an AWS account and permission set combination for which you are eligible based on the eligibility policies defined earlier.
    {: .note}
 3. Provide a business justification, a start date and time, a duration, and a ticket ID (typically representing a change ticket or incident ticket related to your task).
-   > When you complete your request, try to apply the [principle of least privilege](https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html#grant-least-privilege) by selecting a permission set with the least privilege, and a time window with the least duration, that will allow you to complete your task safely. 
+   > When you complete your request, try to apply the [principle of least privilege](https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html#grant-least-privilege) by selecting a permission set with the least privilege, and a time window with the least duration, that will allow you to complete your task safely.
    {: .note}
 4. Finally, click **Submit**.
-   
+
 <video width="750" height="420" frameborder="0" allowfullscreen controls>
 <source src="https://d3f99z5n3ls8r1.cloudfront.net/videos/requestor_guides/create_request.mov">
 </video>
@@ -65,11 +65,11 @@ As a requester, you already belong to a group used in at least one *eligibility 
 ## 🦁 Step 3: Approve elevated access
 Once you submit your request, approvers are notified by email. Approvers are notified when any request is created which falls within the scope of what they are authorized to approve, based on the *approval policies* defined earlier.
 
-Now we’ll switch to the **approver** persona. As an approver, you access the TEAM application in exactly the same way as the other personas. 
+Now we’ll switch to the **approver** persona. As an approver, you access the TEAM application in exactly the same way as the other personas.
 
 Once in the TEAM application, choose **Approve requests** in the left-hand navigation pane under **Approvals**. TEAM displays requests awaiting your review.
 
-You can open a pending request to view the information provided by the requester, and decide whether you want to approve or reject it, s shown below.
+You can open a pending request to view the information provided by the requester, and decide whether you want to approve or reject it, as shown below.
 
 <video width="750" height="420" frameborder="0" allowfullscreen controls>
 <source src="https://d3f99z5n3ls8r1.cloudfront.net/videos/approver_guides/approve_request.mov">
@@ -82,16 +82,16 @@ Once you approve or reject a request, the original requester is notified by emai
 Now we’ll switch back to the **requester** persona. As a requester, you can see the status of your open requests in the TEAM application by selecting **My requests** in the left-hand navigation pane. You can see the requests view with one approved request.
 
 ## 🦓 Step 4: Activate elevated access
-After a request is approved, the TEAM application waits until the start date and time specified in the request and then automatically activates access. 
+After a request is approved, the TEAM application waits until the start date and time specified in the request and then automatically activates access.
 
 > To activate access, the TEAM orchestration workflow creates a temporary [permission set assignment](https://docs.aws.amazon.com/singlesignon/latest/userguide/useraccess.html), which links the requester’s user identity in Identity Center with the permission set and AWS account specified in their request. Following this, TEAM notifies the requester by email that their request is now active.
 {: .note}
 
-To see all active requests, select **Active access** in the left-hand navigation under **Elevated access**, as shown below. You can choose **View details** to view details for an active request.
+To see all active requests, select **Active access** in the left-hand navigation under **Elevated access** ~~, as shown below~~. You can choose **View details** to view details for an active request.
 
 ## 🦓 Step 5: Access AWS Environment with elevated permissions
 
-During the time period in which elevated access is active, you can invoke sessions to access the AWS target environment with the scope (that is, permission set and AWS account) approved in your request. 
+During the time period in which elevated access is active, you can invoke sessions to access the AWS target environment with the scope (that is, permission set and AWS account) approved in your request.
 
 Access Identity Center using the AWS access portal URL. From the AWS access portal you can select an AWS account and permission set that is currently active You’ll also see AWS accounts and permission sets you’ve been assigned statically in Identity Center, independently of TEAM. From here, you can:
 - Select **Management Console** to federate to [AWS Management Console]()
@@ -106,7 +106,7 @@ Access Identity Center using the AWS access portal URL. From the AWS access port
 Whichever way you invoke access, Identity Center provides temporary credentials for the IAM role and AWS account that
 was specified in your request, which allows you to assume that role in that account. The temporary credentials are valid for the [duration specified in the permission set](https://docs.aws.amazon.com/singlesignon/latest/userguide/howtosessionduration.html), defined by an Identity Center administrator.
 
-Now you can complete the operational tasks you need to perform in the AWS target environment. During the period in which your elevated access is active, you can invoke multiple sessions if necessary. 👩‍💻 
+Now you can complete the operational tasks you need to perform in the AWS target environment. During the period in which your elevated access is active, you can invoke multiple sessions if necessary. 👩‍💻
 
 ### 🦓 Step 5.1: Log session activity
 
@@ -116,21 +116,21 @@ When you access the AWS target environment, your activity is logged to [AWS Clou
 {: .note}
 ### 🦓 Step 5.2: End elevated access
 Elevated access ends when either:
-1. The requested duration elapses, or 
-2. Access is explicitly revoked in the TEAM application. 
+1. The requested duration elapses, or
+2. Access is explicitly revoked in the TEAM application.
 
-> Either the requester or an approver can revoke elevated access. See [Revoke access guide]().
+> Either the requester or an approver can revoke elevated access. ~~See [Revoke access guide]()~~.
 {: .note}
 
-When elevated access ends or is revoked, the TEAM orchestration workflow automatically deletes the temporary permission set assignment for this request. This unlinks the permission set, the AWS account, and the user in Identity center. 
+When elevated access ends or is revoked, the TEAM orchestration workflow automatically deletes the temporary permission set assignment for this request. This unlinks the permission set, the AWS account, and the user in Identity center.
 
 The requester is then notified by email that their elevated access has ended.
 
 ## 🦒 Step 9: View session activity logs
 
 You can view request details and session activity for current and historical requests from within the TEAM application. Each persona can see the following information:
-- *Requesters* can inspect elevated access requested by them (guide)
-- *Approvers* can inspect elevated access that falls within the scope of what they are authorized to approve (guide)
+- *Requesters* can inspect elevated access requested by them
+- *Approvers* can inspect elevated access that falls within the scope of what they are authorized to approve
 - *Auditors* can inspect all elevated access globally
 
 > Session activity is streamed to the TEAM application in near real time, which means you can view session activity while a session is in progress.

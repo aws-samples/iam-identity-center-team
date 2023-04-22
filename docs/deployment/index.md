@@ -7,4 +7,4 @@ has_children: true
 
 # Deployment
 
-Follow the steps below to deploy TEAM application into your AWS environment.
+Follow the steps below to deploy the TEAM application into your AWS environment.
