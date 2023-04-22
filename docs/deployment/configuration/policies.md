@@ -17,15 +17,15 @@ Before users can request temporary elevated access in TEAM, a user with the **ad
 
 To manage eligibility policies, in the left-hand menu go to *Administration* -> *Eligibility policies*.
 
-As shown in the screenshot above, each eligibility policy has three main parts:
+~~As shown in the screenshot above,~~ each eligibility policy has three main parts:
 
-- **Entity type and name**: A named Identity Centre user or group
-- **AWS accounts or OUs**: One or more AWS accounts and/or [AWS Organizations]() organizational units (OUs).
-- **Permissions**: One or more Identity Center [permission sets]() (representing [IAM roles]()).
+- **Entity type and name**: A named Identity Center user or group
+- **AWS accounts or OUs**: One or more AWS accounts and/or [AWS Organizations](https://docs.aws.amazon.com/organizations/) organizational units (OUs).
+- **Permissions**: One or more Identity Center [permission sets](https://docs.aws.amazon.com/singlesignon/latest/userguide/permissionsetsconcept.html) (representing [IAM roles](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.html)).
 
 You can also specify in each eligibility policy whether elevated access requests require approval or not.
 
-Each eligibility policy allows the specified Identity Center user, or any member of the specified group, to log into TEAM and request temporary elevated access using the specified permission set(s) in the specified AWS account(s). 
+Each eligibility policy allows the specified Identity Center user, or any member of the specified group, to log into TEAM and request temporary elevated access using the specified permission set(s) in the specified AWS account(s).
 
 When choosing permission sets, you can either use a predefined permission set provided by Identity Center, or you can create your own permission sets using custom permissions in order to provide least-privilege access for particular operational tasks.
 
@@ -34,7 +34,7 @@ When choosing permission sets, you can either use a predefined permission set pr
 
 ## Approver policy configuration
 
-**Approver policies** work in a similar way to eligibility policies, except they authorize users to approve temporary elevated access requests, rather than create them. 
+**Approver policies** work in a similar way to eligibility policies, except they authorize users to approve temporary elevated access requests, rather than create them.
 
 If a specific AWS account is referenced in an eligibility policy that is configured to require approval, then there must be a corresponding approval policy for the same account. If there is no corresponding approval group - or if there is an approval group, but it has no members - then TEAM won’t allow users to request temporary elevated access to that account, because no-one can approve it.
 

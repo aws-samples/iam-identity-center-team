@@ -17,7 +17,7 @@ Replace the **MetadataURL** in the **details.json** file in the **deployment** f
 For example:
 
 ```json
-{ 
+{
     "MetadataURL": "https://portal.sso.us-east-1.amazonaws.com/saml/metadata/ODQzNTUxMTgwNTcyX2lucy04NGM3MThiMzkyY2Y2YTM1"
 }
 ```
@@ -39,7 +39,8 @@ $ ./cognito.sh
 ```
 The **cognito.sh** script should be deployed successfully without any errors.
 
-### The application deployment, configuration and integration is now complete!
+The application deployment, configuration and integration is now complete!
+
 {: .no_toc}
 ### 🚀 Next Step: Set up [Eligibility & Approval Policies]({% link docs/deployment/configuration/policies.md %}) to start using TEAM.
 {: .no_toc}

@@ -13,16 +13,16 @@ Temporary Elevated Access Management (TEAM) solution is a full stack, Single Pag
 
 ## Solution components
 
-TEAM consists of the following components: 
+TEAM consists of the following components:
 - A web interface that you can access as a SAML application on the [IAM Identity Center](https://aws.amazon.com/iam/identity-center/) portal. TEAM users can create, approve, monitor and manage elevated request with a few clicks on the web application UI.
-- A GraphQL API layer powered by [AWS Appsync](https://aws.amazon.com/appsync/) which responds to actions performed on the web UI and retrieves, updates and stores data from TEAM datastores.
+- A GraphQL API layer powered by [AWS Appsync](https://aws.amazon.com/appsync/) which responds to actions performed on the web UI and retrieves, updates and stores data from and to TEAM datastores.
 - [DynamoDB](https://aws.amazon.com/dynamodb/) datastore for storing TEAM request, eligibility and approval state.
 - [AWS Lambda](https://aws.amazon.com/lambda/) backed middleware component that contains logic for routing TEAM elevated access requests to the orchestration layer.
 - [AWS Step Functions](https://aws.amazon.com/step-functions/) orchestration workflow component that automates the process of notification, granting and removal of elevated access.
 - Auditing and visibility component powered by [AWS CloudTrail Lake](https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-lake.html) for veiwing elevated access session activity logs.
 - Security component backed by [Amazon Cognito](https://aws.amazon.com/es/cognito/) for managing group and user based authentication and application authorization.
 
-The TEAM application is built, deployed and hosted on [AWS Amplify](https://aws.amazon.com/amplify/) 
+The TEAM application is built, deployed and hosted on [AWS Amplify](https://aws.amazon.com/amplify/)
 
 ### TEAM DynamoDB Tables
 
@@ -49,12 +49,12 @@ A TEAM request can be in one of the following states:
 
 When a TEAM request item is created or updated in DynamoDB, it triggers a dynamodb stream which invokes the ***TEAM router*** <nbrsp>
 
-The ***TEAM router*** is a lambda function that executes a step function workflow corresponding to the state of a TEAM request. For example, the TEAM router would invoke an approval step function workflow when a new request is created 
+The ***TEAM router*** is a lambda function that executes a step function workflow corresponding to the state of a TEAM request. For example, the TEAM router would invoke an approval step function workflow when a new request is created
 
 ### TEAM Step Function Orchestration Workflows
 The TEAM orchestration workflow is made up of the step functions listed below:
-### Approval workflow 
-The Approval Step Function workflow is invoked when a TEAM request is newly created and the request status is ***pending***. 
+### Approval workflow
+The Approval Step Function workflow is invoked when a TEAM request is newly created and the request status is ***pending***.
 
 <p align="center">
 <img class="img-fluid" src="https://d3f99z5n3ls8r1.cloudfront.net/images/architecture/approval.png" alt="approval" width="50%" height="50%">
@@ -66,16 +66,16 @@ The Approval state machine performs the following functions:
 - Waits for 1 hour (configurable) and checks if the request has been actioned or not.
 - If the request has not been actioned it changes the status to ***expired***
 
-### Reject workflow 
-The Reject Step Function workflow is invoked when a TEAM request is rejected by a member of an approver group thus changing the request status to ***rejected***. 
+### Reject workflow
+The Reject Step Function workflow is invoked when a TEAM request is rejected by a member of an approver group thus changing the request status to ***rejected***.
 <p align="center">
 <img class="img-fluid" src="https://d3f99z5n3ls8r1.cloudfront.net/images/architecture/reject.png" alt="reject">
 </p>
 The Reject state machine performs the following functions:
     - Notifies the requester about the request rejection via email
 
-### Schedule workflow 
-The Schedule Step Function workflow is invoked when a TEAM request is approved by a member of an approver group and the request status is ***approved***. 
+### Schedule workflow
+The Schedule Step Function workflow is invoked when a TEAM request is approved by a member of an approver group and the request status is ***approved***.
 
 <p align="center">
 <img class="img-fluid" src="https://d3f99z5n3ls8r1.cloudfront.net/images/architecture/schedule.png" alt="schedule" width="50%" height="50%">
@@ -87,8 +87,8 @@ The Schedule state machine performs the following functions:
 - Waits until the start time specified in the request
 - Invoke the ***Grant*** State machine workflow at the requested elevated access start time
 
-### Grant workflow 
-The Grant Step Function  workflow is invoked by the ***Schedule*** state machine at the session start time. 
+### Grant workflow
+The Grant Step Function  workflow is invoked by the ***Schedule*** state machine at the session start time.
 
 <p align="center">
 <img class="img-fluid" src="https://d3f99z5n3ls8r1.cloudfront.net/images/architecture/grant.png" alt="grant" width="50%" height="50%">
@@ -102,7 +102,7 @@ The Grant state machine performs the following functions:
 - Invokes the **Revoke** State machine once the session duration elapses
 
 ### Revoke workflow
-The Revoke Step Function workflow is invoked either by the ***Grant*** state machine (when a session duration expires) or when an entity (TEAM requester or approver) revokes an active TEAM session which is **in progress** or **pending**. 
+The Revoke Step Function workflow is invoked either by the ***Grant*** state machine (when a session duration expires) or when an entity (TEAM requester or approver) revokes an active TEAM session which is **in progress** or **pending**.
 
 <p align="center">
 <img class="img-fluid" src="https://d3f99z5n3ls8r1.cloudfront.net/images/architecture/revoke.png" alt="revoke" width="70%" height="70%">
@@ -114,12 +114,12 @@ The Revoke state machine performs the following functions:
 - Updates the TEAM session status to ***ended***
 
 ### TEAM Lambda Resolvers
-The TEAM Lambda resolvers are GrapQL API components backed by Lambda functions that provides business logic to retrieve information that is rendered and consumed in the frontend of the TEAM application.
+The TEAM Lambda resolvers are GraphQL API components backed by Lambda functions that provide business logic to retrieve information that is rendered and consumed in the frontend of the TEAM application.
 
 TEAM makes use of the following Lambda resolvers:
 
 -   **teamgetAccounts** - This Lambda function returns a list of accounts in your AWS organization
 -   **teamgetOUs** - This Lambda function returns a list of Organizational Units (OUs) within your AWS organization
--   **teamgetPermisssion** - This Lambda function returns a permission sets available in IAM Identity center within your AWS organization
--   **teamgetUsers** - This Lambda function returns a list of users available in IAM Identity center within your AWS organization
--   **teamgetIdcGroups** - This Lambda function returns a list of groups available in IAM Identity center within your AWS organization
+-   **teamgetPermisssion** - This Lambda function returns the permission sets available in IAM Identity Center within your AWS organization
+-   **teamgetUsers** - This Lambda function returns a list of users available in IAM Identity Center within your AWS organization
+-   **teamgetIdcGroups** - This Lambda function returns a list of groups available in IAM Identity Center within your AWS organization
