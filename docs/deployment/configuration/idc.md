@@ -6,7 +6,7 @@ parent: Configuration
 grand_parent: Solution deployment
 ---
 
-# IAM Identity Centre Integration
+# IAM Identity Center Integration
 
 
 The TEAM application needs to be onboarded as a SAML 2.0 application on AWS IAM Identity Center before it can be fully accessed.
@@ -14,13 +14,13 @@ The TEAM application needs to be onboarded as a SAML 2.0 application on AWS IAM 
 
 ## SAML Configuration Parameters
 
-The following parameters will be required for configuring the TEAM application as a SAML app on AWS Identity Center:
+The following parameters will be required for configuring the TEAM application as a SAML app in AWS Identity Center:
 
-- **applicationStartURL** - AWS IAM Identity center application properties configuration settings
+- **applicationStartURL** - AWS IAM Identity Center application properties configuration settings
 
-- **applicationACSURL** - AWS IAM Identity center application metadata configuration settings
+- **applicationACSURL** - AWS IAM Identity Center application metadata configuration settings
 
-- **applicationSAMLAudience** - AWS IAM Identity center application metadata configuration settings
+- **applicationSAMLAudience** - URN for the AWS Cognito user pool id for the TEAM application
 
 The **integration.sh** bash script in the **deployment** folder can be used to obtain the SAML configuration parameters:
 
@@ -52,14 +52,11 @@ In AWS IAM Identity Center console >**Application assignment** > **Applications*
 - Copy and save the URL of **AWS IAM Identity Center SAML metadata file URL**. It would be used later for configuring Cognito User pool.
 - Enter the value of **_applicationStartURL_** parameter in **_Application start URL_** under the **_Application properties_** section:
 
-<img src="https://team-documentation-assets-for-github-pages.s3.eu-central-1.amazonaws.com/images/deployment/idc_app_prop.png" alt="IdC App Properties">
+<img src="https://team-documentation-assets-for-github-pages.s3.eu-central-1.amazonaws.com/images/deployment/idc_app_prop.png" alt="IdC App Metadata">
 
 - In the **Application Metadata** section select **_Manually type your metadata values_**.
 - Enter the value of **_applicationACSURL_** parameter in **Application ACS URL**.
 - Enter the value of **_applicationSAMLAudience_** parameter in **Application SAML audience**.
-
-
-<img src="https://team-documentation-assets-for-github-pages.s3.eu-central-1.amazonaws.com/images/deployment/idc_app_meta.png" alt="IdC App Metadata">
 
 Click **Submit** to save configuration.
 
@@ -81,7 +78,7 @@ Click **Save changes**
 
 ## Assign users or groups to TEAM application
 
-Under **Assigned Users** Click the **_Assign users_** and add users. This will grant assigned users and groups access to login to the TEAM application. 
+Under **Assigned Users** Click the **_Assign users_** and add users. This will grant assigned users and groups access to login to the TEAM application.
 
 > Remember to add the **team-admin** and **team-auditor** group to the team application in addition to other application users and groups
 {: .important}
@@ -91,6 +88,6 @@ Under **Assigned Users** Click the **_Assign users_** and add users. This will g
 ---
 
 {: .no_toc}
-### 🚀 Next Step: [Update Cognito user pool configuration](./cognito.md)
+### 🚀 Next Step: [Update Cognito user pool configuration](% link docs/deployment/configuration/cognito.md %)
 
 {: .no_toc}

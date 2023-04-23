@@ -18,12 +18,12 @@ Automated, approval based workflow for managing time-bound elevated access to yo
 [View on GitHub](https://github.com/aws-samples/iam-identity-center-team){: .btn }
 </span>
 
-TEAM is an open source solution that integrates with AWS IAM Identity Center and allows you to manage and monitor, time-bound elevated access to your multi-account AWS environment at scale.
+TEAM is an open source solution that integrates with AWS IAM Identity Center and allows you to manage and monitor time-bound elevated access to your multi-account AWS environment at scale.
 
 The solution is a ready-to-deploy custom application that allows users to request access to an AWS account only when it is needed and only for a specific period of time. Once the time period has elapsed, elevated access is automatically removed.
 
 <video width="800" height="500" frameborder="0" autoplay loop allowfullscreen controls>
-<source src="https://d3f99z5n3ls8r1.cloudfront.net/videos/requestor_guides/create_request.mov" type="video/mp4"> 
+<source src="https://d3f99z5n3ls8r1.cloudfront.net/videos/requestor_guides/create_request.mov" type="video/mp4">
 </video>
 
 ## Benefits
@@ -31,22 +31,22 @@ Temporary Elevated Access Management (TEAM) solution helps to:
 - Simplify cloud access management
 - Meet regulation and compliance requirements
 - Reduce risk of breach or exposure
-- Improve the security of AWS environment
+- Improve the security of your AWS environment
 
 ## Features
 - **Ease of deployment** - Simple one click, batteries included deployment with [AWS Amplify](https://aws.amazon.com/amplify/).
 - **Centralized Management** - Centralized management console for creating, approving, managing and monitoring elevated access requests.
-- **Application Security** - Enhanced application authentication with [Amazon Cognito](https://aws.amazon.com/cognito/) group-based authorization and SAML application Integration with AWS IAM Identity Center
+- **Application Security** - Enhanced application authentication with [Amazon Cognito](https://aws.amazon.com/cognito/) group-based authorization and SAML application Integration with AWS IAM Identity Center.
 - **Auditing and Visibility** - Session logs recording enables auditing and easy correlation of elevated request justification with session activity.
-- **Monitoring and Reporting** - Single dashboard for centralized monitoring and reporting of all elevated access request and approval history
+- **Monitoring and Reporting** - Single dashboard for centralized monitoring and reporting of all elevated access request and approval history.
 - **Alert and notification** - Automatic notification of TEAM request, approval and session status.
 - **Solution Autonomy** - TEAM solution is agnostic and has no dependence on third party integrations with external applications or identity providers.
 
 ## Getting started
-The best way to get started with TEAM is to [deploy the solution](./deployment/index.md) in your environment and follow the [end-to-end example scenario](./guides/walkthrough.md) which will take through all functionalities from requesting access to auditing the session logs.
+The best way to get started with TEAM is to [deploy the solution](./docs/deployment/index.md) in your environment and follow the [end-to-end example scenario](./docs/guides/walkthrough.md) which will take you through all functionalities from requesting access to auditing the session logs.
 
 ## Authors
-TEAM was created by [Taiwo Awoyinfa](http://example.com) and has been enhanced with major contributions from [Varvara Semenova](http://example.com) and [James Greenwood](http://example.com) and technical inputs from [Jeremy Ware](http://example.com) and [Abhishek Pande](http://example.com).
+TEAM was created by [Taiwo Awoyinfa](https://github.com/tawoyinfa) and has been enhanced with major contributions from [Varvara Semenova](https://github.com/astrovar) and [James Greenwood](https://github.com/jmsgwd) and technical inputs from [Jeremy Ware](http://example.com) and [Abhishek Pande](https://github.com/ahpande).
 
 #### Thank you to the GitHub contributors of TEAM!
 
@@ -60,12 +60,12 @@ TEAM was created by [Taiwo Awoyinfa](http://example.com) and has been enhanced w
 
 ## License
 
-Temporary Elevated Access Management (TEAM) is distributed by an [MIT-0 License]([www.example.com](https://github.com/aws-samples/aws-iam-identity-center-temporary-elevated-access-management/blob/main/LICENSE)).
+Temporary Elevated Access Management (TEAM) is distributed by an [MIT-0 License](https://github.com/aws-samples/aws-iam-identity-center-temporary-elevated-access-management/blob/main/LICENSE).
 
 ## Contributing
 Thank you for your interest in contributing to our project. Whether it's a bug report, new feature, correction, or additional documentation, we greatly value feedback and contributions from our community.
 
-Please read through [this document](https://github.com/aws-samples/aws-iam-identity-center-temporary-elevated-access-management/blob/main/CONTRIBUTING.md#security-issue-notifications) before submitting any issues or pull requests to ensure we have all the necessary information to effectively respond to your bug report or contribution.
+Please read through [this document](https://github.com/aws-samples/iam-identity-center-team/blob/main/CONTRIBUTING.md#contributing-guidelines) before submitting any issues or pull requests to ensure we have all the necessary information to effectively respond to your bug report or contribution.
 
 ## Code of Conduct
 This project has adopted the [Amazon Open Source Code of Conduct](https://aws.github.io/code-of-conduct).

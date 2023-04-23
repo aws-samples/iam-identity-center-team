@@ -7,4 +7,4 @@ has_children: true
 
 # Solution Overview
 
-This section provides information about solution architecture, TEAM workflow, cost and security considerations
+This section provides information about solution architecture, TEAM workflow and cost & security considerations

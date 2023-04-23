@@ -22,7 +22,7 @@ When a user requests elevated access to an account, if you are a member of the a
 2. In the left-hand menu go to *Approvals* &rarr; *Approve requests*.
 3. You will see all of the requests that are pending your approval. Tick the request and click on *View details*.
 4. Review the information, including the *Justification* field if provided. Close the pop-up window.
-5. With the request still ticked, click on *Actions*, and either *Approve* or *Reject* the request. 
+5. With the request still ticked, click on *Actions*, and either *Approve* or *Reject* the request.
 6. You might be required to provide a *Comment* with the reason when approving/rejecting the request.
 
 ### Approve elevated access demo
@@ -40,14 +40,14 @@ An approver can inspect actions performed by a requester in near realtime during
   4. Click on dropdown *Session activity logs*.
   5. You can view all of the [CloudTrail](https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-user-guide.html) logs (API calls made by the user) since the start of the session.
   6. You can use the search bar to search the logs.
-  7. To revoke access from the user, click *Revoke*.
+  7. To revoke access for the user, click *Revoke*.
 
 ## Revoke elevated access
 An approver can revoke elevated access for a requester in scenarios such as when the initial approval was unintended or when there is evidence of abuse or misuse of elevated access.
 Follow the steps in the previous section to revoke elevated access.
 
 ### Inspect/revoke elevated access demo
-{: .no_toc}  
+{: .no_toc}
 <video width="750" height="420" frameborder="0" allowfullscreen controls>
 <source src="https://d3f99z5n3ls8r1.cloudfront.net/videos/approver_guides/approver_revoke.mov">
 </video>
