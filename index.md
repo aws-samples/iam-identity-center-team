@@ -11,6 +11,9 @@ IAM Identity Center
 Automated, approval based workflow for managing time-bound elevated access to your multi-account AWS environment
 {: .fs-2 .fw-300}
 
+Coming soon
+{: .label .label-yellow }
+
 <span class="fs-4">
 [Get started]({% link docs/deployment/index.md %}){: .btn .btn-purple }
 </span>
