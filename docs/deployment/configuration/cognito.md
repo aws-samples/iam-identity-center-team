@@ -12,7 +12,7 @@ The TEAM Cognito user pool configuration needs to be updated to complete the dep
 
 ### Update configuration parameters
 
-Replace the **MetadataURL** in the **details.json** file in the **deployment** folder with the value of **AWS IAM Identity Center SAML metadata file URL** copied from the [previous section](#iam-identity-center-saml-integration).
+Create a new file named **details.json** in the **deployment** directory. Copy the contents of the file **details-template.json** to the new file. Replace the **MetadataURL** in the **details.json** file with the value of **AWS IAM Identity Center SAML metadata file URL** copied from the [previous section](#iam-identity-center-saml-integration).
 
 For example:
 
