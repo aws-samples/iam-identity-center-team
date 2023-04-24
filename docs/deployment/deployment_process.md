@@ -32,7 +32,7 @@ This creates a directory named **team-idc-app** in your current directory.
 
 ## Update deployment parameters
 
-Update the parameters in the **parameters.sh** file in the **deployment** folder of the application root directory
+Create a new file named **parameters.sh** in the **deployment** directory. Copy the contents of the file **parameters-template.sh** to the new file. Update the parameters in the **parameters.sh** file as follows:
 
 **Parameters**
 
