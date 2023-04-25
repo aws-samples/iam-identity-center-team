@@ -44,8 +44,8 @@ Create a new file named **parameters.sh** in the **deployment** directory. Copy 
 - **TEAM_ACCOUNT** - ID of AWS Account into which TEAM application will be deployed
 - **ORG_MASTER_PROFILE** - Named profile for Organisation master account
 - **TEAM_ACCOUNT_PROFILE** - Named profile for TEAM Application deployment Account
-- **TEAM_ADMIN_GROUP** - Name of the IAM Identity Center group that contains users with the administrator persona
-- **TEAM_AUDITOR_GROUP** - Name of the IAM Identity Center group that contains users with the auditor persona
+- **TEAM_ADMIN_GROUP** - Name of IAM Identity Center group for TEAM administrators
+- **TEAM_AUDITOR_GROUP** - Name of IAM Identity Center group for TEAM auditors
 
 For example:
 
