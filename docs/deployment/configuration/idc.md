@@ -88,6 +88,6 @@ Under **Assigned Users** Click the **_Assign users_** and add users. This will g
 ---
 
 {: .no_toc}
-### 🚀 Next Step: [Update Cognito user pool configuration](% link docs/deployment/configuration/cognito.md %)
+### 🚀 Next Step: [Update Cognito user pool configuration](% docs/deployment/configuration/cognito.md %)
 
 {: .no_toc}
