@@ -120,6 +120,6 @@ TEAM makes use of the following Lambda resolvers:
 
 -   **teamgetAccounts** - This Lambda function returns a list of accounts in your AWS organization
 -   **teamgetOUs** - This Lambda function returns a list of Organizational Units (OUs) within your AWS organization
--   **teamgetPermisssion** - This Lambda function returns the permission sets available in IAM Identity Center within your AWS organization
+-   **teamgetPermission** - This Lambda function returns the permission sets available in IAM Identity Center within your AWS organization
 -   **teamgetUsers** - This Lambda function returns a list of users available in IAM Identity Center within your AWS organization
 -   **teamgetIdcGroups** - This Lambda function returns a list of groups available in IAM Identity Center within your AWS organization

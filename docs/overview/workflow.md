@@ -69,7 +69,7 @@ To activate elevated access:
 During the time period in which elevated access is active, a requester can invoke sessions to access the AWS target environment with the scope (permission set and AWS account) approved in the request
 
 ### Step 7: Log session activity
-All actions performed by the requester during the period of elevated access in the AWS target environment are recorded and logged as auditable events in [AWS CloudTrail](https://aws.amazon.com/cloudtrail/)
+All actions performed by the requester during the period of elevated access in the AWS target environment are recorded and logged as auditable events in accordance to what is supported by [AWS CloudTrail](https://aws.amazon.com/cloudtrail/)
 
 ### Step 8: End elevated access
 Elevated access ends when either the requested duration elapses or it is explicitly revoked in the TEAM application. Either the requester or an approver can revoke elevated access within the requested duration.

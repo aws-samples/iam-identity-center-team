@@ -17,7 +17,7 @@ Before users can request temporary elevated access in TEAM, a user with the **ad
 
 To manage eligibility policies, in the left-hand menu go to *Administration* -> *Eligibility policies*.
 
-~~As shown in the screenshot above,~~ each eligibility policy has three main parts:
+Each eligibility policy has three main parts:
 
 - **Entity type and name**: A named Identity Center user or group
 - **AWS accounts or OUs**: One or more AWS accounts and/or [AWS Organizations](https://docs.aws.amazon.com/organizations/) organizational units (OUs).
@@ -42,7 +42,7 @@ To manage approval policies, go to *Administration* -> *Approver policy*.
 
 Each approval policy allows any member of the specified groups to log into TEAM and approve any temporary elevated access requests to the specified AWS account(s), **regardless of permission set**.
 
-> If you use the same group for both eligibility and approval, then it means approvers can be in the same team as requesters. This is a valid approach, and is sometimes known as *peer approval*. In any case, **TEAM does not allow an individual to approve their own request**. If you prefer requesters and approvers to be in different teams, specify different groups for eligibility and approval.
+> If you use the same group for both eligibility and approval, then it means approvers can be in the same team as requesters. This can be a valid approach, and is sometimes known as *peer approval*. In any case, **TEAM does not allow an individual to approve their own request**. If you prefer requesters and approvers to be in different teams, specify different groups for eligibility and approval.
 {: .note}
 
 

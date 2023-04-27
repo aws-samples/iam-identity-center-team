@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Identity centre integration
+title: Identity center integration
 nav_order: 1
 parent: Configuration
 grand_parent: Solution deployment

@@ -38,7 +38,7 @@ An approver can inspect actions performed by a requester in near realtime during
   2. Tick the session you are interested in and click *View details*.
   3. Review the details of the request.
   4. Click on dropdown *Session activity logs*.
-  5. You can view all of the [CloudTrail](https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-user-guide.html) logs (API calls made by the user) since the start of the session.
+  5. You can view all of the [CloudTrail](https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-user-guide.html) logs (recorded actions made by the user) since the start of the session.
   6. You can use the search bar to search the logs.
   7. To revoke access for the user, click *Revoke*.
 
