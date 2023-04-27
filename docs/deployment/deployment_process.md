@@ -32,7 +32,7 @@ This creates a directory named **team-idc-app** in your current directory.
 
 ## Update deployment parameters
 
-Update the parameters in the **parameters.sh** file in the **deployment** folder of the application root directory
+Create a new file named **parameters.sh** in the **deployment** directory. Copy the contents of the file **parameters-template.sh** to the new file. Update the parameters in the **parameters.sh** file as follows:
 
 **Parameters**
 
@@ -44,6 +44,8 @@ Update the parameters in the **parameters.sh** file in the **deployment** folder
 - **TEAM_ACCOUNT** - ID of AWS Account into which TEAM application will be deployed
 - **ORG_MASTER_PROFILE** - Named profile for Organisation master account
 - **TEAM_ACCOUNT_PROFILE** - Named profile for TEAM Application deployment Account
+- **TEAM_ADMIN_GROUP** - Name of IAM Identity Center group for TEAM administrators
+- **TEAM_AUDITOR_GROUP** - Name of IAM Identity Center group for TEAM auditors
 
 For example:
 

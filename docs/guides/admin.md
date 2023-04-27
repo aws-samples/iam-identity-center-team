@@ -19,6 +19,9 @@ parent: Guides
 
 Before TEAM application can be used fully, an administrator is required to configure eligibility and approver policies.
 
+> The *Administration* section in the navigation menu is not visible when logging in as a TEAM admin for the first time. This is due to user and group synchronization between Identity Center and Cognito. The *Administration* section becomes visible upon subsequent logins.
+{: .note}
+
 [What are eligibility & approver policies?]({% link docs/deployment/configuration/policies.md %}){: .btn .btn-outline }
 ## Configure eligibility policy
 

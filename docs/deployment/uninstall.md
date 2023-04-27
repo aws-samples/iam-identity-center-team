@@ -22,6 +22,6 @@ Execute the following command in the root directory to deploy the script
 
 ```
 cd deployment
-./delete.sh
+./destroy.sh
 ```
 Once the **destroy.sh** script is complete, monitor the Cloudformation UI for the deletion status of the backend stack  to ensure the backend end resources are deleted and cleaned up properly.
