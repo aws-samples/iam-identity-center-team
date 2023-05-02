@@ -6,7 +6,7 @@ parent: Configuration
 grand_parent: Solution deployment
 ---
 
-# IAM Identity Centre Integration
+# IAM Identity Center Integration
 
 
 The TEAM application needs to be onboarded as a SAML 2.0 application on AWS IAM Identity Center before it can be fully accessed.
@@ -14,13 +14,13 @@ The TEAM application needs to be onboarded as a SAML 2.0 application on AWS IAM 
 
 ## SAML Configuration Parameters
 
-The following parameters will be required for configuring the TEAM application as a SAML app on AWS Identity Center:
+The following parameters will be required for configuring the TEAM application as a SAML app in AWS Identity Center:
 
-- **applicationStartURL** - AWS IAM Identity center application properties configuration settings
+- **applicationStartURL** - AWS IAM Identity Center application properties configuration settings
 
-- **applicationACSURL** - AWS IAM Identity center application metadata configuration settings
+- **applicationACSURL** - AWS IAM Identity Center application metadata configuration settings
 
-- **applicationSAMLAudience** - AWS IAM Identity center application metadata configuration settings
+- **applicationSAMLAudience** - URN for the AWS Cognito user pool ID for the TEAM application
 
 The **integration.sh** bash script in the **deployment** folder can be used to obtain the SAML configuration parameters:
 
