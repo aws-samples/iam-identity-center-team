@@ -51,6 +51,15 @@ The best way to get started with TEAM is to [deploy the solution](./docs/deploym
 ## Authors
 TEAM was created by [Taiwo Awoyinfa](https://github.com/tawoyinfa) and has been enhanced with major contributions from [Varvara Semenova](https://github.com/astrovar) and [James Greenwood](https://github.com/jmsgwd) and technical inputs from [Jeremy Ware](http://example.com) and [Abhishek Pande](https://github.com/ahpande).
 
+## License
+
+Temporary Elevated Access Management (TEAM) is distributed by an [MIT-0 License]([www.example.com](https://github.com/aws-samples/aws-iam-identity-center-temporary-elevated-access-management/blob/main/LICENSE)).
+
+## Contributing
+Thank you for your interest in contributing to our project. Whether it's a bug report, new feature, correction, or additional documentation, we greatly value feedback and contributions from our community.
+
+Please read through [this document](https://github.com/aws-samples/aws-iam-identity-center-temporary-elevated-access-management/blob/main/CONTRIBUTING.md#security-issue-notifications) before submitting any issues or pull requests to ensure we have all the necessary information to effectively respond to your bug report or contribution.
+
 #### Thank you to the GitHub contributors of TEAM!
 
 <ul class="list-style-none">
