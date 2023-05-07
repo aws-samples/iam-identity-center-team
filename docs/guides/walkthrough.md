@@ -59,7 +59,7 @@ As a requester, you already belong to a group used in at least one *eligibility 
 <source src="https://d3f99z5n3ls8r1.cloudfront.net/videos/requestor_guides/create_request.mov">
 </video>
 
-> The duration specified in a request determines the time window for which elevated access will be active, if the request is approved. During this time window, the requester can invoke sessions to access the AWS target environment. It does not affect the duration of each session. Session duration is [configured independently for each permission set](https://docs.aws.amazon.com/singlesignon/latest/userguide/howtosessionduration.html) by an Identity Center administrator, and determines the time period for which IAM temporary credentials are valid when any user invokes a session using that permission set. Be aware that sessions invoked just before elevated access ends will remain valid beyond the end of the elevated access period. If this is a concern, consider minimizing the session duration configured in your permission sets, for example by setting them to 1 hour.
+> The duration specified in a request determines the time window for which elevated access will be active, if the request is approved. During this time window, the requester can invoke sessions to access the AWS target environment. It does not affect the duration of each session. Session duration is [configured independently for each permission set](https://docs.aws.amazon.com/singlesignon/latest/userguide/howtosessionduration.html) by an Identity Center administrator, and determines the time period for which IAM temporary credentials are valid when any user invokes a session using that permission set. Be aware that sessions invoked just before elevated access ends may remain valid beyond the end of the elevated access period. If this is a concern, consider minimizing the session duration configured in your permission sets, for example by setting them to 1 hour.
 {: .note}
 
 ## 🦁 Step 3: Approve elevated access
@@ -87,7 +87,7 @@ After a request is approved, the TEAM application waits until the start date and
 > To activate access, the TEAM orchestration workflow creates a temporary [permission set assignment](https://docs.aws.amazon.com/singlesignon/latest/userguide/useraccess.html), which links the requester’s user identity in Identity Center with the permission set and AWS account specified in their request. Following this, TEAM notifies the requester by email that their request is now active.
 {: .note}
 
-To see all active requests, select **Active access** in the left-hand navigation under **Elevated access** ~~, as shown below~~. You can choose **View details** to view details for an active request.
+To see all active requests, select **Active access** in the left-hand navigation under **Elevated access**. You can choose **View details** to view details for an active request.
 
 ## 🦓 Step 5: Access AWS Environment with elevated permissions
 
@@ -119,7 +119,7 @@ Elevated access ends when either:
 1. The requested duration elapses, or
 2. Access is explicitly revoked in the TEAM application.
 
-> Either the requester or an approver can revoke elevated access. ~~See [Revoke access guide]()~~.
+> Either the requester or an approver can revoke elevated access. See [Revoke access guide](approver.md/#revoke-elevated-access).
 {: .note}
 
 When elevated access ends or is revoked, the TEAM orchestration workflow automatically deletes the temporary permission set assignment for this request. This unlinks the permission set, the AWS account, and the user in Identity center.

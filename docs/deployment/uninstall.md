@@ -13,7 +13,7 @@ The **destroy.sh** bash script performs the following actions within the **TEAM_
 
 - Deletes the Amplify backend Cloudformation stack
 - Deletes the Amplify App Cloudformation stack
-- Deletes the CodeCommit repository for the team application
+- Deletes the CodeCommit repository for the TEAM application
 - Deletes Amplify deployment artifacts S3 bucket
 
   > Ensure that the named profile for the **TEAM Deployment account** has sufficient permissions before executing the **destroy.sh** script
@@ -24,4 +24,6 @@ Execute the following command in the root directory to deploy the script
 cd deployment
 ./destroy.sh
 ```
-Once the **destroy.sh** script is complete, monitor the Cloudformation UI for the deletion status of the backend stack  to ensure the backend end resources are deleted and cleaned up properly.
+Once the **destroy.sh** script is complete, monitor the Cloudformation UI for the deletion status of the backend stack to ensure the backend end resources are deleted and cleaned up properly.
+  > This process does not remove existing permission policy templates or delegated admin configuration in order to prevent negatively impacting your environment if utilized outside of TEAM. AWS recommends following your existing internal review process to address these assets.
+  {: .note}

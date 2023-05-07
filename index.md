@@ -32,7 +32,7 @@ The solution is a ready-to-deploy custom application that allows users to reques
 ## Benefits
 Temporary Elevated Access Management (TEAM) solution helps to:
 - Simplify cloud access management
-- Meet regulation and compliance requirements
+- Help with regulation and compliance requirements
 - Reduce risk of breach or exposure
 - Improve the security of your AWS environment
 
@@ -49,7 +49,7 @@ Temporary Elevated Access Management (TEAM) solution helps to:
 The best way to get started with TEAM is to [deploy the solution](./docs/deployment/index.md) in your environment and follow the [end-to-end example scenario](./docs/guides/walkthrough.md) which will take you through all functionalities from requesting access to auditing the session logs.
 
 ## Authors
-TEAM was created by [Taiwo Awoyinfa](https://github.com/tawoyinfa) and has been enhanced with major contributions from [Varvara Semenova](https://github.com/astrovar) and [James Greenwood](https://github.com/jmsgwd) and technical inputs from [Jeremy Ware](http://example.com) and [Abhishek Pande](https://github.com/ahpande).
+TEAM was created by [Taiwo Awoyinfa](https://github.com/tawoyinfa) and has been enhanced with major contributions from [Varvara Semenova](https://github.com/astrovar) and [James Greenwood](https://github.com/jmsgwd) and technical inputs from [Jeremy Ware](https://github.com/Hero104FH) and [Abhishek Pande](https://github.com/ahpande).
 
 ## License
 
