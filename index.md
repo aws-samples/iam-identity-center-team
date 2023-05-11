@@ -30,16 +30,12 @@ The solution is a ready-to-deploy custom application that allows users to reques
 </video>
 
 ## Benefits
-Temporary Elevated Access Management (TEAM) solution helps to:
-- Simplify cloud access management
-- Meet regulation and compliance requirements
-- Reduce risk of breach or exposure
-- Improve the security of your AWS environment
+Temporary Elevated Access Management (TEAM) enables organizations to implement the principle of least privilege in a more effective and granular way, reducing the risk of unauthorized access and improving overall security posture. By providing temporary access to resources, organizations can ensure that users are only given access to resources when they need it and for the minimum amount of time required, thereby minimizing the risk of data breaches and other security incidents.
 
 ## Features
 - **Ease of deployment** - Simple one click, batteries included deployment with [AWS Amplify](https://aws.amazon.com/amplify/).
 - **Centralized Management** - Centralized management console for creating, approving, managing and monitoring elevated access requests.
-- **Application Security** - Enhanced application authentication with [Amazon Cognito](https://aws.amazon.com/cognito/) group-based authorization and SAML application Integration with AWS IAM Identity Center.
+- **Rich authorization model** - Enhanced application security with [Amazon Cognito](https://aws.amazon.com/cognito/) group-based authorization and SAML Integration with [AWS IAM Identity Center](https://aws.amazon.com/iam/identity-center/).
 - **Auditing and Visibility** - Session logs recording enables auditing and easy correlation of elevated request justification with session activity.
 - **Monitoring and Reporting** - Single dashboard for centralized monitoring and reporting of all elevated access request and approval history.
 - **Alert and notification** - Automatic notification of TEAM request, approval and session status.
@@ -49,7 +45,7 @@ Temporary Elevated Access Management (TEAM) solution helps to:
 The best way to get started with TEAM is to [deploy the solution](./docs/deployment/index.md) in your environment and follow the [end-to-end example scenario](./docs/guides/walkthrough.md) which will take you through all functionalities from requesting access to auditing the session logs.
 
 ## Authors
-TEAM was created by [Taiwo Awoyinfa](https://github.com/tawoyinfa) and has been enhanced with major contributions from [Varvara Semenova](https://github.com/astrovar) and [James Greenwood](https://github.com/jmsgwd) and technical inputs from [Jeremy Ware](http://example.com) and [Abhishek Pande](https://github.com/ahpande).
+TEAM was created by [Taiwo Awoyinfa](https://www.linkedin.com/in/taiwo-awoyinfa-299bb425/) and has been enhanced with major contributions from [Varvara Semenova](https://github.com/astrovar) and [James Greenwood](https://github.com/jmsgwd) and technical inputs from [Jeremy Ware](http://example.com) and [Abhishek Pande](https://github.com/ahpande).
 
 #### Thank you to the GitHub contributors of TEAM!
 
