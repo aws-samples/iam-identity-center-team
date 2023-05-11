@@ -25,3 +25,11 @@ cd deployment
 ./destroy.sh
 ```
 Once the **destroy.sh** script is complete, monitor the Cloudformation UI for the deletion status of the backend stack  to ensure the backend end resources are deleted and cleaned up properly.
+
+Once the cloudformation stack has been deleted, remove the TEAM APP from Identity Center. Follow the steps below to remove the TEAM application from AWS IAM Identity Center:
+
+In AWS IAM Identity Center console >**Application assignment** > **Applications** > **Applications**. Choose the tab **Configured**
+
+- Select the TEAM application and from the **Actions** drop-down menu, choose **Remove**
+
+<img src="https://d3f99z5n3ls8r1.cloudfront.net/images/destroy_app.png" alt="IdC App Uninstall">
