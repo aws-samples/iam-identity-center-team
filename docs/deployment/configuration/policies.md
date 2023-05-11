@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Policy configuration
-nav_order: 3
+nav_order: 4
 parent: Configuration
 grand_parent: Solution deployment
 ---

@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Identity center integration
-nav_order: 1
+nav_order: 2
 parent: Configuration
 grand_parent: Solution deployment
 ---
@@ -81,7 +81,7 @@ Click **Save changes**
 
 ## Assign users or groups to TEAM application
 
-Under **Assigned Users** Click the **_Assign users_** and add users. This will grant assigned users and groups access to login to the TEAM application. 
+Under **Assigned Users** Click the **_Assign users_** and add users. This will grant assigned users and groups access to login to the TEAM application.
 
 > Remember to add the **team-admin** and **team-auditor** group to the team application in addition to other application users and groups
 {: .important}
