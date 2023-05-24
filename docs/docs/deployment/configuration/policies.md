@@ -11,7 +11,7 @@ grand_parent: Solution deployment
 Before users can request temporary elevated access in TEAM, a user with the **admin** persona needs to set up the application. This includes defining eligibility and approval policies. A user takes on the **admin** persona if they are a member of the **TEAM admin** Identity Center group specified during TEAM deployment.
 {: .important}
 
-Refer to the [policy definition]({% link docs/overview/policies.md %}) section for more information on TEAM policies 
+Refer to the [policy overview]({% link docs/overview/policies.md %}) section for more information on TEAM policies 
 
 ## Eligibility policy configuration
 

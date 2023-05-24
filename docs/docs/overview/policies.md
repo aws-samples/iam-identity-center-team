@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Policy definition
+title: Policy overview
 nav_order: 3
 parent: Solution overview
 ---
