@@ -1,0 +1,28 @@
+[
+  {
+    "Action": ["identitystore:ListUsers"],
+    "Resource": ["*"]
+  },
+  {
+    "Action": ["sso:ListInstances",
+                "sso:DescribePermissionSet"],
+    "Resource": ["*"]
+  },
+  {
+    "Action": ["identitystore:ListGroupMembershipsForMember"],
+    "Resource": ["*"]
+  },
+  {
+    "Action": ["identitystore:ListGroupMemberships"],
+    "Resource": ["*"]
+  },
+  {
+    "Action": ["identitystore:DescribeUser"],
+    "Resource": ["*"]
+  },
+  {
+    "Action": ["organizations:Describe*",
+                "organizations:List*"],
+    "Resource": ["*"]
+  }
+]

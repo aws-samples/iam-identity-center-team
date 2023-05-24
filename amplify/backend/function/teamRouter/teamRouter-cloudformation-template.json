@@ -1,0 +1,575 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Lambda Function resource stack creation using Amplify CLI",
+  "Parameters": {
+    "CloudWatchRule": {
+      "Type": "String",
+      "Default": "NONE",
+      "Description": " Schedule Expression"
+    },
+    "deploymentBucketName": {
+      "Type": "String"
+    },
+    "env": {
+      "Type": "String"
+    },
+    "s3Key": {
+      "Type": "String"
+    },
+    "customstepfunctionsGrantSMOutput": {
+      "Type": "String",
+      "Default": "customstepfunctionsGrantSMOutput"
+    },
+    "customstepfunctionsRevokeSMOutput": {
+      "Type": "String",
+      "Default": "customstepfunctionsRevokeSMOutput"
+    },
+    "customstepfunctionsRejectSMOutput": {
+      "Type": "String",
+      "Default": "customstepfunctionsRejectSMOutput"
+    },
+    "customstepfunctionsScheduleSMOutput": {
+      "Type": "String",
+      "Default": "customstepfunctionsScheduleSMOutput"
+    },
+    "customstepfunctionsApprovalSMOutput": {
+      "Type": "String",
+      "Default": "customstepfunctionsApprovalSMOutput"
+    },
+    "apiteamGraphQLAPIIdOutput": {
+      "Type": "String",
+      "Default": "apiteamGraphQLAPIIdOutput"
+    },
+    "apiteamGraphQLAPIEndpointOutput": {
+      "Type": "String",
+      "Default": "apiteamGraphQLAPIEndpointOutput"
+    },
+    "authteam06dbb7fcUserPoolId": {
+      "Type": "String",
+      "Default": "authteam06dbb7fcUserPoolId"
+    }
+  },
+  "Conditions": {
+    "ShouldNotCreateEnvResources": {
+      "Fn::Equals": [
+        {
+          "Ref": "env"
+        },
+        "NONE"
+      ]
+    }
+  },
+  "Resources": {
+    "LambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Metadata": {
+        "aws:asset:path": "./src",
+        "aws:asset:property": "Code"
+      },
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "deploymentBucketName"
+          },
+          "S3Key": {
+            "Ref": "s3Key"
+          }
+        },
+        "Handler": "index.handler",
+        "FunctionName": {
+          "Fn::If": [
+            "ShouldNotCreateEnvResources",
+            "teamRouter",
+            {
+              "Fn::Join": [
+                "",
+                [
+                  "teamRouter",
+                  "-",
+                  {
+                    "Ref": "env"
+                  }
+                ]
+              ]
+            }
+          ]
+        },
+        "Environment": {
+          "Variables": {
+            "ENV": {
+              "Ref": "env"
+            },
+            "REGION": {
+              "Ref": "AWS::Region"
+            },
+            "POLICY_TABLE_NAME": {
+              "Fn::ImportValue": {
+                "Fn::Sub": "${apiteamGraphQLAPIIdOutput}:GetAtt:EligibilityTable:Name"
+              }
+            },
+            "SETTINGS_TABLE_NAME": {
+              "Fn::ImportValue": {
+                "Fn::Sub": "${apiteamGraphQLAPIIdOutput}:GetAtt:SettingsTable:Name"
+              }
+            },
+            "API_TEAM_GRAPHQLAPIENDPOINTOUTPUT": {
+              "Ref": "apiteamGraphQLAPIEndpointOutput"
+            },
+            "GRANT_SM": {
+              "Ref": "customstepfunctionsGrantSMOutput"
+            },
+            "REVOKE_SM": {
+              "Ref": "customstepfunctionsRevokeSMOutput"
+            },
+            "REJECT_SM": {
+              "Ref": "customstepfunctionsRejectSMOutput"
+            },
+            "SCHEDULE_SM": {
+              "Ref": "customstepfunctionsScheduleSMOutput"
+            },
+            "APPROVAL_SM": {
+              "Ref": "customstepfunctionsApprovalSMOutput"
+            },
+            "APPROVER_TABLE_NAME": {
+              "Fn::ImportValue": {
+                "Fn::Sub": "${apiteamGraphQLAPIIdOutput}:GetAtt:ApproversTable:Name"
+              }
+            },
+            "API_TEAM_GRAPHQLAPIIDOUTPUT": {
+              "Ref": "apiteamGraphQLAPIIdOutput"
+            },
+            "AUTH_TEAM06DBB7FC_USERPOOLID": {
+              "Ref": "authteam06dbb7fcUserPoolId"
+            }
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "LambdaExecutionRole",
+            "Arn"
+          ]
+        },
+        "Runtime": "python3.9",
+        "Layers": [],
+        "Timeout": 120
+      }
+    },
+    "LambdaExecutionRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": {
+          "Fn::If": [
+            "ShouldNotCreateEnvResources",
+            "teamapplicationLambdaRole2258cd17",
+            {
+              "Fn::Join": [
+                "",
+                [
+                  "teamapplicationLambdaRole2258cd17",
+                  "-",
+                  {
+                    "Ref": "env"
+                  }
+                ]
+              ]
+            }
+          ]
+        },
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "lambda.amazonaws.com"
+                ]
+              },
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "lambdaexecutionpolicy": {
+      "DependsOn": [
+        "LambdaExecutionRole"
+      ],
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "lambda-execution-policy",
+        "Roles": [
+          {
+            "Ref": "LambdaExecutionRole"
+          }
+        ],
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+              ],
+              "Resource": {
+                "Fn::Sub": [
+                  "arn:aws:logs:${region}:${account}:log-group:/aws/lambda/${lambda}:log-stream:*",
+                  {
+                    "region": {
+                      "Ref": "AWS::Region"
+                    },
+                    "account": {
+                      "Ref": "AWS::AccountId"
+                    },
+                    "lambda": {
+                      "Ref": "LambdaFunction"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "dynamodb:GetItem"
+              ],
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/Eligibility-*"
+                },
+                {
+                  "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/Settings-*"
+                }
+              ]
+            },
+            {
+              "Effect": "Allow",
+              "Action": "states:StartExecution",
+              "Resource": [
+                {
+                  "Ref": "customstepfunctionsGrantSMOutput"
+                },
+                {
+                  "Ref": "customstepfunctionsRevokeSMOutput"
+                },
+                {
+                  "Ref": "customstepfunctionsRejectSMOutput"
+                },
+                {
+                  "Ref": "customstepfunctionsScheduleSMOutput"
+                },
+                {
+                  "Ref": "customstepfunctionsApprovalSMOutput"
+                }
+              ]
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "dynamodb:GetItem"
+              ],
+              "Resource": {
+                "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/Approvers-*"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "LambdaTriggerPolicyrequests": {
+      "DependsOn": [
+        "LambdaExecutionRole"
+      ],
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "amplify-lambda-execution-policy-requests",
+        "Roles": [
+          {
+            "Ref": "LambdaExecutionRole"
+          }
+        ],
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "dynamodb:DescribeStream",
+                "dynamodb:GetRecords",
+                "dynamodb:GetShardIterator",
+                "dynamodb:ListStreams"
+              ],
+              "Resource": {
+                "Fn::ImportValue": {
+                  "Fn::Sub": "${apiteamGraphQLAPIIdOutput}:GetAtt:requestsTable:StreamArn"
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "LambdaEventSourceMappingrequests": {
+      "Type": "AWS::Lambda::EventSourceMapping",
+      "DependsOn": [
+        "LambdaTriggerPolicyrequests",
+        "LambdaExecutionRole"
+      ],
+      "Properties": {
+        "BatchSize": 10,
+        "Enabled": true,
+        "EventSourceArn": {
+          "Fn::ImportValue": {
+            "Fn::Sub": "${apiteamGraphQLAPIIdOutput}:GetAtt:requestsTable:StreamArn"
+          }
+        },
+        "BisectBatchOnFunctionError": true,
+        "MaximumRetryAttempts": 3,
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "LambdaFunction",
+            "Arn"
+          ]
+        },
+        "StartingPosition": "LATEST"
+      }
+    },
+    "AmplifyResourcesPolicy": {
+      "DependsOn": [
+        "LambdaExecutionRole"
+      ],
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "amplify-lambda-execution-policy",
+        "Roles": [
+          {
+            "Ref": "LambdaExecutionRole"
+          }
+        ],
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "appsync:GraphQL"
+              ],
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:appsync:",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      ":",
+                      {
+                        "Ref": "AWS::AccountId"
+                      },
+                      ":apis/",
+                      {
+                        "Ref": "apiteamGraphQLAPIIdOutput"
+                      },
+                      "/types/Query/*"
+                    ]
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:appsync:",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      ":",
+                      {
+                        "Ref": "AWS::AccountId"
+                      },
+                      ":apis/",
+                      {
+                        "Ref": "apiteamGraphQLAPIIdOutput"
+                      },
+                      "/types/Mutation/*"
+                    ]
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:appsync:",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      ":",
+                      {
+                        "Ref": "AWS::AccountId"
+                      },
+                      ":apis/",
+                      {
+                        "Ref": "apiteamGraphQLAPIIdOutput"
+                      },
+                      "/types/Subscription/*"
+                    ]
+                  ]
+                }
+              ]
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "cognito-identity:Describe*",
+                "cognito-identity:Get*",
+                "cognito-identity:List*",
+                "cognito-idp:Describe*",
+                "cognito-idp:AdminGetDevice",
+                "cognito-idp:AdminGetUser",
+                "cognito-idp:AdminList*",
+                "cognito-idp:List*",
+                "cognito-sync:Describe*",
+                "cognito-sync:Get*",
+                "cognito-sync:List*",
+                "iam:ListOpenIdConnectProviders",
+                "iam:ListRoles",
+                "sns:ListPlatformApplications"
+              ],
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:cognito-idp:",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      ":",
+                      {
+                        "Ref": "AWS::AccountId"
+                      },
+                      ":userpool/",
+                      {
+                        "Ref": "authteam06dbb7fcUserPoolId"
+                      }
+                    ]
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "CustomLambdaExecutionPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "custom-lambda-execution-policy",
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Action": [
+                "identitystore:ListUsers"
+              ],
+              "Resource": [
+                "*"
+              ],
+              "Effect": "Allow"
+            },
+            {
+              "Action": [
+                "sso:ListInstances",
+                "sso:DescribePermissionSet"
+              ],
+              "Resource": [
+                "*"
+              ],
+              "Effect": "Allow"
+            },
+            {
+              "Action": [
+                "identitystore:ListGroupMembershipsForMember"
+              ],
+              "Resource": [
+                "*"
+              ],
+              "Effect": "Allow"
+            },
+            {
+              "Action": [
+                "identitystore:ListGroupMemberships"
+              ],
+              "Resource": [
+                "*"
+              ],
+              "Effect": "Allow"
+            },
+            {
+              "Action": [
+                "identitystore:DescribeUser"
+              ],
+              "Resource": [
+                "*"
+              ],
+              "Effect": "Allow"
+            },
+            {
+              "Action": [
+                "organizations:Describe*",
+                "organizations:List*"
+              ],
+              "Resource": [
+                "*"
+              ],
+              "Effect": "Allow"
+            }
+          ]
+        },
+        "Roles": [
+          {
+            "Ref": "LambdaExecutionRole"
+          }
+        ]
+      },
+      "DependsOn": "LambdaExecutionRole"
+    }
+  },
+  "Outputs": {
+    "Name": {
+      "Value": {
+        "Ref": "LambdaFunction"
+      }
+    },
+    "Arn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "LambdaFunction",
+          "Arn"
+        ]
+      }
+    },
+    "Region": {
+      "Value": {
+        "Ref": "AWS::Region"
+      }
+    },
+    "LambdaExecutionRole": {
+      "Value": {
+        "Ref": "LambdaExecutionRole"
+      }
+    },
+    "LambdaExecutionRoleArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "LambdaExecutionRole",
+          "Arn"
+        ]
+      }
+    }
+  }
+}

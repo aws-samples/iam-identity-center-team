@@ -1,0 +1,15 @@
+[
+  {
+    "Action": ["sso:DescribePermissionSet",
+                "sso:ListPermissionSets",
+                "sso:ListInstances",
+                "sso:ListTagsForResource",
+                "sso:ListPermissionSetsProvisionedToAccount"
+              ],
+    "Resource": ["*"]
+  },
+  {
+    "Action": ["organizations:DescribeOrganization"],
+    "Resource": ["*"]
+  }
+]

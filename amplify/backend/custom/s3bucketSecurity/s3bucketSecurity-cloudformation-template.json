@@ -1,0 +1,178 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Parameters": {
+    "env": {
+      "Type": "String"
+    }
+  },
+  "Resources": {
+    "LambdaExecutionRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": {
+          "Fn::Join": [
+            "",
+            [
+              "team-amplify-bucket-lambda-role",
+              "-",
+              {
+                "Ref": "env"
+              }
+            ]
+          ]
+        },
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "S3Permissions",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Action": [
+                    "s3:ListAllMyBuckets",
+                    "s3:PutBucketPolicy",
+                    "s3:PutBucketVersioning"
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "*"
+                }
+              ]
+            }
+          },
+          {
+            "PolicyName": "AmplifyPermissions",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Action": [
+                    "amplify:GetBackendEnvironment",
+                    "amplify:ListApps"
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "*"
+                }
+              ]
+            }
+          },
+          {
+            "PolicyName": "LogPermissions",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogGroup",
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents"
+                  ],
+                  "Resource": {
+                    "Fn::Sub": [
+                      "arn:aws:logs:${region}:${account}:log-group:/aws/lambda/${lambda}:log-stream:*",
+                      {
+                        "region": {
+                          "Ref": "AWS::Region"
+                        },
+                        "account": {
+                          "Ref": "AWS::AccountId"
+                        },
+                        "lambda": {
+                          "Fn::Join": [
+                            "",
+                            [
+                              "team-amplify-bucket-lambda",
+                              "-",
+                              {
+                                "Ref": "env"
+                              }
+                            ]
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "Action": [
+                    "s3:ListAllMyBuckets",
+                    "s3:PutBucketPolicy",
+                    "s3:PutBucketVersioning"
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "*"
+                },
+                {
+                  "Action": [
+                    "amplify:GetBackendEnvironment",
+                    "amplify:ListApps"
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "*"
+                }
+              ]
+            }
+          }
+        ],
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+        ],
+        "Path": "/"
+      }
+    },
+    "LambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Runtime": "python3.9",
+        "FunctionName": {
+          "Fn::Join": [
+            "",
+            [
+              "team-amplify-bucket-lambda",
+              "-",
+              {
+                "Ref": "env"
+              }
+            ]
+          ]
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "LambdaExecutionRole",
+            "Arn"
+          ]
+        },
+        "Handler": "index.handler",
+        "Description": "Put secure transport bucket policy and enable versioning on amplify bucket",
+        "Timeout": 30,
+        "Code": {
+          "ZipFile": "import boto3\nimport json\nimport cfnresponse\nfrom botocore.config import Config\n\ndef get_boto3_config() -> Config:\n    return Config(\n        user_agent_extra=\"team-idc\"\n    )\n\namplify = boto3.client('amplify')\ns3 = boto3.client('s3', config=get_boto3_config())\n\npolicy={\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Sid\": \"AllowSSLRequestsOnly\",\n      \"Principal\": {\n          \"AWS\": \"*\"\n      },\n      \"Effect\": \"Deny\",\n      \"Action\": [\"s3:*\"],\n      \"Resource\": [\n          \"arn:aws:s3:::AMPLIFY_BUCKET\",\n          \"arn:aws:s3:::AMPLIFY_BUCKET/*\"\n      ],\n        \"Condition\": {\n            \"Bool\": {\n                \"aws:SecureTransport\": False\n            }\n        }\n    }\n  ]\n}\n\ndef handler(event, context):\n\n  responseData = {}\n  responseData['Data'] = \"Failure\"\n\n  response = amplify.list_apps()\n  app_id = None\n  for app in response[\"apps\"]:\n      if app[\"name\"] == \"TEAM-IDC-APP\":\n          app_id = app['appId']\n          break\n\n  if app_id:\n      backend_env = amplify.get_backend_environment(appId=app_id, environmentName='main')\n      stackName = backend_env['backendEnvironment']['stackName']\n\n      amplifyBucket=f\"{stackName}-deployment\"\n      print(f\"Amplify bucket name is: {amplifyBucket}\")\n      s3.put_bucket_versioning(Bucket=amplifyBucket,\n              VersioningConfiguration={\n                  'Status': 'Enabled'\n          }\n      )\n\n      policy_str = json.dumps(policy)\n      policy_str = policy_str.replace(\"AMPLIFY_BUCKET\", amplifyBucket)\n      s3.put_bucket_policy(Bucket=amplifyBucket, Policy=policy_str)\n\n      responseData['Data'] = \"Success\"\n      cfnresponse.send(event, context, cfnresponse.SUCCESS, responseData)\n  else:\n    cfnresponse.send(event, context, cfnresponse.FAILED, responseData)\n"
+        }
+      }
+    },
+    "ConfigureAmplifyBucket": {
+      "Type": "Custom::ConfigureAmplifyS3Bucket",
+      "Properties": {
+        "ServiceToken": {
+          "Fn::GetAtt": [
+            "LambdaFunction",
+            "Arn"
+          ]
+        },
+        "version": "0.1"
+      }
+    }
+  }
+}

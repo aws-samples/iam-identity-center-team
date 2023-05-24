@@ -1,0 +1,579 @@
+{
+  "api": {
+    "team": {
+      "dependsOn": [
+        {
+          "attributes": [
+            "UserPoolId"
+          ],
+          "category": "auth",
+          "resourceName": "team06dbb7fc"
+        },
+        {
+          "category": "custom",
+          "resourceName": "appsyncCloudwatchLogRole"
+        }
+      ],
+      "output": {
+        "authConfig": {
+          "additionalAuthenticationProviders": [
+            {
+              "authenticationType": "AWS_IAM"
+            }
+          ],
+          "defaultAuthentication": {
+            "authenticationType": "AMAZON_COGNITO_USER_POOLS",
+            "userPoolConfig": {
+              "userPoolId": "authteam06dbb7fc"
+            }
+          }
+        }
+      },
+      "providerPlugin": "awscloudformation",
+      "service": "AppSync"
+    }
+  },
+  "auth": {
+    "team06dbb7fc": {
+      "customAuth": false,
+      "dependsOn": [],
+      "frontendAuthConfig": {
+        "mfaConfiguration": "OFF",
+        "mfaTypes": [
+          "SMS"
+        ],
+        "passwordProtectionSettings": {
+          "passwordPolicyCharacters": [],
+          "passwordPolicyMinLength": 8
+        },
+        "signupAttributes": [
+          "EMAIL"
+        ],
+        "socialProviders": [],
+        "usernameAttributes": [
+          "EMAIL"
+        ],
+        "verificationMechanisms": [
+          "EMAIL"
+        ]
+      },
+      "providerPlugin": "awscloudformation",
+      "service": "Cognito"
+    },
+    "userPoolGroups": {
+      "dependsOn": [
+        {
+          "attributes": [
+            "UserPoolId",
+            "AppClientIDWeb",
+            "AppClientID",
+            "IdentityPoolId"
+          ],
+          "category": "auth",
+          "resourceName": "team06dbb7fc"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "Cognito-UserPool-Groups"
+    }
+  },
+  "custom": {
+    "appsyncCloudwatchLogRole": {
+      "providerPlugin": "awscloudformation",
+      "service": "customCloudformation"
+    },
+    "cloudtrailLake": {
+      "dependsOn": [],
+      "providerPlugin": "awscloudformation",
+      "service": "customCloudformation"
+    },
+    "s3bucketSecurity": {
+      "dependsOn": [],
+      "providerPlugin": "awscloudformation",
+      "service": "customCloudformation"
+    },
+    "stepfunctions": {
+      "dependsOn": [
+        {
+          "attributes": [
+            "GraphQLAPIIdOutput",
+            "GraphQLAPIEndpointOutput"
+          ],
+          "category": "api",
+          "resourceName": "team"
+        },
+        {
+          "attributes": [
+            "Name",
+            "Arn",
+            "Region",
+            "LambdaExecutionRole"
+          ],
+          "category": "function",
+          "resourceName": "teamStatus"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "customCloudformation"
+    }
+  },
+  "function": {
+    "teamListGroups": {
+      "build": true,
+      "dependsOn": [
+        {
+          "attributes": [
+            "Arn"
+          ],
+          "category": "function",
+          "resourceName": "teamapplicationboto3layer"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
+    "teamRouter": {
+      "build": true,
+      "dependsOn": [
+        {
+          "attributes": [
+            "GraphQLAPIIdOutput",
+            "GraphQLAPIEndpointOutput"
+          ],
+          "category": "api",
+          "resourceName": "team"
+        },
+        {
+          "attributes": [
+            "UserPoolId"
+          ],
+          "category": "auth",
+          "resourceName": "team06dbb7fc"
+        },
+        {
+          "attributes": [
+            "GrantSMOutput",
+            "RevokeSMOutput",
+            "RejectSMOutput",
+            "ScheduleSMOutput",
+            "ApprovalSMOutput"
+          ],
+          "category": "custom",
+          "resourceName": "stepfunctions"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
+    "teamStatus": {
+      "build": true,
+      "dependsOn": [
+        {
+          "attributes": [
+            "GraphQLAPIIdOutput",
+            "GraphQLAPIEndpointOutput"
+          ],
+          "category": "api",
+          "resourceName": "team"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
+    "teamapplicationboto3layer": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "LambdaLayer"
+    },
+    "teamgetAccounts": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
+    "teamgetGroups": {
+      "build": true,
+      "dependsOn": [
+        {
+          "attributes": [
+            "GraphQLAPIIdOutput",
+            "GraphQLAPIEndpointOutput"
+          ],
+          "category": "api",
+          "resourceName": "team"
+        },
+        {
+          "attributes": [
+            "UserPoolId"
+          ],
+          "category": "auth",
+          "resourceName": "team06dbb7fc"
+        },
+        {
+          "attributes": [
+            "Arn"
+          ],
+          "category": "function",
+          "resourceName": "teamapplicationboto3layer"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
+    "teamgetIdCGroups": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
+    "teamgetLogs": {
+      "build": true,
+      "dependsOn": [
+        {
+          "attributes": [
+            "GraphQLAPIIdOutput",
+            "GraphQLAPIEndpointOutput"
+          ],
+          "category": "api",
+          "resourceName": "team"
+        },
+        {
+          "attributes": [
+            "EventDataStoreOutput"
+          ],
+          "category": "custom",
+          "resourceName": "cloudtrailLake"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
+    "teamgetMgmtAccountDetails": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
+    "teamgetOU": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
+    "teamgetOUs": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
+    "teamgetPermissions": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
+    "teamgetUserEntitlement": {
+      "build": true,
+      "dependsOn": [
+        {
+          "attributes": [
+            "GraphQLAPIIdOutput",
+            "GraphQLAPIEndpointOutput"
+          ],
+          "category": "api",
+          "resourceName": "team"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
+    "teamgetUsers": {
+      "build": true,
+      "dependsOn": [
+        {
+          "attributes": [
+            "GraphQLAPIIdOutput",
+            "GraphQLAPIEndpointOutput"
+          ],
+          "category": "api",
+          "resourceName": "team"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
+    "teamqueryLogs": {
+      "build": true,
+      "dependsOn": [
+        {
+          "attributes": [
+            "EventDataStoreOutput"
+          ],
+          "category": "custom",
+          "resourceName": "cloudtrailLake"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    }
+  },
+  "hosting": {
+    "amplifyhosting": {
+      "providerPlugin": "awscloudformation",
+      "service": "amplifyhosting",
+      "type": "manual"
+    }
+  },
+  "parameters": {
+    "AMPLIFY_function_teamListGroups_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teamListGroups"
+        }
+      ]
+    },
+    "AMPLIFY_function_teamListGroups_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teamListGroups"
+        }
+      ]
+    },
+    "AMPLIFY_function_teamRouter_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teamRouter"
+        }
+      ]
+    },
+    "AMPLIFY_function_teamRouter_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teamRouter"
+        }
+      ]
+    },
+    "AMPLIFY_function_teamStatus_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teamStatus"
+        }
+      ]
+    },
+    "AMPLIFY_function_teamStatus_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teamStatus"
+        }
+      ]
+    },
+    "AMPLIFY_function_teamapplicationboto3layer_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teamapplicationboto3layer"
+        }
+      ]
+    },
+    "AMPLIFY_function_teamapplicationboto3layer_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teamapplicationboto3layer"
+        }
+      ]
+    },
+    "AMPLIFY_function_teamgetAccounts_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teamgetAccounts"
+        }
+      ]
+    },
+    "AMPLIFY_function_teamgetAccounts_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teamgetAccounts"
+        }
+      ]
+    },
+    "AMPLIFY_function_teamgetGroups_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teamgetGroups"
+        }
+      ]
+    },
+    "AMPLIFY_function_teamgetGroups_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teamgetGroups"
+        }
+      ]
+    },
+    "AMPLIFY_function_teamgetIdCGroups_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teamgetIdCGroups"
+        }
+      ]
+    },
+    "AMPLIFY_function_teamgetIdCGroups_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teamgetIdCGroups"
+        }
+      ]
+    },
+    "AMPLIFY_function_teamgetLogs_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teamgetLogs"
+        }
+      ]
+    },
+    "AMPLIFY_function_teamgetLogs_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teamgetLogs"
+        }
+      ]
+    },
+    "AMPLIFY_function_teamgetMgmtAccountDetails_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teamgetMgmtAccountDetails"
+        }
+      ]
+    },
+    "AMPLIFY_function_teamgetMgmtAccountDetails_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teamgetMgmtAccountDetails"
+        }
+      ]
+    },
+    "AMPLIFY_function_teamgetOU_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teamgetOU"
+        }
+      ]
+    },
+    "AMPLIFY_function_teamgetOU_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teamgetOU"
+        }
+      ]
+    },
+    "AMPLIFY_function_teamgetOUs_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teamgetOUs"
+        }
+      ]
+    },
+    "AMPLIFY_function_teamgetOUs_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teamgetOUs"
+        }
+      ]
+    },
+    "AMPLIFY_function_teamgetPermissions_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teamgetPermissions"
+        }
+      ]
+    },
+    "AMPLIFY_function_teamgetPermissions_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teamgetPermissions"
+        }
+      ]
+    },
+    "AMPLIFY_function_teamgetUserEntitlement_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teamgetUserEntitlement"
+        }
+      ]
+    },
+    "AMPLIFY_function_teamgetUserEntitlement_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teamgetUserEntitlement"
+        }
+      ]
+    },
+    "AMPLIFY_function_teamgetUsers_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teamgetUsers"
+        }
+      ]
+    },
+    "AMPLIFY_function_teamgetUsers_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teamgetUsers"
+        }
+      ]
+    },
+    "AMPLIFY_function_teamqueryLogs_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teamqueryLogs"
+        }
+      ]
+    },
+    "AMPLIFY_function_teamqueryLogs_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teamqueryLogs"
+        }
+      ]
+    },
+    "AMPLIFY_hosting_amplifyhosting_appId": {
+      "usedBy": [
+        {
+          "category": "hosting",
+          "resourceName": "amplifyhosting"
+        }
+      ]
+    },
+    "AMPLIFY_hosting_amplifyhosting_type": {
+      "usedBy": [
+        {
+          "category": "hosting",
+          "resourceName": "amplifyhosting"
+        }
+      ]
+    }
+  }
+}

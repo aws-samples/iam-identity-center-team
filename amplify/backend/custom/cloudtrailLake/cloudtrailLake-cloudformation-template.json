@@ -1,0 +1,50 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Parameters": {
+      "env": {
+        "Type": "String"
+      }
+    },
+    "Conditions": {
+        "IsOrganizationsSupported": {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "AWS::Partition"
+                        },
+                        "aws-cn"
+                    ]
+                }
+            ]
+        }
+    },
+    "Resources": {
+        "myEventDataStore": {
+            "Type": "AWS::CloudTrail::EventDataStore",
+            "Properties": {
+                "Name": { "Ref" : "AWS::StackName" },
+                "MultiRegionEnabled": true,
+                "RetentionPeriod": 365,
+                "OrganizationEnabled": {
+                    "Fn::If": [
+                        "IsOrganizationsSupported",
+                        true,
+                        {
+                            "Ref": "AWS::NoValue"
+                        }
+                    ]
+                },
+                "TerminationProtectionEnabled": false
+            }
+        }
+    },
+    "Outputs": {
+        "EventDataStoreOutput": {
+            "Description": "The event data store ID",
+            "Value": {
+                "Ref":"myEventDataStore"
+            }
+        }
+    }
+}

@@ -1,0 +1,236 @@
+type requests
+  @model(subscriptions: { level: off })
+  @auth(
+    rules: [
+      { allow: groups, groups: ["Auditors"], operations: [read] }
+      { allow: owner }
+      { allow: owner, ownerField: "approver_ids", operations: [update, read] }
+      { allow: private, provider: iam, operations: [read, update] }
+    ]
+  ) {
+  id: ID!
+  email: String
+    @index(
+      name: "byEmailAndStatus"
+      sortKeyFields: ["status"]
+      queryField: "requestByEmailAndStatus"
+    )
+  accountId: String!
+  accountName: String!
+  role: String!
+  roleId: String!
+  startTime: AWSDateTime!
+  duration: String!
+  justification: String
+  status: String
+  comment: String
+  username: String
+  approver: String
+  approverId: String
+    @index(
+      name: "byApproverAndStatus"
+      sortKeyFields: ["status"]
+      queryField: "requestByApproverAndStatus"
+    )
+  approvers: [String]
+  approver_ids: [String]
+  revoker: String
+  revokerId: String
+  endTime: AWSDateTime
+  ticketNo: String
+  revokeComment: String
+  session_duration: String
+}
+type sessions
+  @model(subscriptions: { level: off })
+  @auth(
+    rules: [
+      { allow: groups, groups: ["Auditors"]}
+      { allow: owner }
+      { allow: owner, ownerField: "username"}
+      { allow: owner, ownerField: "approver_ids"}
+      { allow: private, provider: iam, operations: [read, update] }
+    ]
+  ) {
+  id: String!
+  startTime: String
+  endTime: String
+  username: String
+  accountId: String
+  role: String
+  approver_ids: [String]
+  queryId: String
+  expireAt: AWSTimestamp @ttl
+}
+type Approvers
+  @model
+  @auth(
+    rules: [
+      { allow: groups, groups: ["Admin"] }
+      { allow: private, operations: [read] }
+    ]
+  ) {
+  id: ID
+  name: String
+  type: String
+  approvers: [String]
+  groupIds: [String]
+  ticketNo: String
+  modifiedBy: String
+}
+type Settings
+  @model
+  @auth(
+    rules: [
+      { allow: groups, groups: ["Admin"] }
+      { allow: private, operations: [read] }
+    ]
+  ) {
+  id: String
+  duration: String
+  expiry: String
+  comments: Boolean
+  ticketNo: Boolean
+  approval: Boolean
+  modifiedBy: String
+}
+type data {
+  name: String
+  id: String
+}
+input DataInput {
+  name: String
+  id: String
+ }
+type Eligibility
+  @model
+  @auth(
+    rules: [
+      { allow: groups, groups: ["Admin"] }
+      { allow: private, operations: [read] }
+      { allow: private, provider: iam, operations: [read] }
+    ]
+  ) {
+  id: ID
+  name: String
+  type: String
+  accounts: [data]
+  ous: [data]
+  permissions: [data]
+  ticketNo: String
+  approvalRequired: Boolean
+  duration: String
+  modifiedBy: String
+}
+type Accounts {
+  name: String!
+  id: String!
+}
+type Entitlement {
+  accounts: [data]
+  permissions: [data]
+  approvalRequired: Boolean
+  duration: String
+}
+type IdCGroups {
+  GroupId: String!
+  DisplayName: String!
+}
+type Users {
+  UserName: String!
+  UserId: String!
+}
+type Logs {
+  eventName: String
+  eventSource: String
+  eventID: String
+  eventTime: String
+}
+type OU {
+  Id: String!
+}
+type Groups {
+  groups: [String]
+  userId: String
+  groupIds:[String]
+}
+type Members {
+  members: [String]
+}
+type OUs {
+  Id: String!
+  Arn: String!
+  Name: String!
+}
+type Permissions {
+  Name: String!
+  Arn: String!
+  Duration: String
+}
+type MgmtPs {
+  permissions: [String]
+}
+
+type Subscription {
+  onUpdateRequests: requests
+    @aws_subscribe(mutations: ["updateRequests"])
+    @auth(rules: [{ allow: private }])
+  onCreateRequests: requests
+    @aws_subscribe(mutations: ["createRequests"])
+    @auth(rules: [{ allow: private }])
+  onUpdateSessions(id: String): sessions
+    @aws_subscribe(mutations: ["updateSessions"])
+    @auth(rules: [{ allow: private }])
+}
+type Query {
+  getAccounts: [Accounts]
+    @function(name: "teamgetAccounts-${env}")
+    @auth(rules: [{ allow: private }])
+  getOUs: [OUs]
+    @function(name: "teamgetOUs-${env}")
+    @auth(rules: [{ allow: private }])
+  getOU(id: String): OU
+    @function(name: "teamgetOU-${env}")
+    @auth(rules: [{ allow: private }])
+  getPermissions: [Permissions]
+    @function(name: "teamgetPermissions-${env}")
+    @auth(rules: [{ allow: private }])
+  getMgmtPermissions: MgmtPs
+    @function(name: "teamgetMgmtAccountDetails-${env}")
+    @auth(rules: [{ allow: private }])
+  getGroups: Groups
+    @function(name: "teamgetGroups-${env}")
+    @auth(rules: [{ allow: private }])
+  getIdCGroups: [IdCGroups]
+    @function(name: "teamgetIdCGroups-${env}")
+    @auth(rules: [{ allow: private }])
+  getUsers: [Users]
+    @function(name: "teamgetUsers-${env}")
+    @auth(rules: [{ allow: private }])
+  getLogs(
+    queryId: String
+  ): [Logs]
+    @function(name: "teamqueryLogs-${env}")
+    @auth(rules: [{ allow: private }])
+  getEntitlement(
+    userId: String
+    groupIds: [String]
+  ): [Entitlement]
+    @function(name: "teamgetUserEntitlement-${env}")
+    @auth(
+    rules: [
+      { allow: private, provider: iam}
+      { allow: private }
+      ])
+  listGroups(
+    groupIds: [String]
+  ): Members
+    @function(name: "teamListGroups-${env}")
+    @auth(rules: [{ allow: private }])
+  updateRequestData: requests
+    @function(name: "teamupdateRequest-${env}")
+    @auth(rules: [{ allow: private }])
+  validateRequest: requests
+    @function(name: "teamvalidateRequest-${env}")
+    @auth(rules: [{ allow: private }])
+}

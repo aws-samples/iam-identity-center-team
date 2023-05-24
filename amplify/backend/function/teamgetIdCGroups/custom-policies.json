@@ -1,0 +1,10 @@
+[
+  {
+    "Action": ["identitystore:ListGroups"],
+    "Resource": ["*"]
+  },
+  {
+    "Action": ["sso:ListInstances"],
+    "Resource": ["*"]
+  }
+]

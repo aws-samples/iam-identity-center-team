@@ -1,0 +1,18 @@
+[
+  {
+    "Action": ["identitystore:ListUsers"],
+    "Resource": ["*"]
+  },
+  {
+    "Action": ["identitystore:GetGroupId"],
+    "Resource": ["*"]
+  },
+  {
+    "Action": ["identitystore:ListGroupMembershipsForMember"],
+    "Resource": ["*"]
+  },
+  {
+    "Action": ["sso:ListInstances"],
+    "Resource": ["*"]
+  }
+]

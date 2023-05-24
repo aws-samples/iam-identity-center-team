@@ -1,0 +1,79 @@
+{
+    "version": "1",
+    "cognitoConfig": {
+        "identityPoolName": "team06dbb7fc_identitypool_06dbb7fc",
+        "allowUnauthenticatedIdentities": false,
+        "resourceNameTruncated": "team06dbb7fc",
+        "userPoolName": "team06dbb7fc_userpool_06dbb7fc",
+        "autoVerifiedAttributes": [
+            "email"
+        ],
+        "mfaConfiguration": "OFF",
+        "mfaTypes": [
+            "SMS Text Message"
+        ],
+        "smsAuthenticationMessage": "Your authentication code is {####}",
+        "smsVerificationMessage": "Your verification code is {####}",
+        "emailVerificationSubject": "Your verification code",
+        "emailVerificationMessage": "Your verification code is {####}",
+        "defaultPasswordPolicy": false,
+        "passwordPolicyMinLength": 8,
+        "passwordPolicyCharacters": [],
+        "requiredAttributes": [
+            "email"
+        ],
+        "aliasAttributes": [],
+        "userpoolClientGenerateSecret": false,
+        "userpoolClientRefreshTokenValidity": 1,
+        "userpoolClientWriteAttributes": [
+            "email"
+        ],
+        "userpoolClientReadAttributes": [
+            "email"
+        ],
+        "userpoolClientLambdaRole": "team06dbb7fc_userpoolclient_lambda_role",
+        "userpoolClientSetAttributes": false,
+        "userpoolClientAccessTokenValidity": 60,
+        "sharedId": "06dbb7fc",
+        "resourceName": "team06dbb7fc",
+        "authSelections": "identityPoolAndUserPool",
+        "useDefault": "defaultSocial",
+        "usernameAttributes": [
+            "email"
+        ],
+        "triggers": {},
+        "userPoolGroupList": [
+            "Auditors",
+            "Admin"
+        ],
+        "serviceName": "Cognito",
+        "usernameCaseSensitive": false,
+        "useEnabledMfas": true,
+        "authRoleArn": {
+            "Fn::GetAtt": [
+                "AuthRole",
+                "Arn"
+            ]
+        },
+        "unauthRoleArn": {
+            "Fn::GetAtt": [
+                "UnauthRole",
+                "Arn"
+            ]
+        },
+        "breakCircularDependency": true,
+        "dependsOn": [],
+        "hostedUI": true,
+        "parentStack": {
+            "Ref": "AWS::StackId"
+        },
+        "permissions": [],
+        "hostedUIDomainName": "d144c7ktczmtkd",
+        "authProvidersUserPool": [],
+        "hostedUIProviderMeta": "[]",
+        "authProviders": [],
+        "hostedUIProviderCreds": "[]",
+        "adminQueryGroup": "Admin",
+        "oAuthMetadata": "{\"AllowedOAuthFlows\":[\"code\"],\"AllowedOAuthScopes\":[\"phone\",\"email\",\"openid\",\"profile\",\"aws.cognito.signin.user.admin\"],\"CallbackURLs\":[\"https://main.d144c7ktczmtkd.amplifyapp.com/\"],\"LogoutURLs\":[\"https://main.d144c7ktczmtkd.amplifyapp.com/\"]}"
+    }
+}

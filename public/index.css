@@ -1,0 +1,127 @@
+body {
+  background: #f2f3f3;
+  background: var(--color-background-layout-main-3yk4Ua, #f2f3f3);
+}
+#h {
+  display: block;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  margin: 0;
+  background: #232f3e;
+  background: var(--color-background-home-header-1-wlvl, #232f3e);
+  font-family: "Amazon Ember", "Helvetica Neue", Roboto, Arial, sans-serif;
+}
+.awsui-visual-refresh #h {
+  background: #232f3e;
+}
+ul.menu-list {
+  display: flex;
+  margin: 0;
+  padding: 0 30px;
+  list-style: none;
+}
+ul.menu-list > li {
+  padding: 0 4px;
+  margin: 13px 0 9px;
+}
+ul.menu-list > li a,
+ul.menu-list > li div,
+ul.menu-list > li button,
+ul.menu-list > li input,
+ul.menu-list > li label {
+  float: left;
+  color: #ffffff;
+  color: var(--color-foreground-control-default-NXhZzP, #ffffff);
+  line-height: 16px;
+}
+ul.menu-list > li #visual-refresh-toggle {
+  margin-right: 5px;
+  margin-top: 1px;
+}
+ul.menu-list > li a,
+ul.menu-list > li a:hover {
+  cursor: pointer;
+  text-decoration: none;
+}
+ul.menu-list > li.title {
+  /* font-weight: bold; */
+  margin-left: 50px;
+}
+ul.menu-list > li.selected > a,
+ul.menu-list > li.selected > button {
+  font-weight: bold;
+  color: #ec7211;
+  color: var(--color-text-accent-cH0esx, #ec7211);
+}
+ul.menu-list > li.separated {
+  border-left: 1px solid #aab7b8;
+  border-left: 1px solid var(--color-border-control-default-31hYZM, #aab7b8);
+  padding-left: 9px;
+  margin-left: 9px;
+  color: white;
+}
+ul.menu-list > li.ml-auto {
+  margin-left: auto;
+}
+ul.menu-list button,
+ul.menu-list button:focus {
+  background: none;
+  border: none;
+  cursor: pointer;
+  outline: none;
+  padding: 0 6px;
+}
+.custom-visually-hidden {
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+.input-container {
+  display: flex;
+  flex-wrap: wrap;
+  order: 0;
+  flex-grow: 10;
+  margin-right: 2rem;
+}
+.input-filter {
+  order: 0;
+  flex-grow: 6;
+  width: auto;
+  max-width: 728px;
+  margin-right: 1rem;
+}
+.select-filter {
+  max-width: 130px;
+  flex-grow: 2;
+  width: auto;
+}
+.engine-filter {
+  margin-right: 1rem;
+}
+.filtering-results {
+  margin-left: 1rem;
+  line-height: 3rem;
+}
+@media (max-width: 1152px) {
+  .input-container {
+    margin-right: 0;
+  }
+  .select-filter {
+    max-width: none;
+  }
+  .input-filter {
+    width: 100%;
+    max-width: none;
+    margin-bottom: 1rem;
+    margin-right: 0;
+  }
+}
+
+/*# sourceMappingURL=table-select-filter.index.css.map*/

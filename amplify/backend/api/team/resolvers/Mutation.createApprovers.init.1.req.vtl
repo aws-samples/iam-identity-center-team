@@ -1,0 +1,33 @@
+## [Start] Initialization default values. **
+$util.qr($ctx.stash.put("defaultValues", $util.defaultIfNull($ctx.stash.defaultValues, {})))
+#set( $createdAt = $util.time.nowISO8601() )
+$util.qr($ctx.stash.defaultValues.put("id", $util.autoId()))
+$util.qr($ctx.stash.defaultValues.put("createdAt", $createdAt))
+$util.qr($ctx.stash.defaultValues.put("updatedAt", $createdAt))
+$util.qr($ctx.args.input.put("modifiedBy", $ctx.identity.username))
+
+#if (!$util.matches("\b(OU|Account)\b", $ctx.args.input.type))
+    	$util.error('Invalid input')
+#end
+
+#foreach($arg in $ctx.args.input.approvers)
+    #if (!$util.matches("[\p{L}\p{M}\p{S}\p{N}\p{P}\t\n\r  ]+", $arg) || $arg.length() > 1024)
+      $util.error('Invalid input')
+    #end
+#end
+
+#foreach($arg in $ctx.args.input.groupIds)
+    #if (!$util.matches("([0-9a-f]{10}-|)[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}", $arg) || $arg.length() > 47)
+      $util.error('Invalid input')
+    #end
+#end
+
+#if ($ctx.args.input.ticketNo && !$util.matches("[A-Za-z0-9]", $ctx.args.input.ticketNo.substring(0,1)))
+    	$util.error('Invalid input')
+#end
+
+$util.toJson({
+  "version": "2018-05-29",
+  "payload": {}
+})
+## [End] Initialization default values. **

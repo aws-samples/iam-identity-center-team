@@ -1,0 +1,26 @@
+.custom-home__header {
+  background-color: #232f3e;
+  padding-bottom: 6rem;
+  /* margin-bottom: 3rem; */
+}
+
+.custom-home__header-title {
+  color: white;
+}
+
+.custom-home__category,
+.custom-home__header-sub-title {
+  color: white;
+}
+.custom-home__header-cta {
+  margin-bottom: 38px;
+  margin-left: 10rem;
+}
+.pic {
+  width: 1002px;
+  height: 650px;
+}
+.picbox {
+  width: 1020px;
+  height: 690px;
+}

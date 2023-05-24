@@ -1,0 +1,70 @@
+{
+  "name": "team",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@aws-amplify/ui-react": "^1.2.26",
+    "@awsui/collection-hooks": "^1.0.11",
+    "@awsui/components-react": "^3.0.124",
+    "@awsui/global-styles": "^1.0.7",
+    "@hookform/resolvers": "^2.8.8",
+    "@testing-library/jest-dom": "^5.12.0",
+    "@testing-library/react": "^11.2.6",
+    "@testing-library/user-event": "^12.8.3",
+    "antd": "^4.18.0",
+    "aws-amplify": "^4.3.11",
+    "graphql-ttl-transformer": "^2.0.0",
+    "hermes-engine": "0.11.0",
+    "moment": "^2.29.1",
+    "postcss-flexbugs-fixes": "^5.0.2",
+    "react": "^17.0.2",
+    "react-csv": "^2.2.2",
+    "react-dom": "^17.0.2",
+    "react-router-dom": "^5.2.0",
+    "react-scripts": "5.0.0",
+    "sass": "^1.45.1",
+    "web-vitals": "^1.1.1"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "optionalDependencies": {
+    "fsevents": "~2.3.2"
+  },
+  "description": "Temporary Elevated Access Management is an automated, time-based approval workflow for granting and revoking elevated user permissions on AWS",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "codecommit::us-east-1://pim@sso-pim"
+  },
+  "author": "taiwo awoyinfa",
+  "license": "ISC",
+  "devDependencies": {
+    "@svgr/webpack": "^7.0.0",
+    "json-loader": "^0.5.7"
+  },
+  "overrides": {
+    "@svgr/webpack": "^7.0.0"
+  }
+}

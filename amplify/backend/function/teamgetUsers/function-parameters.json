@@ -1,0 +1,10 @@
+{
+  "lambdaLayers": [],
+  "permissions": {
+    "api": {
+      "awspim": [
+        "Query"
+      ]
+    }
+  }
+}
