@@ -29,8 +29,6 @@ When choosing permission sets, you can either use a predefined permission set pr
 > Where an eligibility policy specifies an OU, TEAM includes all the AWS accounts directly in that OU. It does not include those in its child OUs.
 {: .note}
 
-[Configuring eligibility policy]({% link docs/guides/admin.md %}){: .btn .btn-outline }
-
 ## Approver policy
 
 **Approver policies** work in a similar way to eligibility policies, except they authorize users to approve temporary elevated access requests, rather than create them.
@@ -41,5 +39,3 @@ Each approval policy allows any member of the specified groups to log into TEAM 
 
 > If you use the same group for both eligibility and approval, then it means approvers can be in the same team as requesters. This can be a valid approach, and is sometimes known as *peer approval*. In any case, **TEAM does not allow an individual to approve their own request**. If you prefer requesters and approvers to be in different teams, specify different groups for eligibility and approval.
 {: .note}
-
-[Configuring approval policy]({% link docs/guides/admin.md %}){: .btn .btn-outline }
