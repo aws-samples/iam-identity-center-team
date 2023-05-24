@@ -1,0 +1,848 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Parameters": {
+    "env": {
+      "Type": "String"
+    },
+    "apiteamGraphQLAPIIdOutput": {
+      "Type": "String",
+      "Description": "Input parameter describing GraphQLAPIIdOutput attribute for api/team resource"
+    },
+    "apiteamGraphQLAPIEndpointOutput": {
+      "Type": "String",
+      "Description": "Input parameter describing GraphQLAPIEndpointOutput attribute for api/team resource"
+    },
+    "Source": {
+      "Type": "String"
+    },
+    "Login": {
+      "Type": "String"
+    },
+    "functionteamStatusName": {
+      "Type": "String",
+      "Description": "Input parameter describing Name attribute for function/teamStatus resource"
+    },
+    "functionteamStatusArn": {
+      "Type": "String",
+      "Description": "Input parameter describing Arn attribute for function/teamStatus resource"
+    },
+    "functionteamStatusRegion": {
+      "Type": "String",
+      "Description": "Input parameter describing Region attribute for function/teamStatus resource"
+    },
+    "functionteamStatusLambdaExecutionRole": {
+      "Type": "String",
+      "Description": "Input parameter describing LambdaExecutionRole attribute for function/teamStatus resource"
+    }
+  },
+  "Resources": {
+    "GrantStateMachine": {
+      "Type": "AWS::StepFunctions::StateMachine",
+      "Properties": {
+        "StateMachineName": {
+          "Fn::Join": [
+            "-",
+            [
+              "TEAM-Grant-SM",
+              {
+                "Ref": "env"
+              }
+            ]
+          ]
+        },
+        "DefinitionString": {
+          "Fn::Sub": [
+            "{\"Comment\":\"Temporary Elevated Access Management Grant state machine\",\"StartAt\":\"Grant Permission\",\"States\":{\"Grant Permission\":{\"Type\":\"Task\",\"Next\":\"Update Request Status - in progress\",\"Parameters\":{\"InstanceArn.$\":\"$.instanceARN\",\"PermissionSetArn.$\":\"$.roleId\",\"PrincipalId.$\":\"$.userId\",\"PrincipalType\":\"USER\",\"TargetId.$\":\"$.accountId\",\"TargetType\":\"AWS_ACCOUNT\"},\"Resource\":\"arn:aws:states:::aws-sdk:ssoadmin:createAccountAssignment\",\"ResultPath\":\"$.grant\",\"Catch\":[{\"ErrorEquals\":[\"States.ALL\"],\"Next\":\"Update Request Status - in progress\",\"ResultPath\":\"$.statusError\"}]},\"Update Request Status - in progress\":{\"Type\":\"Task\",\"Resource\":\"arn:aws:states:::lambda:invoke\",\"Parameters\":{\"Payload.$\":\"$\",\"FunctionName\":\"${Function}\"},\"Retry\":[{\"ErrorEquals\":[\"Lambda.ServiceException\",\"Lambda.AWSLambdaException\",\"Lambda.SdkClientException\",\"Lambda.TooManyRequestsException\"],\"IntervalSeconds\":2,\"MaxAttempts\":6,\"BackoffRate\":2}],\"ResultPath\":null,\"Next\":\"DynamoDB UpdateStartTime\"},\"DynamoDB UpdateStartTime\":{\"Type\":\"Task\",\"Resource\":\"arn:aws:states:::dynamodb:updateItem\",\"Parameters\":{\"TableName\":\"${DB}\",\"Key\":{\"id\":{\"S.$\":\"$.id\"}},\"UpdateExpression\":\"SET startTime = :time\",\"ExpressionAttributeValues\":{\":time\":{\"S.$\":\"$$.State.EnteredTime\"}}},\"Next\":\"Grant Error ?\",\"ResultPath\":null},\"Grant Error ?\":{\"Type\":\"Choice\",\"Choices\":[{\"Variable\":\"$.statusError\",\"IsPresent\":true,\"Next\":\"Notify Error\"}],\"Default\":\"Notify Requester - Started\"},\"Notify Error\":{\"Type\":\"Task\",\"Next\":\"Pass\",\"Parameters\":{\"Destination\":{\"ToAddresses.$\":\"States.Array('${Source}')\",\"CcAddresses.$\":\"States.Array($.email)\"},\"Message\":{\"Body\":{\"Html\":{\"Charset\":\"UTF-8\",\"Data.$\":\"States.Format('<html><body>This is an error notification for TEAM elevated access request to account <b>{}({})<\/b> for <b>{}<\/b><p> The permission set <b>{}<\/b> has not been successfully attached to the requester entity. <\/p><p><p>Use the request info below to review step function workflow logs to troubleshoot the error.<\/p><b><u>Request info<\/u><\/b><p>Step function workflow name: <b>{}<\/b><p>Step function execution name: <b>{}<\/b><\/p><p>Step function execution Id: <b>{}<\/b><\/body><\/html>',$.accountName,$.accountId,$.email,$.role,$$.StateMachine.Name,$$.Execution.Name,$$.Execution.Id)\"}},\"Subject\":{\"Data.$\":\"States.Format('Error Notification - TEAM elevated access request for {} to AWS account {}({})',$.email,$.accountName,$.accountId)\"}},\"Source\":\"${Source}\"},\"Resource\":\"arn:aws:states:::aws-sdk:ses:sendEmail\"},\"Pass\":{\"Type\":\"Pass\",\"End\":true},\"Notify Requester - Started\":{\"Type\":\"Task\",\"Parameters\":{\"Destination\":{\"ToAddresses.$\":\"States.Array($.email)\",\"CcAddresses.$\":\"$.approvers\"},\"Message\":{\"Body\":{\"Html\":{\"Charset\":\"UTF-8\",\"Data.$\":\"States.Format('<html><body>TEAM elevated access for {} to account {}({}) is <b>in progress<\/b> and would expire in <b>{} hours<\/b><p>You will get a notification when elevated access expires<\/p><\/body><\/html>',$.email,$.accountName,$.accountId,$.time)\"}},\"Subject\":{\"Data.$\":\"States.Format('TEAM elevated access request for {} to Account {}({}) has started',$.email,$.accountName,$.accountId)\"}},\"Source\":\"${Source}\"},\"Resource\":\"arn:aws:states:::aws-sdk:ses:sendEmail\",\"ResultPath\":null,\"Next\":\"Wait\",\"Catch\":[{\"ErrorEquals\":[\"States.ALL\"],\"Next\":\"Wait\",\"ResultPath\":\"$.error\"}]},\"Wait\":{\"Type\":\"Wait\",\"Next\":\"Revoke Permission\",\"SecondsPath\":\"$.duration\"},\"Revoke Permission\":{\"Type\":\"Task\",\"Resource\":\"arn:aws:states:::states:startExecution\",\"Parameters\":{\"StateMachineArn\":\"${RevokeSM}\",\"Input.$\":\"$\"},\"End\":true}}}",              {
+              "Source": {
+                "Ref": "Source"
+              },
+              "RevokeSM": {
+                "Ref": "RevokeStateMachine"
+              },
+              "Function": {
+                "Ref": "functionteamStatusArn"
+              },
+              "DB": {
+                "Fn::ImportValue": {
+                  "Fn::Sub": "${apiteamGraphQLAPIIdOutput}:GetAtt:requestsTable:Name"
+                }
+              }
+            }
+          ]
+        },
+        "RoleArn": {
+          "Fn::GetAtt": [
+            "TEAMGrantSMRole",
+            "Arn"
+          ]
+        },
+        "LoggingConfiguration": {
+          "Destinations": [
+            {
+              "CloudWatchLogsLogGroup": {
+                "LogGroupArn": {
+                  "Fn::GetAtt": [
+                    "TEAMStateMachineLogGroup",
+                    "Arn"
+                  ]
+                }
+              }
+            }
+          ],
+          "IncludeExecutionData": true,
+          "Level": "ALL"
+        },
+        "TracingConfiguration": {
+          "Enabled": true
+        }
+      }
+    },
+    "ScheduleStateMachine": {
+      "Type": "AWS::StepFunctions::StateMachine",
+      "Properties": {
+        "StateMachineName": {
+          "Fn::Join": [
+            "-",
+            [
+              "TEAM-Schedule-SM",
+              {
+                "Ref": "env"
+              }
+            ]
+          ]
+        },
+        "DefinitionString": {
+          "Fn::Sub": [
+            "{\"Comment\":\"Temporary Elevated Access Management Schedule state machine\",\"StartAt\":\"Update Request Status - scheduled\",\"States\":{\"Update Request Status - scheduled\":{\"Type\":\"Task\",\"Resource\":\"arn:aws:states:::lambda:invoke\",\"Parameters\":{\"Payload.$\":\"$\",\"FunctionName\":\"${Function}\"},\"Retry\":[{\"ErrorEquals\":[\"Lambda.ServiceException\",\"Lambda.AWSLambdaException\",\"Lambda.SdkClientException\",\"Lambda.TooManyRequestsException\"],\"IntervalSeconds\":2,\"MaxAttempts\":6,\"BackoffRate\":2}],\"Next\":\"Notify Requester\",\"ResultPath\":null},\"Notify Requester\":{\"Type\":\"Task\",\"Parameters\":{\"Destination\":{\"ToAddresses.$\":\"States.Array($.email)\"},\"Message\":{\"Body\":{\"Html\":{\"Charset\":\"UTF-8\",\"Data.$\":\"States.Format('<html><body><h4>TEAM elevated access request for {} to AWS account {}({}) has been <b>approved<\/b> for {} hour <\/h4><p> You will get a notification when elevated access has started <\/p><\/body><\/html>',$.email,$.accountName,$.accountId,$.time)\"}},\"Subject\":{\"Data.$\":\"States.Format('TEAM elevated access request for {} to AWS account - {}({}) approved', $.email, $.accountName,$.accountId)\"}},\"Source\":\"${Source}\"},\"Resource\":\"arn:aws:states:::aws-sdk:ses:sendEmail\",\"ResultPath\":null,\"Next\":\"schedule\",\"Catch\":[{\"ErrorEquals\":[\"States.ALL\"],\"Next\":\"schedule\",\"ResultPath\":\"$.error\"}]},\"schedule\":{\"Type\":\"Wait\",\"Next\":\"DynamoDB GetStatus\",\"TimestampPath\":\"$.startTime\"},\"DynamoDB GetStatus\":{\"Type\":\"Task\",\"Resource\":\"arn:aws:states:::dynamodb:getItem\",\"Parameters\":{\"TableName\":\"${DB}\",\"Key\":{\"id\":{\"S.$\":\"$.id\"}}},\"Next\":\"Scheduled ?\",\"ResultPath\":\"$.result\"},\"Scheduled ?\":{\"Type\":\"Choice\",\"Choices\":[{\"Variable\":\"$.result.Item.status.S\",\"StringEquals\":\"scheduled\",\"Next\":\"Grant Permission\"}],\"Default\":\"Pass\"},\"Pass\":{\"Type\":\"Pass\",\"End\":true},\"Grant Permission\":{\"Type\":\"Task\",\"Resource\":\"arn:aws:states:::states:startExecution\",\"Parameters\":{\"StateMachineArn\":\"${GrantSM}\",\"Input.$\":\"$\"},\"End\":true}}}",            
+            {
+              "Source": {
+                "Ref": "Source"
+              },
+              "DB": {
+                "Fn::ImportValue": {
+                  "Fn::Sub": "${apiteamGraphQLAPIIdOutput}:GetAtt:requestsTable:Name"
+                }
+              },
+              "GrantSM": {
+                "Ref": "GrantStateMachine"
+              },
+              "Function": {
+                "Ref": "functionteamStatusArn"
+              }
+            }
+          ]
+        },
+        "RoleArn": {
+          "Fn::GetAtt": [
+            "TEAMScheduleSMRole",
+            "Arn"
+          ]
+        },
+        "LoggingConfiguration": {
+          "Destinations": [
+            {
+              "CloudWatchLogsLogGroup": {
+                "LogGroupArn": {
+                  "Fn::GetAtt": [
+                    "TEAMStateMachineLogGroup",
+                    "Arn"
+                  ]
+                }
+              }
+            }
+          ],
+          "IncludeExecutionData": true,
+          "Level": "ALL"
+        },
+        "TracingConfiguration": {
+          "Enabled": true
+        }
+      }
+    },
+    "RejectStateMachine": {
+      "Type": "AWS::StepFunctions::StateMachine",
+      "Properties": {
+        "StateMachineName": {
+          "Fn::Join": [
+            "-",
+            [
+              "TEAM-Reject-SM",
+              {
+                "Ref": "env"
+              }
+            ]
+          ]
+        },
+        "DefinitionString": {
+          "Fn::Sub": [
+            "{\"Comment\":\"Temporary Elevated Access Management Reject state machine\",\"StartAt\":\"Status ?\",\"States\":{\"Status ?\":{\"Type\":\"Choice\",\"Choices\":[{\"Variable\":\"$.status\",\"StringEquals\":\"cancelled\",\"Next\":\"Notify Requester - Cancelled\"},{\"Variable\":\"$.status\",\"StringEquals\":\"rej`cted\",\"Next\":\"Notify Requester - Rejected\"}]},\"Notify Requester - Cancelled\":{\"Type\":\"Task\",\"Parameters\":{\"Destination\":{\"ToAddresses.$\":\"$.approvers\",\"CcAddresses.$\":\"States.Array($.email)\"},\"Message\":{\"Body\":{\"Html\":{\"Charset\":\"UTF-8\",\"Data.$\":\"States.Format('<html><body>TEAM elevated access approval request for <b>{}<\/b> to account <b>{}({})<\/b> has been <b>cancelled<\/b> by the requester <\/body><\/html>',$.email,$.accountName,$.accountId)\"}},\"Subject\":{\"Data.$\":\"States.Format('TEAM elevated access request for {} to account {}({}) cancelled', $.email,$.accountName,$.accountId)\"}},\"Source\":\"${Source}\"},\"Resource\":\"arn:aws:states:::aws-sdk:ses:sendEmail\",\"ResultPath\":null,\"Catch\":[{\"ErrorEquals\":[\"States.ALL\"],\"Next\":\"Success\",\"ResultPath\":\"$.error\"}],\"Next\":\"Success\"},\"Notify Requester - Rejected\":{\"Type\":\"Task\",\"Parameters\":{\"Destination\":{\"ToAddresses.$\":\"States.Array($.email)\"},\"Message\":{\"Body\":{\"Html\":{\"Charset\":\"UTF-8\",\"Data.$\":\"States.Format('<html><body>TEAM elevated access request for <b>{}<\/b> to account <b>{}({})<\/b> has been <b>rejected<\/b><p> Check your TEAM request details for more information <\/p><\/body><\/html>',$.email,$.accountName,$.accountId)\"}},\"Subject\":{\"Data.$\":\"States.Format('TEAM elevated access request for {} to AWS account {}({}) rejected', $.email,$.accountName,$.accountId)\"}},\"Source\":\"${Source}\"},\"Resource\":\"arn:aws:states:::aws-sdk:ses:sendEmail\",\"ResultPath\":null,\"Catch\":[{\"ErrorEquals\":[\"States.ALL\"],\"Next\":\"Success\",\"ResultPath\":\"$.error\"}],\"Next\":\"Success\"},\"Success\":{\"Type\":\"Succeed\"}}}",
+            {
+              "Source": {
+                "Ref": "Source"
+              }
+            }
+          ]
+        },
+        "RoleArn": {
+          "Fn::GetAtt": [
+            "TEAMRejectSMRole",
+            "Arn"
+          ]
+        },
+        "LoggingConfiguration": {
+          "Destinations": [
+            {
+              "CloudWatchLogsLogGroup": {
+                "LogGroupArn": {
+                  "Fn::GetAtt": [
+                    "TEAMStateMachineLogGroup",
+                    "Arn"
+                  ]
+                }
+              }
+            }
+          ],
+          "IncludeExecutionData": true,
+          "Level": "ALL"
+        },
+        "TracingConfiguration": {
+          "Enabled": true
+        }
+      }
+    },
+    "RevokeStateMachine": {
+      "Type": "AWS::StepFunctions::StateMachine",
+      "Properties": {
+        "StateMachineName": {
+          
+          "Fn::Join": [
+            "-",
+            [
+              "TEAM-Revoke-SM",
+              {
+                "Ref": "env"
+              }
+            ]
+          ]
+        },
+        "DefinitionString": {
+          "Fn::Sub": [
+            "{\"Comment\":\"Temporary Elevated Access Management Revoke state machine\",\"StartAt\":\"DynamoDB GetStatus\",\"States\":{\"DynamoDB GetStatus\":{\"Type\":\"Task\",\"Resource\":\"arn:aws:states:::dynamodb:getItem\",\"Parameters\":{\"TableName\":\"${DB}\",\"Key\":{\"id\":{\"S.$\":\"$.id\"}}},\"Next\":\"Revoked ?\",\"ResultPath\":\"$.data\"},\"Revoked ?\":{\"Type\":\"Choice\",\"Choices\":[{\"And\":[{\"Variable\":\"$.data.Item.status.S \",\"StringEquals\":\"revoked\"},{\"Variable\":\"$.result\",\"IsPresent\":true}],\"Next\":\"Pass\"}],\"Default\":\"Revoke Permission\"},\"Revoke Permission\":{\"Type\":\"Task\",\"Parameters\":{\"InstanceArn.$\":\"$.instanceARN\",\"PermissionSetArn.$\":\"$.roleId\",\"PrincipalId.$\":\"$.userId\",\"PrincipalType\":\"USER\",\"TargetId.$\":\"$.accountId\",\"TargetType\":\"AWS_ACCOUNT\"},\"Resource\":\"arn:aws:states:::aws-sdk:ssoadmin:deleteAccountAssignment\",\"ResultPath\":\"$.revoke\",\"Next\":\"Notify Requester - Session Ended\",\"Catch\":[{\"ErrorEquals\":[\"States.ALL\"],\"ResultPath\":\"$.statusError\",\"Next\":\"Update Request Status\"}]},\"Pass\":{\"Type\":\"Pass\",\"End\":true},\"Notify Requester - Session Ended\":{\"Type\":\"Task\",\"Parameters\":{\"Destination\":{\"ToAddresses.$\":\"States.Array($.email)\",\"CcAddresses.$\":\"$.approvers\"},\"Message\":{\"Body\":{\"Html\":{\"Charset\":\"UTF-8\",\"Data.$\":\"States.Format('<html><body>TEAM elevated access for <b>{}<\/b> to AWS account - <b>{}({})<\/b> has <b>ended<\/b><p> Elevated access has been removed <\/p><p>Login to <a href=${Login}>TEAM Application<\/a> to view session activity logs<\/p><\/body><\/html>',$.email,$.accountName,$.accountId)\"}},\"Subject\":{\"Data.$\":\"States.Format('TEAM elevated access request for {} to AWS account - {}({}) has ended',$.email,$.accountName,$.accountId)\"}},\"Source\":\"${Source}\"},\"Resource\":\"arn:aws:states:::aws-sdk:ses:sendEmail\",\"Next\":\"Revoked || Ended ?\",\"ResultPath\":null,\"Catch\":[{\"ErrorEquals\":[\"States.ALL\"],\"Next\":\"Revoked || Ended ?\",\"ResultPath\":\"$.error\"}]},\"Revoked || Ended ?\":{\"Type\":\"Choice\",\"Choices\":[{\"Variable\":\"$.data.Item.status.S\",\"StringEquals\":\"revoked\",\"Next\":\"DynamoDB Update EndTime\"}],\"Default\":\"Update Request Status\"},\"Update Request Status\":{\"Type\":\"Task\",\"Resource\":\"arn:aws:states:::lambda:invoke\",\"Parameters\":{\"Payload.$\":\"$\",\"FunctionName\":\"${Function}\"},\"Retry\":[{\"ErrorEquals\":[\"Lambda.ServiceException\",\"Lambda.AWSLambdaException\",\"Lambda.SdkClientException\",\"Lambda.TooManyRequestsException\"],\"IntervalSeconds\":2,\"MaxAttempts\":6,\"BackoffRate\":2}],\"Next\":\"Revoke Error ?\",\"ResultPath\":null},\"Revoke Error ?\":{\"Type\":\"Choice\",\"Choices\":[{\"Variable\":\"$.statusError\",\"IsPresent\":true,\"Next\":\"Notify Error\"}],\"Default\":\"DynamoDB Update EndTime\"},\"DynamoDB Update EndTime\":{\"Type\":\"Task\",\"Resource\":\"arn:aws:states:::dynamodb:updateItem\",\"Parameters\":{\"TableName\":\"${DB}\",\"Key\":{\"id\":{\"S.$\":\"$.id\"}},\"UpdateExpression\":\"SET endTime = :time\",\"ExpressionAttributeValues\":{\":time\":{\"S.$\":\"$$.State.EnteredTime\"}}},\"End\":true},\"Notify Error\":{\"Type\":\"Task\",\"Parameters\":{\"Destination\":{\"ToAddresses.$\":\"States.Array('${Source}')\",\"CcAddresses.$\":\"$.approvers\"},\"Message\":{\"Body\":{\"Html\":{\"Charset\":\"UTF-8\",\"Data.$\":\"States.Format('<html><body>This is an Error notification for TEAM elevated access request to AWS account - {}({}) for {}<p> The permission set <b>{}<\/b>has not been successfully removed from the requester entity. <\/p><p>Use the request info below to review step function workflow logs to troubleshoot the error.<\/p><b><u>Request info<\/u><\/b><p>Step function workflow name: <b>{}<\/b><p>Step function execution name: <b>{}<\/b><\/p><p>Step function execution Id: <b>{}<\/b><\/body><\/html>',$.accountName,$.accountId,$.email,$.role,$$.StateMachine.Name,$$.Execution.Name,$$.Execution.Id)\"}},\"Subject\":{\"Data.$\":\"States.Format('Error Notification - TEAM Request for {} to AWS account - {}({})',$.email,$.accountName,$.accountId)\"}},\"Source\":\"${Source}\"},\"Resource\":\"arn:aws:states:::aws-sdk:ses:sendEmail\",\"ResultPath\":null,\"End\":true}}}",            {
+              "Source": {
+                "Ref": "Source"
+              },
+              "DB": {
+                "Fn::ImportValue": {
+                  "Fn::Sub": "${apiteamGraphQLAPIIdOutput}:GetAtt:requestsTable:Name"
+                }
+              },
+              "Login": {
+                "Ref": "Login"
+              },
+              "Function": {
+                "Ref": "functionteamStatusArn"
+              }
+            }
+          ]
+        },
+        "RoleArn": {
+          "Fn::GetAtt": [
+            "TEAMRevokeSMRole",
+            "Arn"
+          ]
+        },
+        "LoggingConfiguration": {
+          "Destinations": [
+            {
+              "CloudWatchLogsLogGroup": {
+                "LogGroupArn": {
+                  "Fn::GetAtt": [
+                    "TEAMStateMachineLogGroup",
+                    "Arn"
+                  ]
+                }
+              }
+            }
+          ],
+          "IncludeExecutionData": true,
+          "Level": "ALL"
+        },
+        "TracingConfiguration": {
+          "Enabled": true
+        }
+      }
+    },
+    "ApprovalStateMachine": {
+      "Type": "AWS::StepFunctions::StateMachine",
+      "Properties": {
+        "StateMachineName": {
+          "Fn::Join": [
+            "-",
+            [
+              "TEAM-Approval-SM",
+              {
+                "Ref": "env"
+              }
+            ]
+          ]
+        },
+        "DefinitionString": {
+          "Fn::Sub": [
+            "{\"Comment\":\"Temporary Elevated Access Management Approval state machine\",\"StartAt\":\"Notify Approvers\",\"States\":{\"Notify Approvers\":{\"Type\":\"Task\",\"Parameters\":{\"Destination\":{\"ToAddresses.$\":\"$.approvers\"},\"Message\":{\"Body\":{\"Html\":{\"Charset\":\"UTF-8\",\"Data.$\":\"States.Format('<html><body><p>This is a TEAM approval request for <b>{}<\/b> to AWS account <b>{}({})<\/b><\/p><p><u><b>Session Length:<\/u><\/b> {}Hrs <\/p><p><u><b>Business Justification:<\/u><\/b> {} <\/p><p>Login to <a href=${Login}>TEAM Application<\/a> to <b>approve or reject<\/b> request<\/p> <\/body><\/html>',$.email,$.accountName,$.accountId,$.time,$.justification)\"}},\"Subject\":{\"Data.$\":\"States.Format('TEAM elevated access approval request for {} to AWS account - {}({})', $.email,$.accountName,$.accountId)\"}},\"Source\":\"${Source}\"},\"Resource\":\"arn:aws:states:::aws-sdk:ses:sendEmail\",\"ResultPath\":null,\"Next\":\"Wait\",\"Catch\":[{\"ErrorEquals\":[\"States.ALL\"],\"Next\":\"Wait\",\"ResultPath\":\"$.error\"}]},\"Wait\":{\"Type\":\"Wait\",\"Next\":\"DynamoDB GetStatus\",\"SecondsPath\":\"$.expire\"},\"DynamoDB GetStatus\":{\"Type\":\"Task\",\"Resource\":\"arn:aws:states:::dynamodb:getItem\",\"Parameters\":{\"TableName\":\"${DB}\",\"Key\":{\"id\":{\"S.$\":\"$.id\"}}},\"Next\":\"Pending ?\",\"ResultPath\":\"$.result\"},\"Pending ?\":{\"Type\":\"Choice\",\"Choices\":[{\"Variable\":\"$.result.Item.status.S\",\"StringEquals\":\"pending\",\"Next\":\"Update Request Status\"}],\"Default\":\"Pass\"},\"Update Request Status\":{\"Type\":\"Task\",\"Resource\":\"arn:aws:states:::lambda:invoke\",\"Parameters\":{\"Payload.$\":\"$\",\"FunctionName\":\"${Function}\"},\"Retry\":[{\"ErrorEquals\":[\"Lambda.ServiceException\",\"Lambda.AWSLambdaException\",\"Lambda.SdkClientException\",\"Lambda.TooManyRequestsException\"],\"IntervalSeconds\":2,\"MaxAttempts\":6,\"BackoffRate\":2}],\"Next\":\"Notify Requester - Expired\",\"ResultPath\":\"$.Payload\"},\"Pass\":{\"Type\":\"Pass\",\"End\":true},\"Notify Requester - Expired\":{\"Type\":\"Task\",\"Parameters\":{\"Destination\":{\"ToAddresses.$\":\"States.Array($.email)\"},\"Message\":{\"Body\":{\"Html\":{\"Charset\":\"UTF-8\",\"Data.$\":\"States.Format('<html><body><h4>TEAM elevated access request to AWS account - {} has Expired<\/h4><p> Contact your TEAM Administrator or Create New Request<\/p><\/body><\/html>',$.accountName)\"}},\"Subject\":{\"Data.$\":\"States.Format('TEAM elevated access request for {} to AWS account - {}({}) expired',$.email,$.accountName,$.accountId)\"}},\"Source\":\"${Source}\"},\"Resource\":\"arn:aws:states:::aws-sdk:ses:sendEmail\",\"ResultPath\":null,\"End\":true,\"Catch\":[{\"ErrorEquals\":[\"States.ALL\"],\"Next\":\"Pass\",\"ResultPath\":\"$.error\"}]}}}",             
+            {
+              "Source": {
+                "Ref": "Source"
+              },
+              "Login": {
+                "Ref": "Login"
+              },
+              "Function": {
+                "Ref": "functionteamStatusArn"
+              },
+              "DB": {
+                "Fn::ImportValue": {
+                  "Fn::Sub": "${apiteamGraphQLAPIIdOutput}:GetAtt:requestsTable:Name"
+                }
+              }
+            }
+          ]
+        },
+        "RoleArn": {
+          "Fn::GetAtt": [
+            "TEAMApproveSMRole",
+            "Arn"
+          ]
+        },
+        "LoggingConfiguration": {
+          "Destinations": [
+            {
+              "CloudWatchLogsLogGroup": {
+                "LogGroupArn": {
+                  "Fn::GetAtt": [
+                    "TEAMStateMachineLogGroup",
+                    "Arn"
+                  ]
+                }
+              }
+            }
+          ],
+          "IncludeExecutionData": true,
+          "Level": "ALL"
+        },
+        "TracingConfiguration": {
+          "Enabled": true
+        }
+      }
+    },
+    "TEAMApproveSMRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "states.amazonaws.com"
+                ]
+              },
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ]
+        },
+        "Path": "/",
+        "Policies": [
+          {
+            "PolicyName": "TEAMStepFunctionRolePolicy1",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogDelivery",
+                    "logs:GetLogDelivery",
+                    "logs:UpdateLogDelivery",
+                    "logs:DeleteLogDelivery",
+                    "logs:ListLogDeliveries",
+                    "logs:PutResourcePolicy",
+                    "logs:DescribeResourcePolicies",
+                    "logs:DescribeLogGroups"
+                  ],
+                  "Resource": "*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": "ses:SendEmail",
+                  "Resource": "*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "dynamodb:UpdateItem",
+                    "dynamodb:GetItem"
+                  ],
+                  "Resource": {
+                    "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/requests*"
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "lambda:InvokeFunction"
+                  ],
+                  "Resource": {
+                    "Ref": "functionteamStatusArn"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "TEAMScheduleSMRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "states.amazonaws.com"
+                ]
+              },
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ]
+        },
+        "Path": "/",
+        "Policies": [
+          {
+            "PolicyName": "TEAMStepFunctionRolePolicy1",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogDelivery",
+                    "logs:GetLogDelivery",
+                    "logs:UpdateLogDelivery",
+                    "logs:DeleteLogDelivery",
+                    "logs:ListLogDeliveries",
+                    "logs:PutResourcePolicy",
+                    "logs:DescribeResourcePolicies",
+                    "logs:DescribeLogGroups"
+                  ],
+                  "Resource": "*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "events:PutTargets",
+                    "events:PutRule",
+                    "events:DescribeRule"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:events:${AWS::Region}:${AWS::AccountId}:rule/StepFunctionsGetEventsForStepFunctionsExecutionRule"
+                    }
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": "ses:SendEmail",
+                  "Resource": "*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "dynamodb:UpdateItem",
+                    "dynamodb:GetItem"
+                  ],
+                  "Resource": {
+                    "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/requests*"
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": "states:StartExecution",
+                  "Resource": {
+                    "Ref": "GrantStateMachine"
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "lambda:InvokeFunction"
+                  ],
+                  "Resource": {
+                    "Ref": "functionteamStatusArn"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "TEAMGrantSMRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "states.amazonaws.com"
+                ]
+              },
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ]
+        },
+        "Path": "/",
+        "Policies": [
+          {
+            "PolicyName": "TEAMStepFunctionRolePolicy1",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogDelivery",
+                    "logs:GetLogDelivery",
+                    "logs:UpdateLogDelivery",
+                    "logs:DeleteLogDelivery",
+                    "logs:ListLogDeliveries",
+                    "logs:PutResourcePolicy",
+                    "logs:DescribeResourcePolicies",
+                    "logs:DescribeLogGroups"
+                  ],
+                  "Resource": "*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "events:PutTargets",
+                    "events:PutRule",
+                    "events:DescribeRule"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:events:${AWS::Region}:${AWS::AccountId}:rule/StepFunctionsGetEventsForStepFunctionsExecutionRule"
+                    }
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": "ses:SendEmail",
+                  "Resource": "*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "sso:CreateAccountAssignment"
+                  ],
+                  "Resource": "*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "dynamodb:UpdateItem"
+                  ],
+                  "Resource": {
+                    "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/requests*"
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": "states:StartExecution",
+                  "Resource": {
+                    "Ref": "RevokeStateMachine"
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "iam:Get*",
+                    "iam:List*",
+                    "iam:CreateRole",
+                    "iam:DeleteRole",
+                    "iam:DetachRolePolicy"
+                  ],
+                  "Resource": "*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "lambda:InvokeFunction"
+                  ],
+                  "Resource": {
+                    "Ref": "functionteamStatusArn"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "TEAMRevokeSMRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "states.amazonaws.com"
+                ]
+              },
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ]
+        },
+        "Path": "/",
+        "Policies": [
+          {
+            "PolicyName": "TEAMStepFunctionRolePolicy1",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogDelivery",
+                    "logs:GetLogDelivery",
+                    "logs:UpdateLogDelivery",
+                    "logs:DeleteLogDelivery",
+                    "logs:ListLogDeliveries",
+                    "logs:PutResourcePolicy",
+                    "logs:DescribeResourcePolicies",
+                    "logs:DescribeLogGroups"
+                  ],
+                  "Resource": "*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": "ses:SendEmail",
+                  "Resource": "*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "sso:DeleteAccountAssignment"
+                  ],
+                  "Resource": "*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "dynamodb:UpdateItem",
+                    "dynamodb:GetItem"
+                  ],
+                  "Resource": {
+                    "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/requests*"
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "iam:Get*",
+                    "iam:List*",
+                    "iam:CreateRole",
+                    "iam:DeleteRole",
+                    "iam:DetachRolePolicy"
+                  ],
+                  "Resource": "*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "lambda:InvokeFunction"
+                  ],
+                  "Resource": {
+                    "Ref": "functionteamStatusArn"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "TEAMRejectSMRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "states.amazonaws.com"
+                ]
+              },
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ]
+        },
+        "Path": "/",
+        "Policies": [
+          {
+            "PolicyName": "TEAMStepFunctionRolePolicy1",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogDelivery",
+                    "logs:GetLogDelivery",
+                    "logs:UpdateLogDelivery",
+                    "logs:DeleteLogDelivery",
+                    "logs:ListLogDeliveries",
+                    "logs:PutResourcePolicy",
+                    "logs:DescribeResourcePolicies",
+                    "logs:DescribeLogGroups"
+                  ],
+                  "Resource": "*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": "ses:SendEmail",
+                  "Resource": "*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "lambda:InvokeFunction"
+                  ],
+                  "Resource": {
+                    "Ref": "functionteamStatusArn"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "TEAMStateMachineLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": {
+          "Fn::Sub": "/aws/stepfunction/team-step-function/${env}"
+        },
+        "KmsKeyId": {
+          "Fn::GetAtt": [
+            "LogGroupKey",
+            "Arn"
+          ]
+        },
+        "RetentionInDays": 14
+      }
+    },
+    "LogGroupKey": {
+      "Type": "AWS::KMS::Key",
+      "Properties": {
+        "Description": "TEAM Stepfunction CloudwatchLog Key",
+        "EnableKeyRotation": true,
+        "PendingWindowInDays": 20,
+        "KeyPolicy": {
+          "Version": "2012-10-17",
+          "Id": "key-default-1",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": {
+                  "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:root"
+                }
+              },
+              "Action": "kms:*",
+              "Resource": "*"
+            },
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": {
+                  "Fn::Sub": "logs.${AWS::Region}.amazonaws.com"
+                }
+              },
+              "Action": [
+                "kms:Encrypt*",
+                "kms:Decrypt*",
+                "kms:ReEncrypt*",
+                "kms:GenerateDataKey*",
+                "kms:Describe*"
+              ],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "kms:EncryptionContext:aws:logs:arn": {
+                    "Fn::Sub": "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/stepfunction/team-step-function/${env}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "GrantSMOutput": {
+      "Description": "TEAM Grant StateMachine ",
+      "Value": {
+        "Ref": "GrantStateMachine"
+      }
+    },
+    "RevokeSMOutput": {
+      "Description": "TEAM Revoke StateMachine ",
+      "Value": {
+        "Ref": "RevokeStateMachine"
+      }
+    },
+    "RejectSMOutput": {
+      "Description": "TEAM Reject StateMachine ",
+      "Value": {
+        "Ref": "RejectStateMachine"
+      }
+    },
+    "ScheduleSMOutput": {
+      "Description": "TEAM Schedule StateMachine ",
+      "Value": {
+        "Ref": "ScheduleStateMachine"
+      }
+    },
+    "ApprovalSMOutput": {
+      "Description": "TEAM Approval StateMachine ",
+      "Value": {
+        "Ref": "ApprovalStateMachine"
+      }
+    }
+  },
+  "Description": "{\"createdOn\":\"Linux\",\"createdBy\":\"Amplify\",\"createdWith\":\"9.2.1\",\"stackType\":\"custom-customCloudformation\",\"metadata\":{}}"
+}

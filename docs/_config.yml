@@ -1,0 +1,54 @@
+title: TEAM
+description: Documentation for AWS Temporary Elevated Access Management (TEAM)
+theme: just-the-docs
+
+url: https://aws-samples.github.io/iam-identity-center-team
+
+logo: "docs/assets/images/logo.png"
+
+favicon_ico: "docs/assets/images/logo.png"
+
+enable_copy_code_button: true
+
+# Enable or disable heading anchors
+heading_anchors: true
+
+aux_links:
+  TEAM on GitHub: https://github.com/aws-samples/iam-identity-center-team
+
+back_to_top: true
+back_to_top_text: "Back to top"
+
+# Footer last edited timestamp
+last_edit_timestamp: true # show or hide edit time - page must have `last_modified_date` defined in the frontmatter
+last_edit_time_format: "%b %e %Y at %I:%M %p" # uses ruby's time format: https://ruby-doc.org/stdlib-2.7.0/libdoc/time/rdoc/Time.html
+
+# Footer "Edit this page on GitHub" link text
+gh_edit_link: true # show or hide edit this page link
+gh_edit_link_text: "Edit this page on GitHub"
+gh_edit_repository: "https://github.com/aws-samples/iam-identity-center-team" # the github URL for your repo
+gh_edit_branch: "main" # the branch that your docs is served from
+# gh_edit_source: docs # the source that your files originate from
+gh_edit_view_mode: "tree" # "tree" or "edit" if you want the user to jump into the editor immediately
+
+kramdown:
+  syntax_highlighter_opts:
+    block:
+      line_numbers: false
+
+callouts_level: quiet # or loud
+callouts:
+  highlight:
+    color: yellow
+  important:
+    title: Important
+    color: blue
+  new:
+    title: New
+    color: green
+  note:
+    title: Note
+    color: purple
+  warning:
+    title: Warning
+    color: red

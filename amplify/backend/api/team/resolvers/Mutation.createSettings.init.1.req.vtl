@@ -1,0 +1,23 @@
+## [Start] Initialization default values. **
+$util.qr($ctx.stash.put("defaultValues", $util.defaultIfNull($ctx.stash.defaultValues, {})))
+#set( $createdAt = $util.time.nowISO8601() )
+$util.qr($ctx.stash.defaultValues.put("id", $util.autoId()))
+$util.qr($ctx.stash.defaultValues.put("createdAt", $createdAt))
+$util.qr($ctx.stash.defaultValues.put("updatedAt", $createdAt))
+$util.qr($ctx.args.input.put("modifiedBy", $ctx.identity.username))
+
+#if (!$util.matches("^[0-9]+", $ctx.args.input.duration) ||
+     $Integer.parseInt($ctx.args.input.duration) > 8000 ||
+     $Integer.parseInt($ctx.args.input.duration) < 1 ||
+     !$util.matches("^[0-9]+", $ctx.args.input.duration) ||
+     $Integer.parseInt($ctx.args.input.duration) > 8000 ||
+     $Integer.parseInt($ctx.args.input.duration) < 1 
+      )
+    	$util.error('Invalid input')
+#end
+
+$util.toJson({
+  "version": "2018-05-29",
+  "payload": {}
+})
+## [End] Initialization default values. **

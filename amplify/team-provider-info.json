@@ -1,0 +1,97 @@
+{
+  "main": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-teamapplication-main-204104-authRole",
+      "UnauthRoleArn": "arn:aws:iam::140411857911:role/amplify-teamapplication-main-204104-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::140411857911:role/amplify-teamapplication-main-204104-authRole",
+      "Region": "us-east-1",
+      "DeploymentBucketName": "amplify-teamapplication-main-204104-deployment",
+      "UnauthRoleName": "amplify-teamapplication-main-204104-unauthRole",
+      "StackName": "amplify-teamapplication-main-204104",
+      "StackId": "arn:aws:cloudformation:us-east-1:140411857911:stack/amplify-teamapplication-main-204104/997078f0-9382-11ed-bf84-0adbb06ea993",
+      "AmplifyAppId": "d1e4tlrfi98y0m"
+    },
+    "categories": {
+      "auth": {
+        "team06dbb7fc": {},
+        "userPoolGroups": {}
+      },
+      "function": {
+        "teamListGroups": {
+          "deploymentBucketName": "amplify-teamapplication-main-204104-deployment",
+          "s3Key": "amplify-builds/teamListGroups-416861645773504d316a-build.zip"
+        },
+        "teamRouter": {
+          "deploymentBucketName": "amplify-teamapplication-main-204104-deployment",
+          "s3Key": "amplify-builds/teamRouter-6561354c753944596573-build.zip"
+        },
+        "teamStatus": {
+          "deploymentBucketName": "amplify-teamapplication-main-204104-deployment",
+          "s3Key": "amplify-builds/teamStatus-7237596b513971766573-build.zip"
+        },
+        "teamapplicationboto3layer": {
+          "deploymentBucketName": "amplify-teamapplication-main-204104-deployment",
+          "s3Key": "amplify-builds/teamapplicationboto3layer-LambdaLayerVersion4f5d937b-build.zip"
+        },
+        "teamgetAccounts": {
+          "deploymentBucketName": "amplify-teamapplication-main-204104-deployment",
+          "s3Key": "amplify-builds/teamgetAccounts-6f4c65775a434f4e4664-build.zip"
+        },
+        "teamgetGroups": {
+          "deploymentBucketName": "amplify-teamapplication-main-204104-deployment",
+          "s3Key": "amplify-builds/teamgetGroups-6762425a493873597377-build.zip"
+        },
+        "teamgetIdCGroups": {
+          "deploymentBucketName": "amplify-teamapplication-main-204104-deployment",
+          "s3Key": "amplify-builds/teamgetIdCGroups-34666b4b6f5075754647-build.zip"
+        },
+        "teamgetLogs": {
+          "deploymentBucketName": "amplify-teamapplication-main-204104-deployment",
+          "s3Key": "amplify-builds/teamgetLogs-74347744525573676961-build.zip"
+        },
+        "teamgetMgmtAccountDetails": {
+          "deploymentBucketName": "amplify-teamapplication-main-204104-deployment",
+          "s3Key": "amplify-builds/teamgetMgmtAccountDetails-77766378306746755146-build.zip"
+        },
+        "teamgetOU": {
+          "deploymentBucketName": "amplify-teamapplication-main-204104-deployment",
+          "s3Key": "amplify-builds/teamgetOU-42554a75357734785156-build.zip"
+        },
+        "teamgetOUs": {
+          "deploymentBucketName": "amplify-teamapplication-main-204104-deployment",
+          "s3Key": "amplify-builds/teamgetOUs-337a2b33566351626b36-build.zip"
+        },
+        "teamgetPermissions": {
+          "deploymentBucketName": "amplify-teamapplication-main-204104-deployment",
+          "s3Key": "amplify-builds/teamgetPermissions-4241384a624c55316573-build.zip"
+        },
+        "teamgetUserEntitlement": {
+          "deploymentBucketName": "amplify-teamapplication-main-204104-deployment",
+          "s3Key": "amplify-builds/teamgetUserEntitlement-39374c716d4f32484633-build.zip"
+        },
+        "teamgetUsers": {
+          "deploymentBucketName": "amplify-teamapplication-main-204104-deployment",
+          "s3Key": "amplify-builds/teamgetUsers-49425963576b6c494f53-build.zip"
+        },
+        "teamqueryLogs": {
+          "deploymentBucketName": "amplify-teamapplication-main-204104-deployment",
+          "s3Key": "amplify-builds/teamqueryLogs-6b352f50546541516d30-build.zip"
+        },
+        "teamupdateRequest": {
+          "deploymentBucketName": "amplify-teamapplication-main-204104-deployment",
+          "s3Key": "amplify-builds/teamupdateRequest-6d6d6c76466978424850-build.zip"
+        },
+        "teamvalidateRequest": {
+          "deploymentBucketName": "amplify-teamapplication-main-204104-deployment",
+          "s3Key": "amplify-builds/teamvalidateRequest-6b645979436948485635-build.zip"
+        }
+      },
+      "hosting": {
+        "amplifyhosting": {
+          "appId": "d1e4tlrfi98y0m",
+          "type": "manual"
+        }
+      }
+    }
+  }
+}

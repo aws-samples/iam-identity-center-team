@@ -1,0 +1,45 @@
+## [Start] Initialization default values. **
+$util.qr($ctx.stash.put("defaultValues", $util.defaultIfNull($ctx.stash.defaultValues, {})))
+#set( $updatedAt = $util.time.nowISO8601() )
+$util.qr($ctx.stash.defaultValues.put("updatedAt", $updatedAt))
+$util.qr($ctx.args.input.put("modifiedBy", $ctx.identity.username))
+
+
+#if (!$util.matches("^[0-9]+", $ctx.args.input.duration) ||
+    $Integer.parseInt($ctx.args.input.duration) > 8000 ||
+    $Integer.parseInt($ctx.args.input.duration) < 1 
+    )
+    	$util.error('Invalid input')
+#end
+
+#foreach($arg in $ctx.args.input.accounts)
+    #if (!$util.matches("^\d{12}$", $arg.id)) 
+        $util.error('Invalid input')
+    #end
+#end
+
+#foreach($arg in $ctx.args.input.permissions)
+    #if (!$util.matches("[\w+=,.@-]+", $arg.name) ||
+        !$util.matches("^arn:aws:sso:::permissionSet\/ssoins-[a-zA-Z0-9-.]{16}\/ps-[a-zA-Z0-9-.]{16}$", $arg.id)
+         ) 
+        $util.error('Invalid input')
+    #end
+#end
+
+#foreach($arg in $ctx.args.input.ous)
+    #if (!$util.matches("^(r-[0-9a-z]{4,32})|(ou-[0-9a-z]{4,32}-[a-z0-9]{8,32})$", $arg.id) ||
+        !$util.matches("[\s\S]*", $arg.name)
+        ) 
+        $util.error('Invalid input')
+    #end
+#end
+
+#if ($ctx.args.input.ticketNo && !$util.matches("[A-Za-z0-9]", $ctx.args.input.ticketNo.substring(0,1)))
+    	$util.error('Invalid input')
+#end
+
+$util.toJson({
+  "version": "2018-05-29",
+  "payload": {}
+})
+## [End] Initialization default values. **

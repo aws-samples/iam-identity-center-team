@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "api": {
+      "team": [
+        "Query",
+        "Mutation",
+        "Subscription"
+      ]
+    },
+    "auth": {
+      "team06dbb7fc": [
+        "read"
+      ]
+    }
+  },
+  "lambdaLayers": []
+}

@@ -1,0 +1,35 @@
+## [Start] Initialization default values. **
+$util.qr($ctx.stash.put("defaultValues", $util.defaultIfNull($ctx.stash.defaultValues, {})))
+#set( $createdAt = $util.time.nowISO8601() )
+$util.qr($ctx.stash.defaultValues.put("id", $util.autoId()))
+$util.qr($ctx.stash.defaultValues.put("createdAt", $createdAt))
+$util.qr($ctx.stash.defaultValues.put("updatedAt", $createdAt))
+$util.qr($ctx.stash.defaultValues.put("status", "pending"))
+
+#if (!$util.matches("^\d{12}$", $ctx.args.input.accountId) || 
+     !$util.matches("^arn:aws:sso:::permissionSet\/ssoins-[a-zA-Z0-9-.]{16}\/ps-[a-zA-Z0-9-.]{16}$", $ctx.args.input.roleId) ||
+     !$util.matches("^[0-9]+", $ctx.args.input.duration) ||
+     $Integer.parseInt($ctx.args.input.duration) > 8000 ||
+     $Integer.parseInt($ctx.args.input.duration) < 1 ||
+     !$util.matches("[\w+=,.@-]+", $ctx.args.input.role) ||
+     $ctx.args.input.role.length() > 32 ||
+     $ctx.args.input.accountName.length() > 50
+      )
+    	$util.error('Invalid input')
+#end
+
+#if (($ctx.args.input.ticketNo && !$util.matches("[A-Za-z0-9]", $ctx.args.input.ticketNo.substring(0,1))) || 
+     !$util.matches("[A-Za-z0-9]", $ctx.args.input.justification.substring(0,1)))
+    	$util.error('Invalid input')
+#end
+
+#if ($ctx.args.input.email || $ctx.args.input.status || $ctx.args.input.username || $ctx.args.input.approvers || $ctx.args.input.approver_ids)
+    $util.error('Invalid input')
+#end
+
+$util.qr($ctx.args.input.put("username", $ctx.identity.username))
+$util.toJson({
+  "version": "2018-05-29",
+  "payload": {}
+})
+## [End] Initialization default values. **

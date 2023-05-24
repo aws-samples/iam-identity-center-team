@@ -1,0 +1,27 @@
+## [Start] Initialization default values. **
+$util.qr($ctx.stash.put("defaultValues", $util.defaultIfNull($ctx.stash.defaultValues, {})))
+#set( $updatedAt = $util.time.nowISO8601() )
+$util.qr($ctx.stash.defaultValues.put("updatedAt", $updatedAt))
+
+#if ($ctx.args.input.comment && !$util.matches("[A-Za-z0-9]", $ctx.args.input.comment.substring(0,1)))
+    	$util.error('Invalid input')
+#end
+
+#if($ctx.args.input.status)
+#foreach($argName in $ctx.args.input.keySet())
+    	#if(!$util.matches("\b(status|comment|id|revokeComment)\b", $argName))
+        	$util.error('Invalid input')
+    	#end
+	#end
+#end
+
+#if ($util.matches("\b(approved|rejected)\b", $ctx.args.input.status))
+	$util.qr($ctx.args.input.put("approverId", $ctx.identity.username))
+#elseif ($ctx.args.input.status == "revoked")
+	$util.qr($ctx.args.input.put("revokerId", $ctx.identity.username))
+#end
+$util.toJson({
+  "version": "2018-05-29",
+  "payload": {}
+})
+## [End] Initialization default values. **
