@@ -8,7 +8,7 @@ parent: Solution overview
 
 {: .no_toc}
 
-TEAM policies are configuration settings managed by a TEAM admin that defines how the solution is utilised by an end user. This includes **eligibility** and **approval** policies described below:
+TEAM policies are configuration settings that define how the solution is utilised by an end user. They are managed by an [admin persona]({% link docs/overview/workflow.md %}). TEAM policies include **eligibility** and **approval** policies described below:
 
 ## Eligibility policy
 
