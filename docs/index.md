@@ -34,12 +34,12 @@ Temporary Elevated Access Management (TEAM) enables organizations to implement t
 
 ## Features
 - **Ease of deployment** - Simple one click, batteries included deployment with [AWS Amplify](https://aws.amazon.com/amplify/).
-- **Centralized Management** - Centralized management console for creating, approving, managing and monitoring elevated access requests.
+- **Centralized management** - Centralized management console for creating, approving, managing and monitoring elevated access requests.
 - **Rich authorization model** - Enhanced application security with [Amazon Cognito](https://aws.amazon.com/cognito/) group-based authorization and SAML Integration with [AWS IAM Identity Center](https://aws.amazon.com/iam/identity-center/).
-- **Auditing and Visibility** - Session logs recording enables auditing and easy correlation of elevated request justification with session activity.
+- **Auditing and visibility** - Session logs recording enables auditing and easy correlation of elevated request justification with session activity.
 - **Monitoring and Reporting** - Single dashboard for centralized monitoring and reporting of all elevated access request and approval history.
 - **Alert and notification** - Automatic notification of TEAM request, approval and session status.
-- **Solution Autonomy** - TEAM solution is agnostic and has no dependence on third party integrations with external applications or identity providers.
+- **Solution autonomy** - TEAM solution is agnostic and has no dependence on third party integrations with external applications or identity providers.
 
 ## Security considerations
 Review the [security considerations]({% link docs/overview/security.md %}) section before deploying the TEAM solution.
