@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Solution workflow
-nav_order: 1
+nav_order: 2
 parent: Solution overview
 ---
 
@@ -23,8 +23,8 @@ An approver can also request for elevated access but cannot approve or reject th
 
 4. **Admin** - This persona is a member of a **team admin** group in AWS IAM Identity Center. An admin user is responsible for:
 - Managing application wide settings such as ***max duration settings***, ***approval settings*** and ***form mandatory fields***
-- Managing ***approval policies*** that delegates approver groups responsible for approving or rejecting elevated access requests for accounts and Organizational Units.
-- Managing ***eligibility policies*** that defines accounts and permission sets a user or group is allowed to request access for.
+- Managing [approval policies]({% link docs/overview/policies.md %}) that delegates approver groups responsible for approving or rejecting elevated access requests for accounts and Organizational Units.
+- Managing [eligibility policies]({% link docs/overview/policies.md %}) that defines accounts and permission sets a user or group is allowed to request access for.
 
 ## TEAM workflow
 
