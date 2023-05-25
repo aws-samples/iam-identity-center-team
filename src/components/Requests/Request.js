@@ -87,6 +87,7 @@ function Request(props) {
   }
   
   async function getDuration(accountId){
+    setDuration("")
     const duration = item.map((data) => {
       data.accounts.map((account,index)=>{
         if (account.id == accountId){
