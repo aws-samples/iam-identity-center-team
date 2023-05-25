@@ -45,7 +45,7 @@ applicationSAMLAudience: urn:amazon:cognito:sp:us-east-1_GXaUCfcno
 
 Follow the steps below to integrate the TEAM application with AWS IAM Identity Center as a SAML application:
 
-In AWS IAM Identity Center console >**Application assignment** > **Applications** > **Add application**
+In AWS IAM Identity Center console > **Application assignment** > **Applications** > **Add application**
 
 - Select **_Add custom SAML 2.0 Application_** and click on **_Next_**
 - Type **TEAM IDC APP** as display name and add a description for the TEAM application under **Configure application** section.
