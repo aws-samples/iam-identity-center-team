@@ -21,7 +21,7 @@ export AWS_PROFILE=$TEAM_ACCOUNT_PROFILE
 
 cd ..
 
-git remote add team git@ssh.gitlab.aws.dev:awoyt/team-idc-app.git
+git remote add team https://github.com/aws-samples/iam-identity-center-team.git
 git pull team main
 git push origin main
 git remote remove team
