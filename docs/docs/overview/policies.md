@@ -12,7 +12,7 @@ TEAM policies are configuration settings that define how the solution is utilise
 
 ## Eligibility policy
 
-**Eligibility policies** determine who can request temporary elevated access with a given scope. You typically define eligibility policies to allow specific people in specific teams to request temporary elevated access that you anticipate they will need to perform operational tasks as part of their job function.
+**Eligibility policies** determine who can request temporary elevated access with a given scope. You typically define eligibility policies to ensure that people in specific teams can only request the access you anticipate they’ll need as part of their job function.
 
 Each eligibility policy has five main parts:
 
@@ -33,9 +33,15 @@ When choosing permission sets, you can either use a predefined permission set pr
 
 **Approver policies** work in a similar way to eligibility policies, except they authorize users to approve temporary elevated access requests, rather than create them.
 
-If a specific AWS account is referenced in an eligibility policy that is configured to require approval, then there must be a corresponding approval policy for the same account. If there is no corresponding approval group - or if there is an approval group, but it has no members - then TEAM won’t allow users to request temporary elevated access to that account, because no-one can approve it. The exception to this is in the case that the approval required setting is turned off global in the TEAM settings.
+An approval policy has two main parts:
 
-Each approval policy allows any member of the specified groups to log into TEAM and approve any temporary elevated access requests to the specified AWS account(s), **regardless of permission set**.
+- **Id, Name, and Type**: Identifiers for an account or OU 
+- **Approver groups**: One or more IAM Identity Center groups
+
+
+If a specific AWS account is referenced in an eligibility policy that is configured to require approval, then there must be a corresponding approval policy for the same account. If there is no corresponding approval policy - or if one exists but its groups have no members - then TEAM won’t allow users to request temporary elevated access to that account, because no-one can approve it. The exception to this is in the case that the approval required setting is turned off global in the TEAM settings.
+
+Each approval policy allows a member of a specified group to log in to TEAM and approve temporary elevated access requests for the specified account, or all accounts under the specified OU.
 
 > If you use the same group for both eligibility and approval, then it means approvers can be in the same team as requesters. This can be a valid approach, and is sometimes known as *peer approval*. In any case, **TEAM does not allow an individual to approve their own request**. If you prefer requesters and approvers to be in different teams, specify different groups for eligibility and approval.
 {: .note}

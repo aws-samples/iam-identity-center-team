@@ -23,19 +23,20 @@ Coming soon
 
 TEAM is an open source solution that integrates with AWS IAM Identity Center and allows you to manage and monitor time-bound elevated access to your multi-account AWS environment at scale.
 
-The solution is a custom application that allows users to request access to an AWS account only when it is needed and only for a specific period of time. Once the time period has elapsed, elevated access is automatically removed.
+The solution is a custom application that allows users to request access to an AWS account only when it is needed and only for a specific period of time. Approvers can review requests before deciding whether to grant access. Once the time period has elapsed, elevated access is automatically removed.
 
 <video width="800" height="500" frameborder="0" autoplay loop allowfullscreen controls>
 <source src="https://d3f99z5n3ls8r1.cloudfront.net/videos/requestor_guides/create_request.mov" type="video/mp4">
 </video>
 
 ## Benefits
-Temporary Elevated Access Management (TEAM) enables organizations to implement the principle of least privilege in a more effective and granular way, reducing the risk of unauthorized access and improving overall security posture. By providing temporary access, organizations can ensure that users are only given access to resources when they need it and for the minimum amount of time required, thereby minimizing the risk of data breaches and other security incidents.
+Temporary Elevated Access Management (TEAM) enables organizations to implement the principle of least privilege in a more effective and granular way, reducing the need for persistent, always-on access. By providing temporary access, organizations can ensure that users are only given access to resources when they need it and for the minimum amount of time required, thereby reducing the risk of unauthorized access and improving overall security posture.
 
 ## Features
-- **Ease of deployment** - Simple one click, batteries included deployment with [AWS Amplify](https://aws.amazon.com/amplify/).
+- **Ease of deployment** -  Straightforward deployment with [AWS Amplify](https://aws.amazon.com/amplify/).
 - **Centralized management** - Centralized management console for creating, approving, managing and monitoring elevated access requests.
 - **Rich authorization model** - Enhanced application security with [Amazon Cognito](https://aws.amazon.com/cognito/) group-based authorization and SAML Integration with [AWS IAM Identity Center](https://aws.amazon.com/iam/identity-center/).
+- **Ability to use managed user identities and groups**. User identities, groups, and group memberships can be managed directly in IAM Identity Center or synced from an external identity provider into IAM Identity Center, which allows you to use your existing access governance processes and tools.
 - **Auditing and visibility** - Session logs recording enables auditing and easy correlation of elevated request justification with session activity.
 - **Monitoring and Reporting** - Single dashboard for centralized monitoring and reporting of all elevated access request and approval history.
 - **Alert and notification** - Automatic notification of TEAM request, approval and session status.
@@ -48,9 +49,9 @@ Review the [security considerations]({% link docs/overview/security.md %}) secti
 The best way to get started with TEAM is to [deploy the solution]({% link docs/deployment/index.md %}) in your environment and follow the [end-to-end example scenario]({% link docs/guides/walkthrough.md %}) which will take you through all functionalities from requesting access to auditing the session logs.
 
 ## Authors
-TEAM was created by [Taiwo Awoyinfa](https://www.linkedin.com/in/taiwo-awoyinfa-299bb425/) and has been enhanced with major contributions from [Varvara Semenova](https://github.com/astrovar) and [James Greenwood](https://github.com/jmsgwd) and technical inputs from [Jeremy Ware](http://example.com) and [Abhishek Pande](https://github.com/ahpande).
+TEAM was created by [Taiwo Awoyinfa](https://github.com/tawoyinfa) and has been enhanced with major contributions from [Varvara Semenova](https://github.com/astrovar) and [James Greenwood](https://github.com/jmsgwd) and technical inputs from [Jeremy Ware](https://github.com/Hero104FH) and [Abhishek Pande](https://github.com/ahpande).
 
-#### Thank you to the GitHub contributors of TEAM!
+#### Additional contributors can be seen on GitHub.
 
 <ul class="list-style-none">
 {% for contributor in site.github.contributors %}
