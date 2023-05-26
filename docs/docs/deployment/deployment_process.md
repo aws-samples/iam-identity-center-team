@@ -56,6 +56,8 @@ REGION=us-east-1
 TEAM_ACCOUNT=123456789101
 ORG_MASTER_PROFILE=OrgMAsterProfileName
 TEAM_ACCOUNT_PROFILE=TeamAccountProfileName
+TEAM_ADMIN_GROUP=team_admin_group_name
+TEAM_AUDITOR_GROUP=team_auditor_group_name
 ```
 
 ---
