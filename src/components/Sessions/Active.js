@@ -611,7 +611,7 @@ function Active(props) {
               <FormField
                 label="Revoke Comments"
                 stretch
-                description="Reason for revoking elevated access"
+                description="Revoked elevated access prevents users from invoking new session. Active sessions might remain valid until session duration expires"
                 errorText={commentError}
               >
                 <Textarea
