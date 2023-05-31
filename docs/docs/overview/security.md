@@ -13,7 +13,10 @@ parent: Solution overview
 {: .important}
 
 ## Access control
-The TEAM solution controls access to your AWS environment and must be treated with extreme care in order to prevent unauthorized access. Special care should be taken to protect the integrity of the solution code and configuration. We recommend that you do not deploy any other workloads in the TEAM account, and carefully manage users with access to this account based on a need-to-do principle.
+The TEAM solution controls access to your AWS environment and must be treated with extreme care in order to prevent unauthorized access. Special care should be taken to protect the integrity of the solution code and configuration. 
+
+We recommend that you do not deploy any other workloads in the TEAM account, and carefully manage users with access to this account based on a need-to-do principle.
+{: .note}
 
 ## Elevated access and session duration
 TEAM solution workflow operates by attaching and removing permission sets from a user entity within the duration of the requested elevated access. The duration specified in a request determines the time window for which elevated access is active, if the request is approved. During this time window, the requester can invoke sessions to access the AWS target environment. It does not affect the duration of each session. Session duration is configured independently for each permission set by an IAM Identity Center administrator, and determines the time period for which IAM temporary credentials are valid for all sessions using that permission set. Be aware that sessions invoked just before elevated access ends might remain valid beyond the end of the elevated access period. Consider minimizing the session duration configured in your permission sets, for example by setting them as the default **1 hour** in IAM Identity Center.
