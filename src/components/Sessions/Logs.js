@@ -257,7 +257,7 @@ function Logs(props) {
                 ? `(${selectedItems.length}/${allItems.length})`
                 : `(${allItems.length})`
             }
-            description="Session activity logs"
+            description="Session activity logs are delivered in near real time"
             actions={
               <SpaceBetween size="s" direction="horizontal">
               {props.item.status === "in progress" &&

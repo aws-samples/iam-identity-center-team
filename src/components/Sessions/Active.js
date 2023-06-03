@@ -420,7 +420,7 @@ function Active(props) {
                 </Button>
               </SpaceBetween>
             }
-            description="Scheduled or in-progress elevated access requested or approved by you"
+            description="Scheduled or in-progress elevated access requests"
           >
             Elevated access
           </Header>
