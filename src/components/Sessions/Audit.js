@@ -344,7 +344,7 @@ function Audit(props) {
                 </Button>
               </SpaceBetween>
             }
-            description="Completed or revoked elevated access requested or approved by you"
+            description="Ended or revoked elevated access"
           >
             Elevated access
           </Header>
