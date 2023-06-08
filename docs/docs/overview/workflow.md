@@ -7,7 +7,7 @@ parent: Solution overview
 
 # Solution workflow
 
-TEAM usese of IAM Identity Center groups synchronized into Cognito to provide group based authorization for managing access to the TEAM application. It is important to understand the TEAM application personas and groups before describing the TEAM solution workflow.
+TEAM uses IAM Identity Center groups synchronized into Cognito to provide group based authorization for managing access to the TEAM application. It is important to understand the TEAM application personas and groups before describing the TEAM solution workflow.
 
 A TEAM user’s persona is determined by their group memberships in IAM Identity Center.
 

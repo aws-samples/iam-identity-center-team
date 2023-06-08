@@ -27,7 +27,7 @@ The solution is a custom application that allows users to request access to an A
 </video>
 
 ## Benefits
-Temporary Elevated Access Management (TEAM) enables organizations to implement the principle of least privilege in a more effective and granular way, reducing the need for persistent, always-on access. By providing temporary access, organizations can ensure that users are only given access to resources when they need it and for the minimum amount of time required, thereby reducing the risk of unauthorized access and improving overall security posture.
+Temporary elevated access management (TEAM) enables organizations to implement the principle of least privilege in a more effective and granular way, reducing the need for persistent, always-on access. By providing temporary access, organizations can ensure that users are only given access to resources when they need it and for the minimum amount of time required, thereby reducing the risk of unauthorized access and improving overall security posture.
 
 ## Features
 - **Ease of deployment** -  Straightforward deployment with [AWS Amplify](https://aws.amazon.com/amplify/).
@@ -39,8 +39,8 @@ Temporary Elevated Access Management (TEAM) enables organizations to implement t
 - **Alert and notification** - Automatic notification of TEAM request, approval and session status.
 - **Solution autonomy** - TEAM solution is agnostic and has no dependence on third party integrations with external applications or identity providers.
 
-## Security considerations
-Review the [security considerations]({% link docs/overview/security.md %}) section before deploying the TEAM solution.
+## Security and resiliency considerations
+Review the [security and resiliency considerations]({% link docs/overview/security.md %}) section before deploying the TEAM solution.
 
 ## Getting started
 The best way to get started with TEAM is to [deploy the solution]({% link docs/deployment/index.md %}) in your environment and follow the [end-to-end example scenario]({% link docs/guides/walkthrough.md %}) which will take you through all functionalities from requesting access to auditing the session logs.

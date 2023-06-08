@@ -1,27 +1,27 @@
 ---
 layout: default
-title: Security and resilience considerations
+title: Security considerations
 nav_order: 4
 parent: Solution overview
 ---
 
-# Security considerations
+# Security and resiliency considerations
 
 ## Disclaimer
 
 > The sample code; software libraries; command line tools; proofs of concept; templates; or other related technology (including any of the foregoing that are provided by our personnel) is provided to you as AWS Content under the AWS Customer Agreement, or the relevant written agreement between you and AWS (whichever applies). You should not use this AWS Content in your production accounts, or on production or other critical data. You are responsible for testing, securing, and optimizing the AWS Content, such as sample code, as appropriate for production grade use based on your specific quality control practices and standards. Deploying AWS Content may incur AWS charges for creating or using AWS chargeable resources, such as running Amazon EC2 instances or using Amazon S3 storage.
 {: .important}
 
-## Access control
-The TEAM solution controls access to your AWS environment and must be treated with extreme care in order to prevent unauthorized access. Special care should be taken to protect the integrity of the solution code and configuration. 
+## General
+The TEAM application controls access to your AWS environment, and you must manage it with great care to prevent unauthorized access. This solution is built using [AWS Amplify](https://aws.amazon.com/amplify/?trk=4301a4e1-3af3-45f9-8fdc-1400729d3f5e&sc_channel=ps&ef_id=CjwKCAjw-IWkBhBTEiwA2exyO5PnFA0vC0o18XhqmQ-lXoUehrKeULiRV5vuthJi1b5DS8-3gwv9VRoCJtMQAvD_BwE:G:s&s_kwcid=AL!4422!3!656437113991!e!!g!!aws%20amplify!20039309735!148673400379) to ease the reference deployment. Before operationalizing this solution, consider how to align it with your existing development and security practices.
 
-We recommend that you do not deploy any other workloads in the TEAM account, and carefully manage users with access to this account based on a need-to-do principle.
-{: .note}
+## TEAM account
+You need to deploy TEAM in the same account that you nominate for IAM Identity Center delegated administration. We strongly recommend that you use this account only for IAM Identity Center delegated administration, TEAM, and associated services; that you do not deploy any other workloads into this account, and that you carefully manage access to this account using the principle of least privilege.
 
 ## Elevated access and session duration
 TEAM solution workflow operates by attaching and removing permission sets from a user entity within the duration of the requested elevated access. The duration specified in a request determines the time window for which elevated access is active, if the request is approved. During this time window, the requester can invoke sessions to access the AWS target environment. It does not affect the duration of each session. Session duration is configured independently for each permission set by an IAM Identity Center administrator, and determines the time period for which IAM temporary credentials are valid for all sessions using that permission set. Be aware that sessions invoked just before elevated access ends might remain valid beyond the end of the elevated access period. Consider minimizing the session duration configured in your permission sets, for example by setting them as the default **1 hour** in IAM Identity Center.
 
-Refer to the blog post for more information on [How to revoke federated users’ active AWS sessions](https://aws.amazon.com/blogs/security/how-to-revoke-federated-users-active-aws-sessions/) 
+For information about terminating active IAM sessions, see [How to revoke federated users’ active AWS sessions](https://aws.amazon.com/blogs/security/how-to-revoke-federated-users-active-aws-sessions/) 
 
 ## Availability and Break glass access
 Some AWS services used by TEAM are regional services, such as Amazon Cognito and AWS IAM Identity Center. TEAM's dependence on these regional services implies that it might not be available in the event of a service event impacting the region where you enable IAM Identity Center.
