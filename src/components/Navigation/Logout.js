@@ -30,12 +30,12 @@ function Logout(props) {
         </a>
       </Menu.Item>
       <Menu.Item>
-        <a target="_blank" rel="noopener noreferrer">
+        <a target="_blank" rel="noopener noreferrer" href="https://github.com/aws-samples/iam-identity-center-team/issues">
           Report Bug
         </a>
       </Menu.Item>
       <Menu.Item>
-        <a target="_blank" rel="noopener noreferrer">
+        <a target="_blank" rel="noopener noreferrer" href="https://github.com/aws-samples/iam-identity-center-team/issues">
           Request Feature
         </a>
       </Menu.Item>
