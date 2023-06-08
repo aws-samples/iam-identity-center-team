@@ -5,7 +5,7 @@ nav_order: 1
 ---
 IAM Identity Center
 {: .fs-2 .mt-0 .mb-0 .text-right}
-# Temporary Elevated Access Management (TEAM)
+# Temporary elevated access management (TEAM)
 {: .fs-7 .fw-700 .mt-0 .mb-0}
 
 Automated, approval based workflow for managing time-bound elevated access to your multi-account AWS environment

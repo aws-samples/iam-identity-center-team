@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Security considerations
+title: Security and resilience considerations
 nav_order: 4
 parent: Solution overview
 ---
@@ -21,7 +21,9 @@ We recommend that you do not deploy any other workloads in the TEAM account, and
 ## Elevated access and session duration
 TEAM solution workflow operates by attaching and removing permission sets from a user entity within the duration of the requested elevated access. The duration specified in a request determines the time window for which elevated access is active, if the request is approved. During this time window, the requester can invoke sessions to access the AWS target environment. It does not affect the duration of each session. Session duration is configured independently for each permission set by an IAM Identity Center administrator, and determines the time period for which IAM temporary credentials are valid for all sessions using that permission set. Be aware that sessions invoked just before elevated access ends might remain valid beyond the end of the elevated access period. Consider minimizing the session duration configured in your permission sets, for example by setting them as the default **1 hour** in IAM Identity Center.
 
-## Availability
+Refer to the blog post for more information on [How to revoke federated users’ active AWS sessions](https://aws.amazon.com/blogs/security/how-to-revoke-federated-users-active-aws-sessions/) 
+
+## Availability and Break glass access
 Some AWS services used by TEAM are regional services, such as Amazon Cognito and AWS IAM Identity Center. TEAM's dependence on these regional services implies that it might not be available in the event of a service event impacting the region where you enable IAM Identity Center.
 
 If this is a concern, consider setting up [emergency access to the AWS Management Console](https://docs.aws.amazon.com/singlesignon/latest/userguide/emergency-access.html) or some other means to provide [break glass access](https://docs.aws.amazon.com/whitepapers/latest/organizing-your-aws-environment/break-glass-access.html).
