@@ -16,7 +16,7 @@ $util.qr($ctx.args.input.put("modifiedBy", $ctx.identity.username))
     #end
 #end
 
-#if ($ctx.args.input.ticketNo && !$util.matches("[A-Za-z0-9]", $ctx.args.input.ticketNo.substring(0,1)))
+#if ($ctx.args.input.ticketNo != '' && !$util.matches("[A-Za-z0-9]", $ctx.args.input.ticketNo.substring(0,1)))
     	$util.error('Invalid input')
 #end
 

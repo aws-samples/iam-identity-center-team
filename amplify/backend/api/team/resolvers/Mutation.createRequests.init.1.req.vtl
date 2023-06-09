@@ -18,7 +18,7 @@ $util.qr($ctx.stash.defaultValues.put("status", "pending"))
     	$util.error('Invalid input')
 #end
 
-#if (($ctx.args.input.ticketNo && !$util.matches("[A-Za-z0-9]", $ctx.args.input.ticketNo.substring(0,1))) || 
+#if (($ctx.args.input.ticketNo != '' && !$util.matches("[A-Za-z0-9]", $ctx.args.input.ticketNo.substring(0,1))) || 
      !$util.matches("[A-Za-z0-9]", $ctx.args.input.justification.substring(0,1)))
     	$util.error('Invalid input')
 #end
