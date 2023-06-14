@@ -1,11 +1,11 @@
 # Copyright 2022 Amazon Web Services, Inc
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,9 +21,9 @@
 
 export AWS_PROFILE=$ORG_MASTER_PROFILE
 
-idc=`aws organizations list-delegated-administrators --service-principal sso.amazonaws.com | jq -r '.DelegatedAdministrators[] | select(.Id=='\"$TEAM_ACCOUNT\"') | .Id'`
-cloudtrail=`aws organizations list-delegated-administrators --service-principal cloudtrail.amazonaws.com | jq -r '.DelegatedAdministrators[] | select(.Id=='\"$TEAM_ACCOUNT\"') | .Id'`
-accountManager=`aws organizations list-delegated-administrators --service-principal account.amazonaws.com | jq -r '.DelegatedAdministrators[] | select(.Id=='\"$TEAM_ACCOUNT\"') | .Id'`
+idc=`aws organizations list-delegated-administrators --service-principal sso.amazonaws.com --output json | jq -r '.DelegatedAdministrators[] | select(.Id=='\"$TEAM_ACCOUNT\"') | .Id'`
+cloudtrail=`aws organizations list-delegated-administrators --service-principal cloudtrail.amazonaws.com --output json | jq -r '.DelegatedAdministrators[] | select(.Id=='\"$TEAM_ACCOUNT\"') | .Id'`
+accountManager=`aws organizations list-delegated-administrators --service-principal account.amazonaws.com --output json | jq -r '.DelegatedAdministrators[] | select(.Id=='\"$TEAM_ACCOUNT\"') | .Id'`
 
 # Enable trusted access for account management
 aws organizations enable-aws-service-access --service-principal account.amazonaws.com
