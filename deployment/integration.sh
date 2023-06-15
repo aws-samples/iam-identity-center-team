@@ -22,7 +22,7 @@ export AWS_PROFILE=$TEAM_ACCOUNT_PROFILE
 green='\033[0;32m'
 clear='\033[0m'
 cognitoUserpoolId=`aws cognito-idp list-user-pools --max-results 10 --output json | jq -r '.UserPools[] | select(.Name | contains("team06dbb7fc")) | .Id'`
-cognitouserpoolhostedUIdomain=`aws cognito-idp describe-user-pool --user-pool-id $cognitoUserpoolId  |jq -r '.UserPool.Domain'`
+cognitouserpoolhostedUIdomain=`aws cognito-idp describe-user-pool --user-pool-id $cognitoUserpoolId --output json | jq -r '.UserPool.Domain'`
 applicationURL=`aws amplify list-apps --output json | jq -r '.apps[] | select(.name=="TEAM-IDC-APP") | .defaultDomain' `
 clientID=`aws cognito-idp list-user-pool-clients --user-pool-id $cognitoUserpoolId --output json | jq -r '.UserPoolClients[] | select(.ClientName | contains("clientWeb")) | .ClientId'`
 
