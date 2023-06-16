@@ -43,6 +43,7 @@ def get_mgmt_ps():
             return page["PermissionSets"]
     except ClientError as e:
         print(e.response['Error']['Message'])
+        return []
 
 
 def getPS(ps):
