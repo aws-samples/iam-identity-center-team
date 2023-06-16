@@ -3,7 +3,7 @@
 // http://aws.amazon.com/agreement or other written agreement between Customer and either
 // Amazon Web Services, Inc. or Amazon Web Services EMEA SARL or both.
 import React, { useEffect, useState } from "react";
-import Amplify, { Auth, Hub } from "aws-amplify";
+import  { Amplify, Auth, Hub } from "aws-amplify";
 import { Spin, Layout } from "antd";
 import awsconfig from "./aws-exports";
 import Nav from "./components/Navigation/Nav";

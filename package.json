@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@aws-amplify/ui-react": "^1.2.26",
+    "@aws-amplify/ui-react": "^5.0.0",
     "@awsui/collection-hooks": "^1.0.11",
     "@awsui/components-react": "^3.0.124",
     "@awsui/global-styles": "^1.0.7",
@@ -12,7 +12,7 @@
     "@testing-library/react": "^11.2.6",
     "@testing-library/user-event": "^12.8.3",
     "antd": "^4.18.0",
-    "aws-amplify": "^4.3.11",
+    "aws-amplify": "^5.2.6",
     "graphql-ttl-transformer": "^2.0.0",
     "hermes-engine": "0.11.0",
     "moment": "^2.29.1",
