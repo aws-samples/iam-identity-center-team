@@ -21,8 +21,10 @@ def list_idc_users(IdentityStoreId):
         client = boto3.client('identitystore')
         p = client.get_paginator('list_users')
         paginator = p.paginate(IdentityStoreId=IdentityStoreId)
+        all_users = []
         for page in paginator:
-            return page["Users"]
+            all_users.extend(page["Users"])
+        return all_users
     except ClientError as e:
         print(e.response['Error']['Message'])
 

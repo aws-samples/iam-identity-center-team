@@ -35,8 +35,10 @@ def get_mgmt_ps():
         paginator = p.paginate(
             InstanceArn=sso_instance['InstanceArn'],
             AccountId=mgmt_account_id,)
+        all_permissions = []
         for page in paginator:
-            return page["PermissionSets"]
+            all_permissions.extend(page["PermissionSets"])
+        return all_permissions
     except ClientError as e:
         print(e.response['Error']['Message'])
 

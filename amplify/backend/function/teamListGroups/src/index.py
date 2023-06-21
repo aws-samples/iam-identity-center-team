@@ -26,8 +26,10 @@ def list_idc_group_membership(groupId):
         paginator = p.paginate(IdentityStoreId=sso_instance,
         GroupId=groupId,
         )
+        all_groups=[]
         for page in paginator:
-            return page["GroupMemberships"]
+            all_groups.extend(page["GroupMemberships"])
+        return all_groups
     except ClientError as e:
         print(e.response['Error']['Message'])
         
