@@ -22,8 +22,10 @@ def list_idc_groups(IdentityStoreId):
         client = boto3.client('identitystore')
         p = client.get_paginator('list_groups')
         paginator = p.paginate(IdentityStoreId=IdentityStoreId)
+        all_groups = []
         for page in paginator:
-            return page["Groups"]
+            all_groups.extend(page["Groups"])
+        return all_groups
     except ClientError as e:
         print(e.response['Error']['Message'])
 
