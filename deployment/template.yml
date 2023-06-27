@@ -76,7 +76,7 @@ Resources:
                 - npm i -S graphql-ttl-transformer
                 - '# Execute Amplify CLI with the helper script'
                 - update-alternatives --install /usr/bin/python3 python3 /usr/local/bin/python3.9 11
-                - /usr/local/bin/pip3.9 install --user pipenv
+                - /usr/local/bin/pip3.9 install --user pipenv==2023.6.12
                 - amplifyPush --simple --allow-destructive-graphql-schema-update
         frontend:
           phases:
