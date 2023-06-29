@@ -19,9 +19,17 @@ set -xe
 
 export AWS_PROFILE=$TEAM_ACCOUNT_PROFILE
 
-cd ..
-
 git remote add team https://github.com/aws-samples/iam-identity-center-team.git
 git pull team main
+
+aws cloudformation deploy --region $REGION --template-file template.yml \
+--stack-name TEAM-IDC-APP \
+--parameter-overrides \
+  Source=$EMAIL_SOURCE \
+  Login=$IDC_LOGIN_URL \
+  teamAdminGroup="$TEAM_ADMIN_GROUP" \
+  teamAuditGroup="$TEAM_AUDITOR_GROUP" \
+--no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
+
 git push origin main
 git remote remove team
