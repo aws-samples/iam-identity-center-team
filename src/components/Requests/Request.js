@@ -11,6 +11,7 @@ import Header from "@awsui/components-react/header";
 import SpaceBetween from "@awsui/components-react/space-between";
 import Button from "@awsui/components-react/button";
 import Textarea from "@awsui/components-react/textarea";
+import moment from 'moment';
 import { DatePicker } from "antd";
 import "../../index.css";
 import React, { useState, useEffect } from "react";
@@ -63,7 +64,6 @@ function Request(props) {
   const [approvalRequired, setApprovalRequired] = useState(true);
 
   const history = useHistory();
-
 
   function concatenateAccounts(data) {
     let allAccounts = data.map(item => item.accounts);
@@ -393,6 +393,7 @@ function Request(props) {
               <DatePicker
                 showTime
                 format="YYYY-MM-DD HH:mm"
+                defaultValue={moment()}
                 // disabledDate={disabledDate}
                 onChange={(event) => {
                   setTimeError();
