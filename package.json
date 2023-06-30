@@ -65,6 +65,7 @@
     "json-loader": "^0.5.7"
   },
   "overrides": {
-    "@svgr/webpack": "^7.0.0"
+    "@svgr/webpack": "^7.0.0",
+    "semver": "^7.5.3"
   }
 }
