@@ -12,14 +12,18 @@ Refer to the [blog post on the AWS Security Blog](https://aws.amazon.com/blogs/s
 Visit our **[Documentation pages](https://aws-samples.github.io/iam-identity-center-team/)** to learn more and get started installing and using TEAM.
 
 ### Quick links
-- [Discord](https://discord.gg/bcUxUQMM)
 - [Deploying the TEAM application](https://aws-samples.github.io/iam-identity-center-team/docs/deployment/)
 - [Solution architecture and workflows](https://aws-samples.github.io/iam-identity-center-team/docs/overview/)
 - [User guides and walkthrough](https://aws-samples.github.io/iam-identity-center-team/docs/guides/)
 - [Blog Post](https://aws.amazon.com/blogs/security/temporary-elevated-access-management-with-iam-identity-center/)
-- [ReInforce Talk](https://www.youtube.com/watch?v=a1Na2G7TTQ0)
-- [Feedback Form](https://forms.gle/PDis3i46XABCpSBHA)
+- [ReInforce talk](https://www.youtube.com/watch?v=a1Na2G7TTQ0)
+- [Feedback form](https://www.pulse.aws/survey/PZDTVK85)
 
+## Feedback 
+
+We value your input! Please take a moment to provide us with your [feedback](https://www.pulse.aws/survey/PZDTVK85). 
+
+Thank you for helping us improve!
 ## Security
 
 See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
