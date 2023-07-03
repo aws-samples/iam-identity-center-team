@@ -150,6 +150,7 @@ function Request(props) {
     getEligibility();
     props.addNotification([]);
     getMgmtPs();
+    setTime(moment().format());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -399,6 +400,7 @@ function Request(props) {
                   setTimeError();
                   if (event) {
                     setTime(event._d);
+                    console.log(event._d)
                   }
                 }}
               />
