@@ -24,32 +24,9 @@ cd ..
 aws codecommit create-repository --repository-name team-idc-app --repository-description "Temporary Elevated Access Management (TEAM) Application"
 git remote remove origin
 git remote add origin codecommit::$REGION://team-idc-app
-
-# Part below will update tag keys and values in amplify/backend/tags.json
-IFS=' ' read -ra TAG_ARRAY <<< "$TAGS"
-
-output="["
-for tag in "${TAG_ARRAY[@]}"; do
-  IFS='=' read -ra pair <<< "$tag"
-  key="${pair[0]}"
-  value="${pair[1]}"
-  output+="\n  {\n    \"Key\": \"$key\",\n    \"Value\": \"$value\"\n  },"
-done
-
-output="${output%,}\n]"
-echo "$output" > ./amplify/backend/tags.json
-
-if git diff-index --quiet HEAD -- "./amplify/backend/tags.json"; then
-  echo "No changes to amplify/backend/tags.json."
-else
-  git add ./amplify/backend/tags.json
-  git commit -m "Update tags."
-fi
-
 git push origin main
 
 cd ./deployment
-
 if [[ ! -z "$TAGS" ]];
 then
   aws cloudformation deploy --region $REGION --template-file template.yml \
@@ -59,7 +36,8 @@ then
     Login=$IDC_LOGIN_URL \
     teamAdminGroup="$TEAM_ADMIN_GROUP" \
     teamAuditGroup="$TEAM_AUDITOR_GROUP" \
-  --tags "$TAGS" \
+    tags="$TAGS" \
+  --tags $TAGS \
   --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
 else
   aws cloudformation deploy --region $REGION --template-file template.yml \
@@ -69,5 +47,6 @@ else
     Login=$IDC_LOGIN_URL \
     teamAdminGroup="$TEAM_ADMIN_GROUP" \
     teamAuditGroup="$TEAM_AUDITOR_GROUP" \
+    tags="$TAGS" \
   --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
 fi
