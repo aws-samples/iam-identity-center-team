@@ -13,6 +13,10 @@ Parameters:
   teamAuditGroup:
     Type: String
     Description: TEAM application Auditor group
+  tags:
+    Type: String
+    Description: TEAM application tags
+    Default: ""
 
 Resources:
   TriggerAmplifyBuild:
@@ -113,6 +117,8 @@ Resources:
           Value: !Ref teamAdminGroup
         - Name: TEAM_AUDITOR_GROUP
           Value: !Ref teamAuditGroup
+        - Name: TAGS
+          Value: !Ref tags
       Tags:
         - Key: Branch
           Value: main

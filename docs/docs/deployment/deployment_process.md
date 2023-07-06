@@ -46,6 +46,7 @@ Create a new file named **parameters.sh** in the **deployment** directory. Copy 
 - **TEAM_ACCOUNT_PROFILE** - Named profile for TEAM Application deployment Account
 - **TEAM_ADMIN_GROUP** - Name of IAM Identity Center group for TEAM administrators
 - **TEAM_AUDITOR_GROUP** - Name of IAM Identity Center group for TEAM auditors
+- **TAGS** - Tags that should be propagated to nested stacks and underlying resources
 
 For example:
 
@@ -58,6 +59,7 @@ ORG_MASTER_PROFILE=OrgMAsterProfileName
 TEAM_ACCOUNT_PROFILE=TeamAccountProfileName
 TEAM_ADMIN_GROUP=team_admin_group_name
 TEAM_AUDITOR_GROUP=team_auditor_group_name
+TAGS="tag1=value1 tag2=value2"
 ```
 
 ---

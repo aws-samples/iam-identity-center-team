@@ -6,7 +6,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const { AWS_APP_ID, AWS_BRANCH, EMAIL_SOURCE, SSO_LOGIN, TEAM_ADMIN_GROUP, TEAM_AUDITOR_GROUP } = process.env;
+const { AWS_APP_ID, AWS_BRANCH, EMAIL_SOURCE, SSO_LOGIN, TEAM_ADMIN_GROUP, TEAM_AUDITOR_GROUP, TAGS } = process.env;
 
 async function update_auth_parameters() {
   console.log(`updating amplify config for branch "${AWS_BRANCH}"...`);
@@ -87,7 +87,28 @@ async function update_groups_parameters() {
   );
 }
 
+async function update_tag_parameters() {
+  console.log(`updating amplify/backend/tags.json"...`);
+
+  const tagsParametersJsonPath = path.resolve(
+    `./amplify/backend/tags.json`
+  );
+
+  const tagsArray = TAGS ? TAGS.split(' ').map((tag) => {
+    const [key, value] = tag.split('=');
+    return {
+      Key: key,
+      Value: value,
+    };
+  }) : [];
+
+  fs.writeFileSync(tagsParametersJsonPath, JSON.stringify(tagsArray, null, 2));
+}
+
+
+
 update_custom_parameters();
 update_auth_parameters();
 update_react_parameters();
 update_groups_parameters();
+update_tag_parameters();
