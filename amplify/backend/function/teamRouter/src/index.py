@@ -409,7 +409,7 @@ async def get_approvers_details(accountId):
             for data in approvers_data:
                 if data["approver"] not in approvers:
                     approvers.append(data["approver"])
-                    approver_ids.append(data["approver_id"])
+                    approver_ids.append(data["approver_id"].lower())
     return {"approvers":approvers, "approver_ids":approver_ids}
 
 async def updateRequestDetails(request_id, username, accountId, roleId):
