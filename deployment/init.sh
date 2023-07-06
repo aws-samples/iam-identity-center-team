@@ -16,6 +16,7 @@
 # The script enables delegated admin for AWS Account Management, AWS IAM IdC and CloudTrail Lake
 
 #!/usr/bin/env bash
+set +e
 
 . "./parameters.sh"
 
@@ -24,6 +25,7 @@ export AWS_PROFILE=$ORG_MASTER_PROFILE
 idc=`aws organizations list-delegated-administrators --service-principal sso.amazonaws.com --output json | jq -r '.DelegatedAdministrators[] | select(.Id=='\"$TEAM_ACCOUNT\"') | .Id'`
 cloudtrail=`aws organizations list-delegated-administrators --service-principal cloudtrail.amazonaws.com --output json | jq -r '.DelegatedAdministrators[] | select(.Id=='\"$TEAM_ACCOUNT\"') | .Id'`
 accountManager=`aws organizations list-delegated-administrators --service-principal account.amazonaws.com --output json | jq -r '.DelegatedAdministrators[] | select(.Id=='\"$TEAM_ACCOUNT\"') | .Id'`
+serviceRole=`aws iam get-role --role-name AWSServiceRoleForCloudTrail`
 
 # Enable trusted access for account management
 aws organizations enable-aws-service-access --service-principal account.amazonaws.com
@@ -42,6 +44,10 @@ fi
 
 # Enable trusted access for cloudtrail
 aws organizations enable-aws-service-access --service-principal cloudtrail.amazonaws.com
+
+if [ -z "$serviceRole" ]; then
+    aws iam create-service-linked-role --aws-service-name cloudtrail.amazonaws.com
+fi
 
 # Enable Delegated Admin for CloudTrail
 if [ -z "$cloudtrail" ]
