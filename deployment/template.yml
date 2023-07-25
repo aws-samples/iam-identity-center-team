@@ -4,6 +4,9 @@ Parameters:
   Source:
     Type: String
     Description: Email notification source
+  SourceArn:
+    Type: String
+    Description: SES ARN for cross-account email sending
   Login:
     Type: String
     Description: IAM IDC Login URL
@@ -122,6 +125,8 @@ Resources:
       EnvironmentVariables: 
         - Name: EMAIL_SOURCE
           Value: !Ref Source
+        - Name: SES_SOURCE_ARN
+          Value: !Ref SourceArn
         - Name: SSO_LOGIN
           Value: !Ref Login
         - Name: CLOUDTRAIL_AUDIT_LOGS

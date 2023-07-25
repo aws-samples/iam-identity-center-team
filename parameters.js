@@ -6,7 +6,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const { AWS_APP_ID, AWS_BRANCH, EMAIL_SOURCE, SSO_LOGIN, TEAM_ADMIN_GROUP, TEAM_AUDITOR_GROUP, TAGS, CLOUDTRAIL_AUDIT_LOGS } = process.env;
+const { AWS_APP_ID, AWS_BRANCH, EMAIL_SOURCE, SES_SOURCE_ARN, SSO_LOGIN, TEAM_ADMIN_GROUP, TEAM_AUDITOR_GROUP, TAGS, CLOUDTRAIL_AUDIT_LOGS } = process.env;
 
 async function update_auth_parameters() {
   console.log(`updating amplify config for branch "${AWS_BRANCH}"...`);
@@ -62,6 +62,7 @@ async function update_custom_parameters() {
   const customParametersJson = require(customParametersJsonPath);
 
   customParametersJson.Source = EMAIL_SOURCE;
+  customParametersJson.SourceArn = SES_SOURCE_ARN;
   customParametersJson.Login = SSO_LOGIN;
 
   fs.writeFileSync(

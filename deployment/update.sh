@@ -30,6 +30,7 @@ then
   --stack-name TEAM-IDC-APP \
   --parameter-overrides \
     Source=$EMAIL_SOURCE \
+    SourceArn=$SES_SOURCE_ARN \
     Login=$IDC_LOGIN_URL \
     CloudTrailAuditLogs=$CLOUDTRAIL_AUDIT_LOGS \
     teamAdminGroup="$TEAM_ADMIN_GROUP" \
@@ -42,6 +43,7 @@ else
   --stack-name TEAM-IDC-APP \
   --parameter-overrides \
     Source=$EMAIL_SOURCE \
+    SourceArn=$SES_SOURCE_ARN \
     Login=$IDC_LOGIN_URL \
     CloudTrailAuditLogs=$CLOUDTRAIL_AUDIT_LOGS \
     teamAdminGroup="$TEAM_ADMIN_GROUP" \

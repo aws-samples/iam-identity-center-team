@@ -38,6 +38,7 @@ Create a new file named **parameters.sh** in the **deployment** directory. Copy 
 
 Required:
 - **EMAIL_SOURCE** - Verified Email address for originating TEAM notifications
+- **SES_SOURCE_ARN** - Optional SES ARN for cross-account email sending
 - **IDC_LOGIN_URL** - AWS IAM Identity Center Login URL
 - **REGION** - AWS region where the application will be deployed.
     > This must be the same region AWS IAM Identity Center is deployed in
@@ -60,6 +61,7 @@ For example:
 
 ```sh
 EMAIL_SOURCE=notification@team.awsapps.com
+SES_SOURCE_ARN=""
 IDC_LOGIN_URL=https://d-12345678.awsapps.com/start
 REGION=us-east-1
 TEAM_ACCOUNT=123456789101
