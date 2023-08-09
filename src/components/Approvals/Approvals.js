@@ -69,7 +69,7 @@ const COLUMN_DEFINITIONS = [
     id: "duration",
     sortingField: "duration",
     header: "Duration",
-    cell: (item) => item.duration,
+    cell: (item) => `${item.duration} hours`,
     maxWidth: 120,
   },
   {

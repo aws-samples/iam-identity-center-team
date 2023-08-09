@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-EMAIL_SOURCE=notification@example.com
 IDC_LOGIN_URL=https://d-90676dxxxx.awsapps.com/start
 REGION=us-east-1
 TEAM_ACCOUNT=123456789101

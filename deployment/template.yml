@@ -1,9 +1,6 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Temporary Elevated Access Management (TEAM) Application stack
 Parameters:
-  Source:
-    Type: String
-    Description: Email notification source
   Login:
     Type: String
     Description: IAM IDC Login URL
@@ -109,8 +106,6 @@ Resources:
       AppId: !GetAtt AmplifyApp.AppId
       EnableAutoBuild: true
       EnvironmentVariables: 
-        - Name: EMAIL_SOURCE
-          Value: !Ref Source
         - Name: SSO_LOGIN
           Value: !Ref Login
         - Name: TEAM_ADMIN_GROUP

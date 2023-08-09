@@ -4,9 +4,9 @@
   "private": true,
   "dependencies": {
     "@aws-amplify/ui-react": "^5.0.0",
-    "@awsui/collection-hooks": "^1.0.11",
-    "@awsui/components-react": "^3.0.124",
-    "@awsui/global-styles": "^1.0.7",
+    "@awsui/collection-hooks": "^1.0.21",
+    "@awsui/components-react": "^3.0.312",
+    "@awsui/global-styles": "^1.0.10",
     "@hookform/resolvers": "^2.8.8",
     "@testing-library/jest-dom": "^5.12.0",
     "@testing-library/react": "^11.2.6",

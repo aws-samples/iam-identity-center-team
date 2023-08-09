@@ -14,6 +14,7 @@ from botocore.config import Config
 policy_table_name = os.getenv("POLICY_TABLE_NAME")
 settings_table_name = os.getenv("SETTINGS_TABLE_NAME")
 approver_table_name = os.getenv("APPROVER_TABLE_NAME")
+requests_table_name = os.getenv("REQUESTS_TABLE_NAME")
 user_pool_id = os.getenv("AUTH_TEAM06DBB7FC_USERPOOLID")
 dynamodb = boto3.resource('dynamodb')
 approver_table = dynamodb.Table(approver_table_name)
@@ -25,6 +26,19 @@ revoke = os.getenv("REVOKE_SM")
 reject = os.getenv("REJECT_SM")
 schedule = os.getenv("SCHEDULE_SM")
 approval = os.getenv("APPROVAL_SM")
+notification_topic_arn = os.getenv("NOTIFICATION_TOPIC_ARN")
+sso_login_url = os.getenv("SSO_LOGIN_URL")
+fn_teamstatus_arn = os.getenv("FN_TEAMSTATUS_ARN")
+fn_teamnotifyslack_arn = os.getenv("FN_TEAMNOTIFYSLACK_ARN")
+team_config = {
+    "sso_login_url": sso_login_url,
+    "requests_table": requests_table_name,
+    "revoke_sm": revoke,
+    "grant_sm": grant,
+    "fn_teamstatus_arn": fn_teamstatus_arn,
+    "fn_teamnotifyslack_arn": fn_teamnotifyslack_arn,
+}
+
 
 
 def list_account_for_ou(ouId):
@@ -199,13 +213,13 @@ def get_user(username):
         print(e.response['Error']['Message'])
 
 
-def invoke_approval_sm(request, sm_arn):
+def invoke_approval_sm(request, sm_arn, notification_config, team_config):
     sfn_client = boto3.client('stepfunctions')
     try:
         response = sfn_client.start_execution(
             stateMachineArn=sm_arn,
             name=request["id"],
-            input=(json.dumps(request)))
+            input=(json.dumps({**request, **notification_config, **team_config})))
     except ClientError as e:
         print(e.response['Error']['Message'])
     else:
@@ -272,10 +286,24 @@ def check_settings():
     approval_required = item_settings.get("approval", True)
     expiry = int(item_settings.get("expiry", 3)) * 60 * 60
     max_duration = item_settings.get("duration", "9")
-    return {"approval_required": approval_required, "expiry": expiry, "max_duration":max_duration}
+    notification_service = item_settings.get("notificationService", "None")
+    ses_source_email = item_settings.get("sesSourceEmail", "")
+    ses_source_arn = item_settings.get("sesSourceArn", "")
+    notification_config = {
+        "notification_service": notification_service,
+        "ses_source_email": ses_source_email,
+        "ses_source_arn": ses_source_arn,
+        "notification_topic_arn": notification_topic_arn,
+    }
+    return {
+        "approval_required": approval_required, 
+        "expiry": expiry, 
+        "max_duration": max_duration,
+        "notification_config": notification_config,
+    }
 
         
-def invoke_workflow(request, approval_required):
+def invoke_workflow(request, approval_required, notification_config, team_config):
     workflow = None
     if approval_required and request["status"] == "pending":
         print("sending approval")
@@ -305,7 +333,7 @@ def invoke_workflow(request, approval_required):
     else:
         print("no action")
     if workflow:
-        invoke_approval_sm(request, workflow)
+        invoke_approval_sm(request, workflow, notification_config, team_config)
 
 def get_email(username):
     cognito = boto3.client('cognito-idp', config=Config(user_agent_extra="team-idc"))
@@ -405,7 +433,7 @@ async def get_approvers_details(accountId):
     if approver_groups:
         for group in approver_groups:
             approvers_data = [get_approvers(result["MemberId"]["UserId"])
-              for result in list_group_membership(group)]
+                for result in list_group_membership(group)]
             for data in approvers_data:
                 if data["approver"] not in approvers:
                     approvers.append(data["approver"])
@@ -469,6 +497,7 @@ def handler(event, context):
     if request_is_updated(status,data,username,request_id):
         settings = check_settings()
         approval_required = settings["approval_required"]
+        notification_config = settings["notification_config"]
         expiry_time = settings["expiry"]
         request = get_request_data(data, expiry_time, approval_required)
         if int(request["time"]) > int(settings["max_duration"]):
@@ -486,7 +515,7 @@ def handler(event, context):
             if approval_required:
                 approval_required = eligible["approval"]
                 request["approvalRequired"] = eligible["approval"]
-            invoke_workflow(request, approval_required)
+            invoke_workflow(request, approval_required, notification_config, team_config)
     else:
         print("Request not updated")
         

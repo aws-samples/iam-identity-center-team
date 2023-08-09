@@ -87,6 +87,11 @@
       "providerPlugin": "awscloudformation",
       "service": "customCloudformation"
     },
+    "sns": {
+      "dependsOn": [],
+      "providerPlugin": "awscloudformation",
+      "service": "customCloudformation"
+    },
     "s3bucketSecurity": {
       "dependsOn": [],
       "providerPlugin": "awscloudformation",
@@ -96,21 +101,17 @@
       "dependsOn": [
         {
           "attributes": [
-            "GraphQLAPIIdOutput",
-            "GraphQLAPIEndpointOutput"
-          ],
-          "category": "api",
-          "resourceName": "team"
-        },
-        {
-          "attributes": [
-            "Name",
-            "Arn",
-            "Region",
-            "LambdaExecutionRole"
+            "Arn"
           ],
           "category": "function",
           "resourceName": "teamStatus"
+        },
+        {
+          "attributes": [
+            "Arn"
+          ],
+          "category": "function",
+          "resourceName": "teamNotifySlack"
         }
       ],
       "providerPlugin": "awscloudformation",
@@ -160,6 +161,20 @@
           ],
           "category": "custom",
           "resourceName": "stepfunctions"
+        },
+        {
+          "attributes": [
+            "Arn"
+          ],
+          "category": "function",
+          "resourceName": "teamStatus"
+        },
+        {
+          "attributes": [
+            "Arn"
+          ],
+          "category": "function",
+          "resourceName": "teamNotifySlack"
         }
       ],
       "providerPlugin": "awscloudformation",
@@ -305,6 +320,20 @@
           ],
           "category": "custom",
           "resourceName": "cloudtrailLake"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
+    "teamNotifySlack": {
+      "build": true,
+      "dependsOn": [
+        {
+          "attributes": [
+            "GraphQLAPIIdOutput"
+          ],
+          "category": "api",
+          "resourceName": "team"
         }
       ],
       "providerPlugin": "awscloudformation",
@@ -556,6 +585,22 @@
         {
           "category": "function",
           "resourceName": "teamqueryLogs"
+        }
+      ]
+    },
+    "AMPLIFY_function_teamNotifySlack_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teamNotifySlack"
+        }
+      ]
+    },
+    "AMPLIFY_function_teamNotifySlack_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teamNotifySlack"
         }
       ]
     },

@@ -30,6 +30,9 @@ cd deployment
 
 Once the upgrade script has completed execution, go to the AWS Amplify console to monitor the status of the TEAM application build and deployment.
 
+## If upgrading from v1.0.0 - v1.0.5, re-set notifications settings
+TEAM v1.0.6 introduces additional notifications settings, and **will break the email notification configuration on previous versions**. After upgrading, navigate to the settings page and update the notification settings. To continue using email notifications, select Amazon SES and the notification service and set the source email address.
+
 ## Verify app deployment
 Go to Amplify console: **AWS Amplify -> All apps -> TEAM-IDC-APP -> Hosting environments**. On the **Hosting environments** tab, click on the application URL to confirm that it was deployed successfully and you can access the TEAM application landing page as shown in the video below:
 

@@ -258,6 +258,10 @@ export const getSettings = /* GraphQL */ `
       modifiedBy
       createdAt
       updatedAt
+      notificationService
+      sesSourceEmail
+      sesSourceArn
+      slackToken
     }
   }
 `;
@@ -278,6 +282,10 @@ export const listSettings = /* GraphQL */ `
         modifiedBy
         createdAt
         updatedAt
+        notificationService
+        sesSourceEmail
+        sesSourceArn
+        slackToken
       }
       nextToken
     }

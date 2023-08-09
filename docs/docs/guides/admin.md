@@ -84,6 +84,10 @@ An administrator can configure global TEAM application settings, such as:
 - Workflow settings
   - **Approval required**: Determines if approval is turned on or off for all elevated access request
     > If this setting is turned on, the approval configuration in the eligibility policy  will determine if approval is required or not for an entity (user or group)
+- Notification settings
+  - **Notification service**: Determines the services used to deliver notifications to users. Supported options are Amazon SES (email), Slack, Amazon SNS, or None.
+  - **Source email**: If using Amazon SES to send email notifications, determines the source email address.
+  - **Slack OAuth token**: If using Slack notifications, sets the token giving TEAM permission to your Slack workspace as a bot user.
 
 ### Step-by-step
 {: .no_toc}

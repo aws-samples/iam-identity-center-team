@@ -29,7 +29,6 @@ then
   aws cloudformation deploy --region $REGION --template-file template.yml \
   --stack-name TEAM-IDC-APP \
   --parameter-overrides \
-    Source=$EMAIL_SOURCE \
     Login=$IDC_LOGIN_URL \
     teamAdminGroup="$TEAM_ADMIN_GROUP" \
     teamAuditGroup="$TEAM_AUDITOR_GROUP" \
@@ -40,7 +39,6 @@ else
   aws cloudformation deploy --region $REGION --template-file template.yml \
   --stack-name TEAM-IDC-APP \
   --parameter-overrides \
-    Source=$EMAIL_SOURCE \
     Login=$IDC_LOGIN_URL \
     teamAdminGroup="$TEAM_ADMIN_GROUP" \
     teamAuditGroup="$TEAM_AUDITOR_GROUP" \
