@@ -140,11 +140,11 @@
                   "Body": {
                     "Html": {
                       "Charset": "UTF-8",
-                      "Data.$": "States.Format('<html><body>This is an error notification for TEAM elevated access request to account <b>{}({})</b> for <b>{}</b><p> The permission set <b>{}</b> has not been successfully attached to the requester entity. </p><p><p>Use the request info below to review step function workflow logs to troubleshoot the error.</p><b><u>Request info</u></b><p>Step function workflow name: <b>{}</b><p>Step function execution name: <b>{}</b></p><p>Step function execution Id: <b>{}</b></body></html>',$.accountName,$.accountId,$.email,$.role,$$.StateMachine.Name,$$.Execution.Name,$$.Execution.Id)"
+                      "Data.$": "States.Format('<html><body><p>TEAM encountered an error granting AWS access to {}. Please review the Step Function logs to troubleshoot the error and ensure access is properly addressed. Open <a href=\"{}\">TEAM</a> to view additional details.</p><p><b>Step Function Workflow Name:</b> {}<br /><b>Step Function Execution Name:</b> {}<br /><b>Step Function Execution Id:</b> {}</p><p><b>Account:</b> {} ({})<br /><b>Role:</b> {}<br /><b>Start Time:</b> {}<br /><b>Duration:</b> {} hours<br /><b>Justification:</b> {}<br /><b>Ticket Number:</b> {}<br /></p></body></html>',$.email,$.sso_login_url,$$.StateMachine.Name,$$.Execution.Name,$$.Execution.Id,$.accountName,$.accountId,$.startTime,$.time,$.justification,$.ticketNo)"
                     }
                   },
                   "Subject": {
-                    "Data.$": "States.Format('Error Notification - TEAM elevated access request for {} to AWS account {}({})',$.email,$.accountName,$.accountId)"
+                    "Data.$": "States.Format('Error granting AWS access for {} to AWS account {} - TEAM', $.email, $.accountName)"
                   }
                 },
                 "Source.$": "$.ses_source_email"
@@ -251,11 +251,11 @@
                   "Body": {
                     "Html": {
                       "Charset": "UTF-8",
-                      "Data.$": "States.Format('<html><body>TEAM elevated access for {} to account {}({}) is <b>in progress</b> and would expire in <b>{} hours</b><p>You will get a notification when elevated access expires</p></body></html>',$.email,$.accountName,$.accountId,$.time)"
+                      "Data.$": "States.Format('<html><body><p>Your AWS access session has started. Open <a href=\"{}\">TEAM</a> to manage AWS access requests.</p><p><b>Account:</b> {} ({})<br /><b>Role:</b> {}<br /><b>Start Time:</b> {}<br /><b>Duration:</b> {} hours<br /><b>Justification:</b> {}<br /><b>Ticket Number:</b> {}<br /></p></body></html>',$.sso_login_url,$.accountName,$.accountId,$.startTime,$.time,$.justification,$.ticketNo)"
                     }
                   },
                   "Subject": {
-                    "Data.$": "States.Format('TEAM elevated access request for {} to Account {}({}) has started',$.email,$.accountName,$.accountId)"
+                    "Data.$": "States.Format('AWS access session started for {} to AWS account {} - TEAM', $.email, $.accountName)"
                   }
                 },
                 "Source.$": "$.ses_source_email"
@@ -375,11 +375,11 @@
                   "Body": {
                     "Html": {
                       "Charset": "UTF-8",
-                      "Data.$": "States.Format('<html><body>TEAM elevated access for {} to account {}({}) is <b>in progress</b> and would expire in <b>{} hours</b><p>You will get a notification when elevated access expires</p></body></html>',$.email,$.accountName,$.accountId,$.time)"
+                      "Data.$": "States.Format('<html><body><p>Your AWS access session has started. Open <a href=\"{}\">TEAM</a> to manage AWS access requests.</p><p><b>Account:</b> {} ({})<br /><b>Role:</b> {}<br /><b>Start Time:</b> {}<br /><b>Duration:</b> {} hours<br /><b>Justification:</b> {}<br /><b>Ticket Number:</b> {}<br /></p></body></html>',$.sso_login_url,$.accountName,$.accountId,$.startTime,$.time,$.justification,$.ticketNo)"
                     }
                   },
                   "Subject": {
-                    "Data.$": "States.Format('TEAM elevated access request for {} to Account {}({}) has started',$.email,$.accountName,$.accountId)"
+                    "Data.$": "States.Format('AWS access session started for {} to AWS account {} - TEAM', $.email, $.accountName)"
                   }
                 },
                 "Source.$": "$.ses_source_email",
@@ -401,11 +401,11 @@
                   "Body": {
                     "Html": {
                       "Charset": "UTF-8",
-                      "Data.$": "States.Format('<html><body>This is an error notification for TEAM elevated access request to account <b>{}({})</b> for <b>{}</b><p> The permission set <b>{}</b> has not been successfully attached to the requester entity. </p><p><p>Use the request info below to review step function workflow logs to troubleshoot the error.</p><b><u>Request info</u></b><p>Step function workflow name: <b>{}</b><p>Step function execution name: <b>{}</b></p><p>Step function execution Id: <b>{}</b></body></html>',$.accountName,$.accountId,$.email,$.role,$$.StateMachine.Name,$$.Execution.Name,$$.Execution.Id)"
+                      "Data.$": "States.Format('<html><body><p>TEAM encountered an error granting AWS access to {}. Please review the Step Function logs to troubleshoot the error and ensure access is properly addressed. Open <a href=\"{}\">TEAM</a> to view additional details.</p><p><b>Step Function Workflow Name:</b> {}<br /><b>Step Function Execution Name:</b> {}<br /><b>Step Function Execution Id:</b> {}</p><p><b>Account:</b> {} ({})<br /><b>Role:</b> {}<br /><b>Start Time:</b> {}<br /><b>Duration:</b> {} hours<br /><b>Justification:</b> {}<br /><b>Ticket Number:</b> {}<br /></p></body></html>',$.email,$.sso_login_url,$$.StateMachine.Name,$$.Execution.Name,$$.Execution.Id,$.accountName,$.accountId,$.startTime,$.time,$.justification,$.ticketNo)"
                     }
                   },
                   "Subject": {
-                    "Data.$": "States.Format('Error Notification - TEAM elevated access request for {} to AWS account {}({})',$.email,$.accountName,$.accountId)"
+                    "Data.$": "States.Format('Error granting AWS access for {} to AWS account {} - TEAM', $.email, $.accountName)"
                   }
                 },
                 "Source.$": "$.ses_source_email",
@@ -542,11 +542,11 @@
                   "Body": {
                     "Html": {
                       "Charset": "UTF-8",
-                      "Data.$": "States.Format('<html><body><h4>TEAM elevated access request for {} to AWS account {}({}) has been <b>approved</b> for {} hour </h4><p> You will get a notification when elevated access has started </p></body></html>',$.email,$.accountName,$.accountId,$.time)"
+                      "Data.$": "States.Format('<html><body><p>Your AWS access request has been approved. You will receive a notification when the session has started. Open <a href=\"{}\">TEAM</a> to manage AWS access requests.</p><p><b>Account:</b> {} ({})<br /><b>Role:</b> {}<br /><b>Start Time:</b> {}<br /><b>Duration:</b> {} hours<br /><b>Justification:</b> {}<br /><b>Ticket Number:</b> {}<br /></p></body></html>',$.sso_login_url,$.accountName,$.accountId,$.startTime,$.time,$.justification,$.ticketNo)"
                     }
                   },
                   "Subject": {
-                    "Data.$": "States.Format('TEAM elevated access request for {} to AWS account - {}({}) approved', $.email, $.accountName,$.accountId)"
+                    "Data.$": "States.Format('AWS access request approved for {} to AWS account {} - TEAM', $.email, $.accountName)"
                   }
                 },
                 "Source.$": "$.ses_source_email"
@@ -667,11 +667,11 @@
                   "Body": {
                     "Html": {
                       "Charset": "UTF-8",
-                      "Data.$": "States.Format('<html><body><h4>TEAM elevated access request for {} to AWS account {}({}) has been <b>approved</b> for {} hour </h4><p> You will get a notification when elevated access has started </p></body></html>',$.email,$.accountName,$.accountId,$.time)"
+                      "Data.$": "States.Format('<html><body><p>Your AWS access request has been approved. You will receive a notification when the session has started. Open <a href=\"{}\">TEAM</a> to manage AWS access requests.</p><p><b>Account:</b> {} ({})<br /><b>Role:</b> {}<br /><b>Start Time:</b> {}<br /><b>Duration:</b> {} hours<br /><b>Justification:</b> {}<br /><b>Ticket Number:</b> {}<br /></p></body></html>',$.sso_login_url,$.accountName,$.accountId,$.startTime,$.time,$.justification,$.ticketNo)"
                     }
                   },
                   "Subject": {
-                    "Data.$": "States.Format('TEAM elevated access request for {} to AWS account - {}({}) approved', $.email, $.accountName,$.accountId)"
+                    "Data.$": "States.Format('AWS access request approved for {} to AWS account {} - TEAM', $.email, $.accountName)"
                   }
                 },
                 "Source.$": "$.ses_source_email",
@@ -787,11 +787,11 @@
                   "Body": {
                     "Html": {
                       "Charset": "UTF-8",
-                      "Data.$": "States.Format('<html><body>TEAM elevated access approval request for <b>{}</b> to account <b>{}({})</b> has been <b>cancelled</b> by the requester </body></html>',$.email,$.accountName,$.accountId)"
+                      "Data.$": "States.Format('<html><body><p>{} cancelled an AWS access request. Open <a href=\"{}\">TEAM</a> to manage AWS access requests.</p><p><b>Account:</b> {} ({})<br /><b>Role:</b> {}<br /><b>Start Time:</b> {}<br /><b>Duration:</b> {} hours<br /><b>Justification:</b> {}<br /><b>Ticket Number:</b> {}<br /></p></body></html>',$.email,$.sso_login_url,$.accountName,$.accountId,$.startTime,$.time,$.justification,$.ticketNo)"
                     }
                   },
                   "Subject": {
-                    "Data.$": "States.Format('TEAM elevated access request for {} to account {}({}) cancelled', $.email,$.accountName,$.accountId)"
+                    "Data.$": "States.Format('AWS access request cancelled for {} to AWS account {} - TEAM', $.email, $.accountName)"
                   }
                 },
                 "Source.$": "$.ses_source_email"
@@ -914,11 +914,11 @@
                   "Body": {
                     "Html": {
                       "Charset": "UTF-8",
-                      "Data.$": "States.Format('<html><body>TEAM elevated access request for <b>{}</b> to account <b>{}({})</b> has been <b>rejected</b><p> Check your TEAM request details for more information </p></body></html>',$.email,$.accountName,$.accountId)"
+                      "Data.$": "States.Format('<html><body><p>Your AWS access request has been rejected. Open <a href=\"{}\">TEAM</a> to manage AWS access requests.</p><p><b>Account:</b> {} ({})<br /><b>Role:</b> {}<br /><b>Start Time:</b> {}<br /><b>Duration:</b> {} hours<br /><b>Justification:</b> {}<br /><b>Ticket Number:</b> {}<br /></p></body></html>',$.sso_login_url,$.accountName,$.accountId,$.startTime,$.time,$.justification,$.ticketNo)"
                     }
                   },
                   "Subject": {
-                    "Data.$": "States.Format('TEAM elevated access request for {} to AWS account {}({}) rejected', $.email,$.accountName,$.accountId)"
+                    "Data.$": "States.Format('AWS access request rejected for {} to AWS account {} - TEAM', $.email, $.accountName)"
                   }
                 },
                 "Source.$": "$.ses_source_email"
@@ -1015,11 +1015,11 @@
                   "Body": {
                     "Html": {
                       "Charset": "UTF-8",
-                      "Data.$": "States.Format('<html><body>TEAM elevated access approval request for <b>{}</b> to account <b>{}({})</b> has been <b>cancelled</b> by the requester </body></html>',$.email,$.accountName,$.accountId)"
+                      "Data.$": "States.Format('<html><body><p>{} cancelled an AWS access request. Open <a href=\"{}\">TEAM</a> to manage AWS access requests.</p><p><b>Account:</b> {} ({})<br /><b>Role:</b> {}<br /><b>Start Time:</b> {}<br /><b>Duration:</b> {} hours<br /><b>Justification:</b> {}<br /><b>Ticket Number:</b> {}<br /></p></body></html>',$.email,$.sso_login_url,$.accountName,$.accountId,$.startTime,$.time,$.justification,$.ticketNo)"
                     }
                   },
                   "Subject": {
-                    "Data.$": "States.Format('TEAM elevated access request for {} to account {}({}) cancelled', $.email,$.accountName,$.accountId)"
+                    "Data.$": "States.Format('AWS access request cancelled for {} to AWS account {} - TEAM', $.email, $.accountName)"
                   }
                 },
                 "Source.$": "$.ses_source_email",
@@ -1048,11 +1048,11 @@
                   "Body": {
                     "Html": {
                       "Charset": "UTF-8",
-                      "Data.$": "States.Format('<html><body>TEAM elevated access request for <b>{}</b> to account <b>{}({})</b> has been <b>rejected</b><p> Check your TEAM request details for more information </p></body></html>',$.email,$.accountName,$.accountId)"
+                      "Data.$": "States.Format('<html><body><p>Your AWS access request has been rejected. Open <a href=\"{}\">TEAM</a> to manage AWS access requests.</p><p><b>Account:</b> {} ({})<br /><b>Role:</b> {}<br /><b>Start Time:</b> {}<br /><b>Duration:</b> {} hours<br /><b>Justification:</b> {}<br /><b>Ticket Number:</b> {}<br /></p></body></html>',$.sso_login_url,$.accountName,$.accountId,$.startTime,$.time,$.justification,$.ticketNo)"
                     }
                   },
                   "Subject": {
-                    "Data.$": "States.Format('TEAM elevated access request for {} to AWS account {}({}) rejected', $.email,$.accountName,$.accountId)"
+                    "Data.$": "States.Format('AWS access request rejected for {} to AWS account {} - TEAM', $.email, $.accountName)"
                   }
                 },
                 "Source.$": "$.ses_source_email",
@@ -1191,11 +1191,11 @@
                   "Body": {
                     "Html": {
                       "Charset": "UTF-8",
-                      "Data.$": "States.Format('<html><body>This is an Error notification for TEAM elevated access request to AWS account - {}({}) for {}<p> The permission set <b>{}</b>has not been successfully removed from the requester entity. </p><p>Use the request info below to review step function workflow logs to troubleshoot the error.</p><b><u>Request info</u></b><p>Step function workflow name: <b>{}</b><p>Step function execution name: <b>{}</b></p><p>Step function execution Id: <b>{}</b></body></html>',$.accountName,$.accountId,$.email,$.role,$$.StateMachine.Name,$$.Execution.Name,$$.Execution.Id)"
+                      "Data.$": "States.Format('<html><body><p>TEAM encountered an error ending an AWS access session for {}. Please review the Step Function logs to troubleshoot the error and ensure access is properly revoked. Open <a href=\"{}\">TEAM</a> to view additional details.</p><p><b>Step Function Workflow Name:</b> {}<br /><b>Step Function Execution Name:</b> {}<br /><b>Step Function Execution Id:</b> {}</p><p><b>Account:</b> {} ({})<br /><b>Role:</b> {}<br /><b>Start Time:</b> {}<br /><b>Duration:</b> {} hours<br /><b>Justification:</b> {}<br /><b>Ticket Number:</b> {}<br /></p></body></html>',$.email,$.sso_login_url,$$.StateMachine.Name,$$.Execution.Name,$$.Execution.Id,$.accountName,$.accountId,$.startTime,$.time,$.justification,$.ticketNo)"
                     }
                   },
                   "Subject": {
-                    "Data.$": "States.Format('Error Notification - TEAM Request for {} to AWS account - {}({})',$.email,$.accountName,$.accountId)"
+                    "Data.$": "States.Format('Error revoking AWS access for {} to AWS account {} - TEAM', $.email, $.accountName)"
                   }
                 },
                 "Source.$": "$.ses_source_email"
@@ -1302,11 +1302,11 @@
                   "Body": {
                     "Html": {
                       "Charset": "UTF-8",
-                      "Data.$": "States.Format('<html><body>TEAM elevated access for <b>{}</b> to AWS account - <b>{}({})</b> has <b>ended</b><p> Elevated access has been removed </p><p>Login to <a href=\"{}\">TEAM Application</a> to view session activity logs</p></body></html>',$.email,$.accountName,$.accountId,$.sso_login_url)"
+                      "Data.$": "States.Format('<html><body><p>Your AWS access session has ended, please open <a href=\"{}\">TEAM</a> to view session activity logs.</p><p><b>Account:</b> {} ({})<br /><b>Role:</b> {}<br /><b>Start Time:</b> {}<br /><b>Duration:</b> {} hours<br /><b>Justification:</b> {}<br /><b>Ticket Number:</b> {}<br /></p></body></html>',$.sso_login_url,$.accountName,$.accountId,$.startTime,$.time,$.justification,$.ticketNo)"
                     }
                   },
                   "Subject": {
-                    "Data.$": "States.Format('TEAM elevated access request for {} to AWS account - {}({}) has ended',$.email,$.accountName,$.accountId)"
+                    "Data.$": "States.Format('AWS access session ended for {} to AWS account {} - TEAM', $.email, $.accountName)"
                   }
                 },
                 "Source.$": "$.ses_source_email"
@@ -1476,11 +1476,11 @@
                   "Body": {
                     "Html": {
                       "Charset": "UTF-8",
-                      "Data.$": "States.Format('<html><body>TEAM elevated access for <b>{}</b> to AWS account - <b>{}({})</b> has <b>ended</b><p> Elevated access has been removed </p><p>Login to <a href=\"{}\">TEAM Application</a> to view session activity logs</p></body></html>',$.email,$.accountName,$.accountId,$.sso_login_url)"
+                      "Data.$": "States.Format('<html><body><p>Your AWS access session has ended, please open <a href=\"{}\">TEAM</a> to view session activity logs.</p><p><b>Account:</b> {} ({})<br /><b>Role:</b> {}<br /><b>Start Time:</b> {}<br /><b>Duration:</b> {} hours<br /><b>Justification:</b> {}<br /><b>Ticket Number:</b> {}<br /></p></body></html>',$.sso_login_url,$.accountName,$.accountId,$.startTime,$.time,$.justification,$.ticketNo)"
                     }
                   },
                   "Subject": {
-                    "Data.$": "States.Format('TEAM elevated access request for {} to AWS account - {}({}) has ended',$.email,$.accountName,$.accountId)"
+                    "Data.$": "States.Format('AWS access session ended for {} to AWS account {} - TEAM', $.email, $.accountName)"
                   }
                 },
                 "Source.$": "$.ses_source_email",
@@ -1502,11 +1502,11 @@
                   "Body": {
                     "Html": {
                       "Charset": "UTF-8",
-                      "Data.$": "States.Format('<html><body>This is an Error notification for TEAM elevated access request to AWS account - {}({}) for {}<p> The permission set <b>{}</b>has not been successfully removed from the requester entity. </p><p>Use the request info below to review step function workflow logs to troubleshoot the error.</p><b><u>Request info</u></b><p>Step function workflow name: <b>{}</b><p>Step function execution name: <b>{}</b></p><p>Step function execution Id: <b>{}</b></body></html>',$.accountName,$.accountId,$.email,$.role,$$.StateMachine.Name,$$.Execution.Name,$$.Execution.Id)"
+                      "Data.$": "States.Format('<html><body><p>TEAM encountered an error ending an AWS access session for {}. Please review the Step Function logs to troubleshoot the error and ensure access is properly revoked. Open <a href=\"{}\">TEAM</a> to view additional details.</p><p><b>Step Function Workflow Name:</b> {}<br /><b>Step Function Execution Name:</b> {}<br /><b>Step Function Execution Id:</b> {}</p><p><b>Account:</b> {} ({})<br /><b>Role:</b> {}<br /><b>Start Time:</b> {}<br /><b>Duration:</b> {} hours<br /><b>Justification:</b> {}<br /><b>Ticket Number:</b> {}<br /></p></body></html>',$.email,$.sso_login_url,$$.StateMachine.Name,$$.Execution.Name,$$.Execution.Id,$.accountName,$.accountId,$.startTime,$.time,$.justification,$.ticketNo)"
                     }
                   },
                   "Subject": {
-                    "Data.$": "States.Format('Error Notification - TEAM Request for {} to AWS account - {}({})',$.email,$.accountName,$.accountId)"
+                    "Data.$": "States.Format('Error revoking AWS access for {} to AWS account {} - TEAM', $.email, $.accountName)"
                   }
                 },
                 "Source.$": "$.ses_source_email",
@@ -1635,11 +1635,11 @@
                   "Body": {
                     "Html": {
                       "Charset": "UTF-8",
-                      "Data.$": "States.Format('<html><body><p>This is a TEAM approval request for <b>{}</b> to AWS account <b>{}({})</b></p><p><u><b>Session Length:</u></b> {}Hrs </p><p><u><b>Business Justification:</u></b> {} </p><p>Login to <a href=\"{}\">TEAM Application</a> to <b>approve or reject</b> request</p> </body></html>',$.email,$.accountName,$.accountId,$.time,$.justification,$.sso_login_url)"
+                      "Data.$": "States.Format('<html><body><p><b>{}</b> requests access to AWS, please <b>approve or reject this request</b> in <a href=\"{}\">TEAM</a>.</p><p><b>Account:</b> {} ({})<br /><b>Role:</b> {}<br /><b>Start Time:</b> {}<br /><b>Duration:</b> {} hours<br /><b>Justification:</b> {}<br /><b>Ticket Number:</b> {}<br /></p></body></html>',$.email,$.sso_login_url,$.accountName,$.accountId,$.startTime,$.time,$.justification,$.ticketNo)"
                     }
                   },
                   "Subject": {
-                    "Data.$": "States.Format('TEAM elevated access approval request for {} to AWS account - {}({})', $.email,$.accountName,$.accountId)"
+                    "Data.$": "States.Format('{} requests access to AWS account {} - TEAM', $.email,$.accountName)"
                   }
                 },
                 "Source.$": "$.ses_source_email"
@@ -1749,11 +1749,11 @@
                   "Body": {
                     "Html": {
                       "Charset": "UTF-8",
-                      "Data.$": "States.Format('<html><body><h4>TEAM elevated access request to AWS account - {} has Expired</h4><p> Contact your TEAM Administrator or Create New Request</p></body></html>',$.accountName)"
+                      "Data.$": "States.Format('<html><body><p>Your AWS access request has expired, please open <a href=\"{}\">TEAM</a> to submit a new request.</p><p><b>Account:</b> {} ({})<br /><b>Role:</b> {}<br /><b>Start Time:</b> {}<br /><b>Duration:</b> {} hours<br /><b>Justification:</b> {}<br /><b>Ticket Number:</b> {}<br /></p></body></html>',$.sso_login_url,$.accountName,$.accountId,$.startTime,$.time,$.justification,$.ticketNo)"
                     }
                   },
                   "Subject": {
-                    "Data.$": "States.Format('TEAM elevated access request for {} to AWS account - {}({}) expired',$.email,$.accountName,$.accountId)"
+                    "Data.$": "States.Format('Expired access request for {} to AWS account {} - TEAM', $.email, $.accountName)"
                   }
                 },
                 "Source.$": "$.ses_source_email"
@@ -1862,11 +1862,11 @@
                   "Body": {
                     "Html": {
                       "Charset": "UTF-8",
-                      "Data.$": "States.Format('<html><body><p>This is a TEAM approval request for <b>{}</b> to AWS account <b>{}({})</b></p><p><u><b>Session Length:</u></b> {}Hrs </p><p><u><b>Business Justification:</u></b> {} </p><p>Login to <a href=\"{}\">TEAM Application</a> to <b>approve or reject</b> request</p> </body></html>',$.email,$.accountName,$.accountId,$.time,$.justification,$.sso_login_url)"
+                      "Data.$": "States.Format('<html><body><p><b>{}</b> requests access to AWS, please <b>approve or reject this request</b> in <a href=\"{}\">TEAM</a>.</p><p><b>Account:</b> {} ({})<br /><b>Role:</b> {}<br /><b>Start Time:</b> {}<br /><b>Duration:</b> {} hours<br /><b>Justification:</b> {}<br /><b>Ticket Number:</b> {}<br /></p></body></html>',$.email,$.sso_login_url,$.accountName,$.accountId,$.startTime,$.time,$.justification,$.ticketNo)"
                     }
                   },
                   "Subject": {
-                    "Data.$": "States.Format('TEAM elevated access approval request for {} to AWS account - {}({})', $.email,$.accountName,$.accountId)"
+                    "Data.$": "States.Format('{} requests access to AWS account {} - TEAM', $.email,$.accountName)"
                   }
                 },
                 "Source.$": "$.ses_source_email",
@@ -1897,11 +1897,11 @@
                   "Body": {
                     "Html": {
                       "Charset": "UTF-8",
-                      "Data.$": "States.Format('<html><body><h4>TEAM elevated access request to AWS account - {} has Expired</h4><p> Contact your TEAM Administrator or Create New Request</p></body></html>',$.accountName)"
+                      "Data.$": "States.Format('<html><body><p>Your AWS access request has expired, please open <a href=\"{}\">TEAM</a> to submit a new request.</p><p><b>Account:</b> {} ({})<br /><b>Role:</b> {}<br /><b>Start Time:</b> {}<br /><b>Duration:</b> {} hours<br /><b>Justification:</b> {}<br /><b>Ticket Number:</b> {}<br /></p></body></html>',$.sso_login_url,$.accountName,$.accountId,$.startTime,$.time,$.justification,$.ticketNo)"
                     }
                   },
                   "Subject": {
-                    "Data.$": "States.Format('TEAM elevated access request for {} to AWS account - {}({}) expired',$.email,$.accountName,$.accountId)"
+                    "Data.$": "States.Format('Expired access request for {} to AWS account {} - TEAM', $.email, $.accountName)"
                   }
                 },
                 "Source.$": "$.ses_source_email",
