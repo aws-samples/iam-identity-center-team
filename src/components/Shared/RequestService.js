@@ -71,16 +71,22 @@ export async function getMgmtAccountPs() {
 }
 
 export async function getUserRequests(email) {
+  let nextToken = null;
+  let data = [];
   try {
+    do {
     const requests = await API.graphql(
       graphqlOperation(requestByEmailAndStatus, {
-        email: email,
+        email: email,nextToken
       })
     );
-    const data = await requests.data.requestByEmailAndStatus.items;
+    data = data.concat(requests.data.requestByEmailAndStatus.items);
+    nextToken = requests.data.requestByEmailAndStatus.nextToken;
+  } while (nextToken);
     return data;
   } catch (err) {
     console.log("error fetching requests");
+    return {"error":err}
   }
 }
 
@@ -152,12 +158,20 @@ export async function fetchUsers() {
 }
 
 export async function getSessionList() {
+  let nextToken = null;
+  let data = [];
   try {
-    const request = await API.graphql(graphqlOperation(listRequests));
-    const data = await request.data.listRequests.items;
+    do {
+    const request = await API.graphql(graphqlOperation(listRequests, {
+      nextToken
+    }));
+    data = data.concat(request.data.listRequests.items);
+    nextToken = request.data.listRequests.nextToken;
+  } while (nextToken);
     return data;
   } catch (err) {
     console.log("error fetching sessions");
+    return {"error":err}
   }
 }
 
@@ -176,24 +190,37 @@ export async function getRequest(id) {
 }
 
 export async function getAllApprovers() {
+  let nextToken = null;
+  let data = [];
   try {
-    const request = await API.graphql(graphqlOperation(listApprovers));
-    const data = await request.data.listApprovers.items;
+    do{
+    const request = await API.graphql(graphqlOperation(listApprovers, {nextToken}));
+    data = data.concat(request.data.listApprovers.items);
+    nextToken = request.data.listApprovers.nextToken;
+    } while (nextToken);
+    console.log(data)
     return data;
   } catch (err) {
     console.log("error fetching approvers");
+    return {"error":err}
   }
 }
 
 export async function sessions(filter) {
+  let nextToken = null;
+  let data = [];
   try {
+    do {
     const request = await API.graphql(
-      graphqlOperation(listRequests, { filter: filter })
+      graphqlOperation(listRequests, { filter: filter, nextToken })
     );
-    const data = await request.data.listRequests.items;
+    data = data.concat(request.data.listRequests.items);
+    nextToken = request.data.listRequests.nextToken;
+  } while (nextToken);
     return data;
   } catch (err) {
     console.log("error fetching sessions");
+    return {"error":err}
   }
 }
 
@@ -371,12 +398,21 @@ export async function fetchEligibility(id) {
 }
 
 export async function getAllEligibility() {
+  let nextToken = null;
+  let data = [];
   try {
-    const request = await API.graphql(graphqlOperation(listEligibilities));
-    const data = await request.data.listEligibilities.items;
+    do {
+    const request = await API.graphql(graphqlOperation(listEligibilities, {
+      nextToken
+    }));
+    data = data.concat(request.data.listEligibilities.items);
+    nextToken = request.data.listEligibilities.nextToken;
+  } while (nextToken);
+  console.log(data)
     return data;
   } catch (err) {
-    console.log("error fetching eligibility");
+    console.log("error fetching eligibility", err);
+    return {"error":err}
   }
 }
 
