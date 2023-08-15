@@ -55,9 +55,9 @@
       "Type": "String",
       "Default": "functionteamStatusArn"
     },
-    "functionteamNotifySlackArn": {
+    "functionteamNotificationsArn": {
       "Type": "String",
-      "Default": "functionteamNotifySlackArn"
+      "Default": "functionteamNotificationsArn"
     }
   },
   "Conditions": {
@@ -166,8 +166,8 @@
             "FN_TEAMSTATUS_ARN": {
               "Ref": "functionteamStatusArn"
             },
-            "FN_TEAMNOTIFYSLACK_ARN": {
-              "Ref": "functionteamNotifySlackArn"
+            "FN_TEAMNOTIFICATIONS_ARN": {
+              "Ref": "functionteamNotificationsArn"
             }
           }
         },

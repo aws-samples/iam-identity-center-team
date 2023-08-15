@@ -258,7 +258,9 @@ export const getSettings = /* GraphQL */ `
       modifiedBy
       createdAt
       updatedAt
-      notificationService
+      sesNotificationsEnabled
+      snsNotificationsEnabled
+      slackNotificationsEnabled
       sesSourceEmail
       sesSourceArn
       slackToken
@@ -282,7 +284,9 @@ export const listSettings = /* GraphQL */ `
         modifiedBy
         createdAt
         updatedAt
-        notificationService
+        sesNotificationsEnabled
+        snsNotificationsEnabled
+        slackNotificationsEnabled
         sesSourceEmail
         sesSourceArn
         slackToken

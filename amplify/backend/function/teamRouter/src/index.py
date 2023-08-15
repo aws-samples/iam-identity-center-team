@@ -29,14 +29,14 @@ approval = os.getenv("APPROVAL_SM")
 notification_topic_arn = os.getenv("NOTIFICATION_TOPIC_ARN")
 sso_login_url = os.getenv("SSO_LOGIN_URL")
 fn_teamstatus_arn = os.getenv("FN_TEAMSTATUS_ARN")
-fn_teamnotifyslack_arn = os.getenv("FN_TEAMNOTIFYSLACK_ARN")
+fn_teamnotifications_arn = os.getenv("FN_TEAMNOTIFICATIONS_ARN")
 team_config = {
     "sso_login_url": sso_login_url,
     "requests_table": requests_table_name,
     "revoke_sm": revoke,
     "grant_sm": grant,
     "fn_teamstatus_arn": fn_teamstatus_arn,
-    "fn_teamnotifyslack_arn": fn_teamnotifyslack_arn,
+    "fn_teamnotifications_arn": fn_teamnotifications_arn,
 }
 
 
@@ -286,11 +286,15 @@ def check_settings():
     approval_required = item_settings.get("approval", True)
     expiry = int(item_settings.get("expiry", 3)) * 60 * 60
     max_duration = item_settings.get("duration", "9")
-    notification_service = item_settings.get("notificationService", "None")
+    ses_notifications_enabled = item_settings.get("sesNotificationsEnabled", False)
+    sns_notifications_enabled = item_settings.get("snsNotificationsEnabled", False)
+    slack_notifications_enabled = item_settings.get("slackNotificationsEnabled", False)
     ses_source_email = item_settings.get("sesSourceEmail", "")
     ses_source_arn = item_settings.get("sesSourceArn", "")
     notification_config = {
-        "notification_service": notification_service,
+        "ses_notifications_enabled": ses_notifications_enabled,
+        "sns_notifications_enabled": sns_notifications_enabled,
+        "slack_notifications_enabled": slack_notifications_enabled,
         "ses_source_email": ses_source_email,
         "ses_source_arn": ses_source_arn,
         "notification_topic_arn": notification_topic_arn,

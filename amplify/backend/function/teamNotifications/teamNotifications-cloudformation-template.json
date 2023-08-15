@@ -46,12 +46,12 @@
         "FunctionName": {
           "Fn::If": [
             "ShouldNotCreateEnvResources",
-            "teamNotifySlack",
+            "teamNotifications",
             {
               "Fn::Join": [
                 "",
                 [
-                  "teamNotifySlack",
+                  "teamNotifications",
                   "-",
                   {
                     "Ref": "env"
@@ -93,12 +93,12 @@
         "RoleName": {
           "Fn::If": [
             "ShouldNotCreateEnvResources",
-            "teamLambdaRoledaa4354c",
+            "teamLambdaRoledab1354c",
             {
               "Fn::Join": [
                 "",
                 [
-                  "teamLambdaRoledaa4354c",
+                  "teamLambdaRoledab1354c",
                   "-",
                   {
                     "Ref": "env"
@@ -175,6 +175,22 @@
                   "Fn::Sub": "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/Settings-*"
                 }
               ]
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "ses:SendEmail"
+              ],
+              "Resource": "*"
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "sns:Publish"
+              ],
+              "Resource": {
+                "Fn::ImportValue": "NotificationTopicArn"
+              }
             }
           ]
         }

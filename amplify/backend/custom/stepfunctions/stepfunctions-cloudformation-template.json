@@ -8,9 +8,9 @@
       "Type": "String",
       "Description": "Input parameter describing Arn attribute for function/teamStatus resource"
     },
-    "functionteamNotifySlackArn": {
+    "functionteamNotificationsArn": {
       "Type": "String",
-      "Description": "Input parameter describing Arn attribute for function/teamNotifySlack resource"
+      "Description": "Input parameter describing Arn attribute for function/teamNotifications resource"
     }
   },
   "Resources": {
@@ -56,11 +56,11 @@
               "Choices": [
                 {
                   "IsPresent": true,
-                  "Next": "Notify Error - Notification Type",
+                  "Next": "Notify Error",
                   "Variable": "$.statusError"
                 }
               ],
-              "Default": "Notify Requester Started - Notification Type",
+              "Default": "Notify Started",
               "Type": "Choice"
             },
             "Grant Permission": {
@@ -86,88 +86,10 @@
               "ResultPath": "$.grant",
               "Type": "Task"
             },
-            "Notify Error - Notification Type": {
-              "Choices": [
-                {
-                  "Next": "Notify Error - SNS",
-                  "StringEquals": "SNS",
-                  "Variable": "$.notification_service"
-                },
-                {
-                  "And": [
-                    {
-                      "Variable": "$.notification_service",
-                      "StringEquals": "SES"
-                    },
-                    {
-                      "Variable": "$.ses_source_arn",
-                      "StringEquals": ""
-                    }
-                  ],
-                  "Next": "Notify Error - SES"
-                },
-                {
-                  "Next": "Notify Error - Slack",
-                  "StringEquals": "Slack",
-                  "Variable": "$.notification_service"
-                },
-                {
-                  "And": [
-                    {
-                      "Variable": "$.notification_service",
-                      "StringEquals": "SES"
-                    },
-                    {
-                      "Not": {
-                        "Variable": "$.ses_source_arn",
-                        "StringEquals": ""
-                      }
-                    }
-                  ],
-                  "Next": "Notify Error - SES CrossAccount"
-                }
-              ],
-              "Default": "Pass",
-              "Type": "Choice"
-            },
-            "Notify Error - SES": {
-              "Parameters": {
-                "Destination": {
-                  "CcAddresses.$": "States.Array($.email)",
-                  "ToAddresses.$": "States.Array($.ses_source_email)"
-                },
-                "Message": {
-                  "Body": {
-                    "Html": {
-                      "Charset": "UTF-8",
-                      "Data.$": "States.Format('<html><body><p>TEAM encountered an error granting AWS access to {}. Please review the Step Function logs to troubleshoot the error and ensure access is properly addressed. Open <a href=\"{}\">TEAM</a> to view additional details.</p><p><b>Step Function Workflow Name:</b> {}<br /><b>Step Function Execution Name:</b> {}<br /><b>Step Function Execution Id:</b> {}</p><p><b>Account:</b> {} ({})<br /><b>Role:</b> {}<br /><b>Start Time:</b> {}<br /><b>Duration:</b> {} hours<br /><b>Justification:</b> {}<br /><b>Ticket Number:</b> {}<br /></p></body></html>',$.email,$.sso_login_url,$$.StateMachine.Name,$$.Execution.Name,$$.Execution.Id,$.accountName,$.accountId,$.startTime,$.time,$.justification,$.ticketNo)"
-                    }
-                  },
-                  "Subject": {
-                    "Data.$": "States.Format('Error granting AWS access for {} to AWS account {} - TEAM', $.email, $.accountName)"
-                  }
-                },
-                "Source.$": "$.ses_source_email"
-              },
-              "Resource": "arn:aws:states:::aws-sdk:ses:sendEmail",
-              "ResultPath": "$.lastTaskResult",
-              "Type": "Task",
-              "End": true
-            },
-            "Notify Error - SNS": {
+            "Notify Error": {
               "End": true,
               "Parameters": {
-                "Message.$": "$",
-                "TopicArn.$": "$.notification_topic_arn"
-              },
-              "Resource": "arn:aws:states:::sns:publish",
-              "ResultPath": "$.lastTaskResult",
-              "Type": "Task"
-            },
-            "Notify Error - Slack": {
-              "End": true,
-              "Parameters": {
-                "FunctionName.$": "$.fn_teamnotifyslack_arn",
+                "FunctionName.$": "$.fn_teamnotifications_arn",
                 "Payload.$": "$"
               },
               "Resource": "arn:aws:states:::lambda:invoke",
@@ -187,51 +109,7 @@
               ],
               "Type": "Task"
             },
-            "Notify Requester Started - Notification Type": {
-              "Choices": [
-                {
-                  "Next": "Notify Started - SNS",
-                  "StringEquals": "SNS",
-                  "Variable": "$.notification_service"
-                },
-                {
-                  "And": [
-                    {
-                      "Variable": "$.notification_service",
-                      "StringEquals": "SES"
-                    },
-                    {
-                      "Variable": "$.ses_source_arn",
-                      "StringEquals": ""
-                    }
-                  ],
-                  "Next": "Notify Started - SES"
-                },
-                {
-                  "Next": "Notify Started - Slack",
-                  "StringEquals": "Slack",
-                  "Variable": "$.notification_service"
-                },
-                {
-                  "And": [
-                    {
-                      "Variable": "$.notification_service",
-                      "StringEquals": "SES"
-                    },
-                    {
-                      "Not": {
-                        "Variable": "$.ses_source_arn",
-                        "StringEquals": ""
-                      }
-                    }
-                  ],
-                  "Next": "Notify Started - SES CrossAccount"
-                }
-              ],
-              "Default": "Wait",
-              "Type": "Choice"
-            },
-            "Notify Started - SES": {
+            "Notify Started": {
               "Catch": [
                 {
                   "ErrorEquals": [
@@ -243,59 +121,7 @@
               ],
               "Next": "Wait",
               "Parameters": {
-                "Destination": {
-                  "CcAddresses.$": "$.approvers",
-                  "ToAddresses.$": "States.Array($.email)"
-                },
-                "Message": {
-                  "Body": {
-                    "Html": {
-                      "Charset": "UTF-8",
-                      "Data.$": "States.Format('<html><body><p>Your AWS access session has started. Open <a href=\"{}\">TEAM</a> to manage AWS access requests.</p><p><b>Account:</b> {} ({})<br /><b>Role:</b> {}<br /><b>Start Time:</b> {}<br /><b>Duration:</b> {} hours<br /><b>Justification:</b> {}<br /><b>Ticket Number:</b> {}<br /></p></body></html>',$.sso_login_url,$.accountName,$.accountId,$.startTime,$.time,$.justification,$.ticketNo)"
-                    }
-                  },
-                  "Subject": {
-                    "Data.$": "States.Format('AWS access session started for {} to AWS account {} - TEAM', $.email, $.accountName)"
-                  }
-                },
-                "Source.$": "$.ses_source_email"
-              },
-              "Resource": "arn:aws:states:::aws-sdk:ses:sendEmail",
-              "ResultPath": "$.lastTaskResult",
-              "Type": "Task"
-            },
-            "Notify Started - SNS": {
-              "Catch": [
-                {
-                  "ErrorEquals": [
-                    "States.ALL"
-                  ],
-                  "Next": "Wait",
-                  "ResultPath": "$.error"
-                }
-              ],
-              "Next": "Wait",
-              "Parameters": {
-                "Message.$": "$",
-                "TopicArn.$": "$.notification_topic_arn"
-              },
-              "Resource": "arn:aws:states:::sns:publish",
-              "ResultPath": "$.lastTaskResult",
-              "Type": "Task"
-            },
-            "Notify Started - Slack": {
-              "Catch": [
-                {
-                  "ErrorEquals": [
-                    "States.ALL"
-                  ],
-                  "Next": "Wait",
-                  "ResultPath": "$.error"
-                }
-              ],
-              "Next": "Wait",
-              "Parameters": {
-                "FunctionName.$": "$.fn_teamnotifyslack_arn",
+                "FunctionName.$": "$.fn_teamnotifications_arn",
                 "Payload.$": "$"
               },
               "Resource": "arn:aws:states:::lambda:invoke",
@@ -314,10 +140,6 @@
                 }
               ],
               "Type": "Task"
-            },
-            "Pass": {
-              "End": true,
-              "Type": "Pass"
             },
             "Revoke Permission": {
               "End": true,
@@ -355,65 +177,6 @@
               "Next": "Revoke Permission",
               "SecondsPath": "$.duration",
               "Type": "Wait"
-            },
-            "Notify Started - SES CrossAccount": {
-              "Catch": [
-                {
-                  "ErrorEquals": [
-                    "States.ALL"
-                  ],
-                  "Next": "Wait",
-                  "ResultPath": "$.error"
-                }
-              ],
-              "Parameters": {
-                "Destination": {
-                  "CcAddresses.$": "$.approvers",
-                  "ToAddresses.$": "States.Array($.email)"
-                },
-                "Message": {
-                  "Body": {
-                    "Html": {
-                      "Charset": "UTF-8",
-                      "Data.$": "States.Format('<html><body><p>Your AWS access session has started. Open <a href=\"{}\">TEAM</a> to manage AWS access requests.</p><p><b>Account:</b> {} ({})<br /><b>Role:</b> {}<br /><b>Start Time:</b> {}<br /><b>Duration:</b> {} hours<br /><b>Justification:</b> {}<br /><b>Ticket Number:</b> {}<br /></p></body></html>',$.sso_login_url,$.accountName,$.accountId,$.startTime,$.time,$.justification,$.ticketNo)"
-                    }
-                  },
-                  "Subject": {
-                    "Data.$": "States.Format('AWS access session started for {} to AWS account {} - TEAM', $.email, $.accountName)"
-                  }
-                },
-                "Source.$": "$.ses_source_email",
-                "SourceArn.$": "$.ses_source_arn"
-              },
-              "Resource": "arn:aws:states:::aws-sdk:ses:sendEmail",
-              "ResultPath": "$.lastTaskResult",
-              "Type": "Task",
-              "Next": "Wait"
-            },
-            "Notify Error - SES CrossAccount": {
-              "End": true,
-              "Parameters": {
-                "Destination": {
-                  "CcAddresses.$": "States.Array($.email)",
-                  "ToAddresses.$": "States.Array($.ses_source_email)"
-                },
-                "Message": {
-                  "Body": {
-                    "Html": {
-                      "Charset": "UTF-8",
-                      "Data.$": "States.Format('<html><body><p>TEAM encountered an error granting AWS access to {}. Please review the Step Function logs to troubleshoot the error and ensure access is properly addressed. Open <a href=\"{}\">TEAM</a> to view additional details.</p><p><b>Step Function Workflow Name:</b> {}<br /><b>Step Function Execution Name:</b> {}<br /><b>Step Function Execution Id:</b> {}</p><p><b>Account:</b> {} ({})<br /><b>Role:</b> {}<br /><b>Start Time:</b> {}<br /><b>Duration:</b> {} hours<br /><b>Justification:</b> {}<br /><b>Ticket Number:</b> {}<br /></p></body></html>',$.email,$.sso_login_url,$$.StateMachine.Name,$$.Execution.Name,$$.Execution.Id,$.accountName,$.accountId,$.startTime,$.time,$.justification,$.ticketNo)"
-                    }
-                  },
-                  "Subject": {
-                    "Data.$": "States.Format('Error granting AWS access for {} to AWS account {} - TEAM', $.email, $.accountName)"
-                  }
-                },
-                "Source.$": "$.ses_source_email",
-                "SourceArn.$": "$.ses_source_arn"
-              },
-              "Resource": "arn:aws:states:::aws-sdk:ses:sendEmail",
-              "ResultPath": "$.lastTaskResult",
-              "Type": "Task"
             }
           }
         },
@@ -479,51 +242,7 @@
               "Resource": "arn:aws:states:::states:startExecution",
               "Type": "Task"
             },
-            "Notify Requester Scheduled - Notification Type": {
-              "Choices": [
-                {
-                  "Next": "Notify Requester Scheduled - SNS",
-                  "StringEquals": "SNS",
-                  "Variable": "$.notification_service"
-                },
-                {
-                  "And": [
-                    {
-                      "Variable": "$.notification_service",
-                      "StringEquals": "SES"
-                    },
-                    {
-                      "Variable": "$.ses_source_arn",
-                      "StringEquals": ""
-                    }
-                  ],
-                  "Next": "Notify Requester Scheduled - SES"
-                },
-                {
-                  "Next": "Notify Requester Scheduled - Slack",
-                  "StringEquals": "Slack",
-                  "Variable": "$.notification_service"
-                },
-                {
-                  "And": [
-                    {
-                      "Variable": "$.notification_service",
-                      "StringEquals": "SES"
-                    },
-                    {
-                      "Not": {
-                        "Variable": "$.ses_source_arn",
-                        "StringEquals": ""
-                      }
-                    }
-                  ],
-                  "Next": "Notify Requester Scheduled - SES CrossAccount"
-                }
-              ],
-              "Default": "Schedule",
-              "Type": "Choice"
-            },
-            "Notify Requester Scheduled - SES": {
+            "Notify Requester Scheduled": {
               "Catch": [
                 {
                   "ErrorEquals": [
@@ -535,58 +254,7 @@
               ],
               "Next": "Schedule",
               "Parameters": {
-                "Destination": {
-                  "ToAddresses.$": "States.Array($.email)"
-                },
-                "Message": {
-                  "Body": {
-                    "Html": {
-                      "Charset": "UTF-8",
-                      "Data.$": "States.Format('<html><body><p>Your AWS access request has been approved. You will receive a notification when the session has started. Open <a href=\"{}\">TEAM</a> to manage AWS access requests.</p><p><b>Account:</b> {} ({})<br /><b>Role:</b> {}<br /><b>Start Time:</b> {}<br /><b>Duration:</b> {} hours<br /><b>Justification:</b> {}<br /><b>Ticket Number:</b> {}<br /></p></body></html>',$.sso_login_url,$.accountName,$.accountId,$.startTime,$.time,$.justification,$.ticketNo)"
-                    }
-                  },
-                  "Subject": {
-                    "Data.$": "States.Format('AWS access request approved for {} to AWS account {} - TEAM', $.email, $.accountName)"
-                  }
-                },
-                "Source.$": "$.ses_source_email"
-              },
-              "Resource": "arn:aws:states:::aws-sdk:ses:sendEmail",
-              "ResultPath": "$.lastTaskResult",
-              "Type": "Task"
-            },
-            "Notify Requester Scheduled - SNS": {
-              "Catch": [
-                {
-                  "ErrorEquals": [
-                    "States.ALL"
-                  ],
-                  "Next": "Schedule",
-                  "ResultPath": "$.error"
-                }
-              ],
-              "Next": "Schedule",
-              "Parameters": {
-                "Message.$": "$",
-                "TopicArn.$": "$.notification_topic_arn"
-              },
-              "Resource": "arn:aws:states:::sns:publish",
-              "ResultPath": "$.lastTaskResult",
-              "Type": "Task"
-            },
-            "Notify Requester Scheduled - Slack": {
-              "Catch": [
-                {
-                  "ErrorEquals": [
-                    "States.ALL"
-                  ],
-                  "Next": "Schedule",
-                  "ResultPath": "$.error"
-                }
-              ],
-              "Next": "Schedule",
-              "Parameters": {
-                "FunctionName.$": "$.fn_teamnotifyslack_arn",
+                "FunctionName.$": "$.fn_teamnotifications_arn",
                 "Payload.$": "$"
               },
               "Resource": "arn:aws:states:::lambda:invoke",
@@ -627,7 +295,7 @@
               "Type": "Choice"
             },
             "Update Request Status - scheduled": {
-              "Next": "Notify Requester Scheduled - Notification Type",
+              "Next": "Notify Requester Scheduled",
               "Parameters": {
                 "FunctionName.$": "$.fn_teamstatus_arn",
                 "Payload.$": "$"
@@ -648,39 +316,6 @@
                 }
               ],
               "Type": "Task"
-            },
-            "Notify Requester Scheduled - SES CrossAccount": {
-              "Catch": [
-                {
-                  "ErrorEquals": [
-                    "States.ALL"
-                  ],
-                  "Next": "Schedule",
-                  "ResultPath": "$.error"
-                }
-              ],
-              "Parameters": {
-                "Destination": {
-                  "ToAddresses.$": "States.Array($.email)"
-                },
-                "Message": {
-                  "Body": {
-                    "Html": {
-                      "Charset": "UTF-8",
-                      "Data.$": "States.Format('<html><body><p>Your AWS access request has been approved. You will receive a notification when the session has started. Open <a href=\"{}\">TEAM</a> to manage AWS access requests.</p><p><b>Account:</b> {} ({})<br /><b>Role:</b> {}<br /><b>Start Time:</b> {}<br /><b>Duration:</b> {} hours<br /><b>Justification:</b> {}<br /><b>Ticket Number:</b> {}<br /></p></body></html>',$.sso_login_url,$.accountName,$.accountId,$.startTime,$.time,$.justification,$.ticketNo)"
-                    }
-                  },
-                  "Subject": {
-                    "Data.$": "States.Format('AWS access request approved for {} to AWS account {} - TEAM', $.email, $.accountName)"
-                  }
-                },
-                "Source.$": "$.ses_source_email",
-                "SourceArn.$": "$.ses_source_arn"
-              },
-              "Resource": "arn:aws:states:::aws-sdk:ses:sendEmail",
-              "ResultPath": "$.lastTaskResult",
-              "Type": "Task",
-              "Next": "Schedule"
             }
           }
         },
@@ -723,51 +358,7 @@
           "Comment": "Temporary Elevated Access Management - Reject state machine",
           "StartAt": "Status?",
           "States": {
-            "Notify Requester Cancelled - Notification Type": {
-              "Choices": [
-                {
-                  "Next": "Notify Requester Cancelled - SNS",
-                  "StringEquals": "SNS",
-                  "Variable": "$.notification_service"
-                },
-                {
-                  "And": [
-                    {
-                      "Variable": "$.notification_service",
-                      "StringEquals": "SES"
-                    },
-                    {
-                      "Variable": "$.ses_source_arn",
-                      "StringEquals": ""
-                    }
-                  ],
-                  "Next": "Notify Requester Cancelled - SES"
-                },
-                {
-                  "Next": "Notify Requester Cancelled - Slack",
-                  "StringEquals": "Slack",
-                  "Variable": "$.notification_service"
-                },
-                {
-                  "And": [
-                    {
-                      "Variable": "$.notification_service",
-                      "StringEquals": "SES"
-                    },
-                    {
-                      "Not": {
-                        "Variable": "$.ses_source_arn",
-                        "StringEquals": ""
-                      }
-                    }
-                  ],
-                  "Next": "Notify Requester Cancelled - SES CrossAccount"
-                }
-              ],
-              "Default": "Success",
-              "Type": "Choice"
-            },
-            "Notify Requester Cancelled - SES": {
+            "Notify Requester Cancelled": {
               "Catch": [
                 {
                   "ErrorEquals": [
@@ -779,59 +370,7 @@
               ],
               "Next": "Success",
               "Parameters": {
-                "Destination": {
-                  "CcAddresses.$": "States.Array($.email)",
-                  "ToAddresses.$": "$.approvers"
-                },
-                "Message": {
-                  "Body": {
-                    "Html": {
-                      "Charset": "UTF-8",
-                      "Data.$": "States.Format('<html><body><p>{} cancelled an AWS access request. Open <a href=\"{}\">TEAM</a> to manage AWS access requests.</p><p><b>Account:</b> {} ({})<br /><b>Role:</b> {}<br /><b>Start Time:</b> {}<br /><b>Duration:</b> {} hours<br /><b>Justification:</b> {}<br /><b>Ticket Number:</b> {}<br /></p></body></html>',$.email,$.sso_login_url,$.accountName,$.accountId,$.startTime,$.time,$.justification,$.ticketNo)"
-                    }
-                  },
-                  "Subject": {
-                    "Data.$": "States.Format('AWS access request cancelled for {} to AWS account {} - TEAM', $.email, $.accountName)"
-                  }
-                },
-                "Source.$": "$.ses_source_email"
-              },
-              "Resource": "arn:aws:states:::aws-sdk:ses:sendEmail",
-              "ResultPath": "$.lastTaskResult",
-              "Type": "Task"
-            },
-            "Notify Requester Cancelled - SNS": {
-              "Catch": [
-                {
-                  "ErrorEquals": [
-                    "States.ALL"
-                  ],
-                  "Next": "Success",
-                  "ResultPath": "$.error"
-                }
-              ],
-              "Next": "Success",
-              "Parameters": {
-                "Message.$": "$",
-                "TopicArn.$": "$.notification_topic_arn"
-              },
-              "Resource": "arn:aws:states:::sns:publish",
-              "ResultPath": "$.lastTaskResult",
-              "Type": "Task"
-            },
-            "Notify Requester Cancelled - Slack": {
-              "Catch": [
-                {
-                  "ErrorEquals": [
-                    "States.ALL"
-                  ],
-                  "Next": "Success",
-                  "ResultPath": "$.error"
-                }
-              ],
-              "Next": "Success",
-              "Parameters": {
-                "FunctionName.$": "$.fn_teamnotifyslack_arn",
+                "FunctionName.$": "$.fn_teamnotifications_arn",
                 "Payload.$": "$"
               },
               "Resource": "arn:aws:states:::lambda:invoke",
@@ -851,51 +390,7 @@
               ],
               "Type": "Task"
             },
-            "Notify Requester Rejected - Notification Type": {
-              "Choices": [
-                {
-                  "Next": "Notify Requester Rejected - SNS",
-                  "StringEquals": "SNS",
-                  "Variable": "$.notification_service"
-                },
-                {
-                  "And": [
-                    {
-                      "Variable": "$.notification_service",
-                      "StringEquals": "SES"
-                    },
-                    {
-                      "Variable": "$.ses_source_arn",
-                      "StringEquals": ""
-                    }
-                  ],
-                  "Next": "Notify Requester Rejected - SES"
-                },
-                {
-                  "Next": "Notify Requester Rejected - Slack",
-                  "StringEquals": "Slack",
-                  "Variable": "$.notification_service"
-                },
-                {
-                  "And": [
-                    {
-                      "Variable": "$.notification_service",
-                      "StringEquals": "SES"
-                    },
-                    {
-                      "Not": {
-                        "Variable": "$.ses_source_arn",
-                        "StringEquals": ""
-                      }
-                    }
-                  ],
-                  "Next": "Notify Requester Rejected - SES CrossAccount"
-                }
-              ],
-              "Default": "Success",
-              "Type": "Choice"
-            },
-            "Notify Requester Rejected - SES": {
+            "Notify Requester Rejected": {
               "Catch": [
                 {
                   "ErrorEquals": [
@@ -907,58 +402,7 @@
               ],
               "Next": "Success",
               "Parameters": {
-                "Destination": {
-                  "ToAddresses.$": "States.Array($.email)"
-                },
-                "Message": {
-                  "Body": {
-                    "Html": {
-                      "Charset": "UTF-8",
-                      "Data.$": "States.Format('<html><body><p>Your AWS access request has been rejected. Open <a href=\"{}\">TEAM</a> to manage AWS access requests.</p><p><b>Account:</b> {} ({})<br /><b>Role:</b> {}<br /><b>Start Time:</b> {}<br /><b>Duration:</b> {} hours<br /><b>Justification:</b> {}<br /><b>Ticket Number:</b> {}<br /></p></body></html>',$.sso_login_url,$.accountName,$.accountId,$.startTime,$.time,$.justification,$.ticketNo)"
-                    }
-                  },
-                  "Subject": {
-                    "Data.$": "States.Format('AWS access request rejected for {} to AWS account {} - TEAM', $.email, $.accountName)"
-                  }
-                },
-                "Source.$": "$.ses_source_email"
-              },
-              "Resource": "arn:aws:states:::aws-sdk:ses:sendEmail",
-              "ResultPath": "$.lastTaskResult",
-              "Type": "Task"
-            },
-            "Notify Requester Rejected - SNS": {
-              "Catch": [
-                {
-                  "ErrorEquals": [
-                    "States.ALL"
-                  ],
-                  "Next": "Success",
-                  "ResultPath": "$.error"
-                }
-              ],
-              "Next": "Success",
-              "Parameters": {
-                "Message.$": "$",
-                "TopicArn.$": "$.notification_topic_arn"
-              },
-              "Resource": "arn:aws:states:::sns:publish",
-              "ResultPath": "$.lastTaskResult",
-              "Type": "Task"
-            },
-            "Notify Requester Rejected - Slack": {
-              "Catch": [
-                {
-                  "ErrorEquals": [
-                    "States.ALL"
-                  ],
-                  "Next": "Success",
-                  "ResultPath": "$.error"
-                }
-              ],
-              "Next": "Success",
-              "Parameters": {
-                "FunctionName.$": "$.fn_teamnotifyslack_arn",
+                "FunctionName.$": "$.fn_teamnotifications_arn",
                 "Payload.$": "$"
               },
               "Resource": "arn:aws:states:::lambda:invoke",
@@ -981,12 +425,12 @@
             "Status?": {
               "Choices": [
                 {
-                  "Next": "Notify Requester Cancelled - Notification Type",
+                  "Next": "Notify Requester Cancelled",
                   "StringEquals": "cancelled",
                   "Variable": "$.status"
                 },
                 {
-                  "Next": "Notify Requester Rejected - Notification Type",
+                  "Next": "Notify Requester Rejected",
                   "StringEquals": "rejected",
                   "Variable": "$.status"
                 }
@@ -995,73 +439,6 @@
             },
             "Success": {
               "Type": "Succeed"
-            },
-            "Notify Requester Cancelled - SES CrossAccount": {
-              "Catch": [
-                {
-                  "ErrorEquals": [
-                    "States.ALL"
-                  ],
-                  "Next": "Success",
-                  "ResultPath": "$.error"
-                }
-              ],
-              "Parameters": {
-                "Destination": {
-                  "CcAddresses.$": "States.Array($.email)",
-                  "ToAddresses.$": "$.approvers"
-                },
-                "Message": {
-                  "Body": {
-                    "Html": {
-                      "Charset": "UTF-8",
-                      "Data.$": "States.Format('<html><body><p>{} cancelled an AWS access request. Open <a href=\"{}\">TEAM</a> to manage AWS access requests.</p><p><b>Account:</b> {} ({})<br /><b>Role:</b> {}<br /><b>Start Time:</b> {}<br /><b>Duration:</b> {} hours<br /><b>Justification:</b> {}<br /><b>Ticket Number:</b> {}<br /></p></body></html>',$.email,$.sso_login_url,$.accountName,$.accountId,$.startTime,$.time,$.justification,$.ticketNo)"
-                    }
-                  },
-                  "Subject": {
-                    "Data.$": "States.Format('AWS access request cancelled for {} to AWS account {} - TEAM', $.email, $.accountName)"
-                  }
-                },
-                "Source.$": "$.ses_source_email",
-                "SourceArn.$": "$.ses_source_arn"
-              },
-              "Resource": "arn:aws:states:::aws-sdk:ses:sendEmail",
-              "ResultPath": "$.lastTaskResult",
-              "Type": "Task",
-              "Next": "Success"
-            },
-            "Notify Requester Rejected - SES CrossAccount": {
-              "Catch": [
-                {
-                  "ErrorEquals": [
-                    "States.ALL"
-                  ],
-                  "Next": "Success",
-                  "ResultPath": "$.error"
-                }
-              ],
-              "Parameters": {
-                "Destination": {
-                  "ToAddresses.$": "States.Array($.email)"
-                },
-                "Message": {
-                  "Body": {
-                    "Html": {
-                      "Charset": "UTF-8",
-                      "Data.$": "States.Format('<html><body><p>Your AWS access request has been rejected. Open <a href=\"{}\">TEAM</a> to manage AWS access requests.</p><p><b>Account:</b> {} ({})<br /><b>Role:</b> {}<br /><b>Start Time:</b> {}<br /><b>Duration:</b> {} hours<br /><b>Justification:</b> {}<br /><b>Ticket Number:</b> {}<br /></p></body></html>',$.sso_login_url,$.accountName,$.accountId,$.startTime,$.time,$.justification,$.ticketNo)"
-                    }
-                  },
-                  "Subject": {
-                    "Data.$": "States.Format('AWS access request rejected for {} to AWS account {} - TEAM', $.email, $.accountName)"
-                  }
-                },
-                "Source.$": "$.ses_source_email",
-                "SourceArn.$": "$.ses_source_arn"
-              },
-              "Resource": "arn:aws:states:::aws-sdk:ses:sendEmail",
-              "ResultPath": "$.lastTaskResult",
-              "Type": "Task",
-              "Next": "Success"
             }
           }
         },
@@ -1137,88 +514,10 @@
               "Resource": "arn:aws:states:::dynamodb:updateItem",
               "Type": "Task"
             },
-            "Notify Error - Notification Type": {
-              "Choices": [
-                {
-                  "Next": "Notify Error - SNS",
-                  "StringEquals": "SNS",
-                  "Variable": "$.notification_service"
-                },
-                {
-                  "And": [
-                    {
-                      "Variable": "$.notification_service",
-                      "StringEquals": "SES"
-                    },
-                    {
-                      "Variable": "$.ses_source_arn",
-                      "StringEquals": ""
-                    }
-                  ],
-                  "Next": "Notify Error - SES"
-                },
-                {
-                  "Next": "Notify Error - Slack",
-                  "StringEquals": "Slack",
-                  "Variable": "$.notification_service"
-                },
-                {
-                  "And": [
-                    {
-                      "Variable": "$.notification_service",
-                      "StringEquals": "SES"
-                    },
-                    {
-                      "Not": {
-                        "Variable": "$.ses_source_arn",
-                        "StringEquals": ""
-                      }
-                    }
-                  ],
-                  "Next": "Notify Error - SES CrossAccount"
-                }
-              ],
-              "Default": "Pass",
-              "Type": "Choice"
-            },
-            "Notify Error - SES": {
-              "Parameters": {
-                "Destination": {
-                  "CcAddresses.$": "$.approvers",
-                  "ToAddresses.$": "States.Array($.ses_source_email)"
-                },
-                "Message": {
-                  "Body": {
-                    "Html": {
-                      "Charset": "UTF-8",
-                      "Data.$": "States.Format('<html><body><p>TEAM encountered an error ending an AWS access session for {}. Please review the Step Function logs to troubleshoot the error and ensure access is properly revoked. Open <a href=\"{}\">TEAM</a> to view additional details.</p><p><b>Step Function Workflow Name:</b> {}<br /><b>Step Function Execution Name:</b> {}<br /><b>Step Function Execution Id:</b> {}</p><p><b>Account:</b> {} ({})<br /><b>Role:</b> {}<br /><b>Start Time:</b> {}<br /><b>Duration:</b> {} hours<br /><b>Justification:</b> {}<br /><b>Ticket Number:</b> {}<br /></p></body></html>',$.email,$.sso_login_url,$$.StateMachine.Name,$$.Execution.Name,$$.Execution.Id,$.accountName,$.accountId,$.startTime,$.time,$.justification,$.ticketNo)"
-                    }
-                  },
-                  "Subject": {
-                    "Data.$": "States.Format('Error revoking AWS access for {} to AWS account {} - TEAM', $.email, $.accountName)"
-                  }
-                },
-                "Source.$": "$.ses_source_email"
-              },
-              "Resource": "arn:aws:states:::aws-sdk:ses:sendEmail",
-              "ResultPath": "$.lastTaskResult",
-              "Type": "Task",
-              "End": true
-            },
-            "Notify Error - SNS": {
+            "Notify Error": {
               "End": true,
               "Parameters": {
-                "Message.$": "$",
-                "TopicArn.$": "$.notification_topic_arn"
-              },
-              "Resource": "arn:aws:states:::sns:publish",
-              "ResultPath": "$.lastTaskResult",
-              "Type": "Task"
-            },
-            "Notify Error - Slack": {
-              "End": true,
-              "Parameters": {
-                "FunctionName.$": "$.fn_teamnotifyslack_arn",
+                "FunctionName.$": "$.fn_teamnotifications_arn",
                 "Payload.$": "$"
               },
               "Resource": "arn:aws:states:::lambda:invoke",
@@ -1238,51 +537,7 @@
               ],
               "Type": "Task"
             },
-            "Notify Requester Session Ended - Notification Type": {
-              "Choices": [
-                {
-                  "Next": "Notify Requester Session Ended - SNS",
-                  "StringEquals": "SNS",
-                  "Variable": "$.notification_service"
-                },
-                {
-                  "And": [
-                    {
-                      "Variable": "$.notification_service",
-                      "StringEquals": "SES"
-                    },
-                    {
-                      "Variable": "$.ses_source_arn",
-                      "StringEquals": ""
-                    }
-                  ],
-                  "Next": "Notify Requester Session Ended - SES"
-                },
-                {
-                  "Next": "Notify Requester Session Ended - Slack",
-                  "StringEquals": "Slack",
-                  "Variable": "$.notification_service"
-                },
-                {
-                  "And": [
-                    {
-                      "Variable": "$.notification_service",
-                      "StringEquals": "SES"
-                    },
-                    {
-                      "Not": {
-                        "Variable": "$.ses_source_arn",
-                        "StringEquals": ""
-                      }
-                    }
-                  ],
-                  "Next": "Notify Requester Session Ended - SES CrossAccount"
-                }
-              ],
-              "Default": "Revoked || Ended ?",
-              "Type": "Choice"
-            },
-            "Notify Requester Session Ended - SES": {
+            "Notify Requester Session Ended": {
               "Catch": [
                 {
                   "ErrorEquals": [
@@ -1294,59 +549,7 @@
               ],
               "Next": "Revoked || Ended ?",
               "Parameters": {
-                "Destination": {
-                  "CcAddresses.$": "$.approvers",
-                  "ToAddresses.$": "States.Array($.email)"
-                },
-                "Message": {
-                  "Body": {
-                    "Html": {
-                      "Charset": "UTF-8",
-                      "Data.$": "States.Format('<html><body><p>Your AWS access session has ended, please open <a href=\"{}\">TEAM</a> to view session activity logs.</p><p><b>Account:</b> {} ({})<br /><b>Role:</b> {}<br /><b>Start Time:</b> {}<br /><b>Duration:</b> {} hours<br /><b>Justification:</b> {}<br /><b>Ticket Number:</b> {}<br /></p></body></html>',$.sso_login_url,$.accountName,$.accountId,$.startTime,$.time,$.justification,$.ticketNo)"
-                    }
-                  },
-                  "Subject": {
-                    "Data.$": "States.Format('AWS access session ended for {} to AWS account {} - TEAM', $.email, $.accountName)"
-                  }
-                },
-                "Source.$": "$.ses_source_email"
-              },
-              "Resource": "arn:aws:states:::aws-sdk:ses:sendEmail",
-              "ResultPath": "$.lastTaskResult",
-              "Type": "Task"
-            },
-            "Notify Requester Session Ended - SNS": {
-              "Catch": [
-                {
-                  "ErrorEquals": [
-                    "States.ALL"
-                  ],
-                  "Next": "Revoked || Ended ?",
-                  "ResultPath": "$.error"
-                }
-              ],
-              "Next": "Revoked || Ended ?",
-              "Parameters": {
-                "Message.$": "$",
-                "TopicArn.$": "$.notification_topic_arn"
-              },
-              "Resource": "arn:aws:states:::sns:publish",
-              "ResultPath": "$.lastTaskResult",
-              "Type": "Task"
-            },
-            "Notify Requester Session Ended - Slack": {
-              "Catch": [
-                {
-                  "ErrorEquals": [
-                    "States.ALL"
-                  ],
-                  "Next": "Revoked || Ended ?",
-                  "ResultPath": "$.error"
-                }
-              ],
-              "Next": "Revoked || Ended ?",
-              "Parameters": {
-                "FunctionName.$": "$.fn_teamnotifyslack_arn",
+                "FunctionName.$": "$.fn_teamnotifications_arn",
                 "Payload.$": "$"
               },
               "Resource": "arn:aws:states:::lambda:invoke",
@@ -1374,7 +577,7 @@
               "Choices": [
                 {
                   "IsPresent": true,
-                  "Next": "Notify Error - Notification Type",
+                  "Next": "Notify Error",
                   "Variable": "$.statusError"
                 }
               ],
@@ -1391,7 +594,7 @@
                   "ResultPath": "$.statusError"
                 }
               ],
-              "Next": "Notify Requester Session Ended - Notification Type",
+              "Next": "Notify Requester Session Ended",
               "Parameters": {
                 "InstanceArn.$": "$.instanceARN",
                 "PermissionSetArn.$": "$.roleId",
@@ -1456,65 +659,6 @@
                 }
               ],
               "Type": "Task"
-            },
-            "Notify Requester Session Ended - SES CrossAccount": {
-              "Catch": [
-                {
-                  "ErrorEquals": [
-                    "States.ALL"
-                  ],
-                  "Next": "Revoked || Ended ?",
-                  "ResultPath": "$.error"
-                }
-              ],
-              "Parameters": {
-                "Destination": {
-                  "CcAddresses.$": "$.approvers",
-                  "ToAddresses.$": "States.Array($.email)"
-                },
-                "Message": {
-                  "Body": {
-                    "Html": {
-                      "Charset": "UTF-8",
-                      "Data.$": "States.Format('<html><body><p>Your AWS access session has ended, please open <a href=\"{}\">TEAM</a> to view session activity logs.</p><p><b>Account:</b> {} ({})<br /><b>Role:</b> {}<br /><b>Start Time:</b> {}<br /><b>Duration:</b> {} hours<br /><b>Justification:</b> {}<br /><b>Ticket Number:</b> {}<br /></p></body></html>',$.sso_login_url,$.accountName,$.accountId,$.startTime,$.time,$.justification,$.ticketNo)"
-                    }
-                  },
-                  "Subject": {
-                    "Data.$": "States.Format('AWS access session ended for {} to AWS account {} - TEAM', $.email, $.accountName)"
-                  }
-                },
-                "Source.$": "$.ses_source_email",
-                "SourceArn.$": "$.ses_source_arn"
-              },
-              "Resource": "arn:aws:states:::aws-sdk:ses:sendEmail",
-              "ResultPath": "$.lastTaskResult",
-              "Type": "Task",
-              "Next": "Revoked || Ended ?"
-            },
-            "Notify Error - SES CrossAccount": {
-              "End": true,
-              "Parameters": {
-                "Destination": {
-                  "CcAddresses.$": "$.approvers",
-                  "ToAddresses.$": "States.Array($.ses_source_email)"
-                },
-                "Message": {
-                  "Body": {
-                    "Html": {
-                      "Charset": "UTF-8",
-                      "Data.$": "States.Format('<html><body><p>TEAM encountered an error ending an AWS access session for {}. Please review the Step Function logs to troubleshoot the error and ensure access is properly revoked. Open <a href=\"{}\">TEAM</a> to view additional details.</p><p><b>Step Function Workflow Name:</b> {}<br /><b>Step Function Execution Name:</b> {}<br /><b>Step Function Execution Id:</b> {}</p><p><b>Account:</b> {} ({})<br /><b>Role:</b> {}<br /><b>Start Time:</b> {}<br /><b>Duration:</b> {} hours<br /><b>Justification:</b> {}<br /><b>Ticket Number:</b> {}<br /></p></body></html>',$.email,$.sso_login_url,$$.StateMachine.Name,$$.Execution.Name,$$.Execution.Id,$.accountName,$.accountId,$.startTime,$.time,$.justification,$.ticketNo)"
-                    }
-                  },
-                  "Subject": {
-                    "Data.$": "States.Format('Error revoking AWS access for {} to AWS account {} - TEAM', $.email, $.accountName)"
-                  }
-                },
-                "Source.$": "$.ses_source_email",
-                "SourceArn.$": "$.ses_source_arn"
-              },
-              "Resource": "arn:aws:states:::aws-sdk:ses:sendEmail",
-              "ResultPath": "$.lastTaskResult",
-              "Type": "Task"
             }
           }
         },
@@ -1555,7 +699,7 @@
         },
         "Definition": {
           "Comment": "Temporary Elevated Access Management -  Approval state machine",
-          "StartAt": "Notify Approvers Pending - Notification Type",
+          "StartAt": "Notify Approvers Pending",
           "States": {
             "DynamoDB GetStatus": {
               "Next": "Pending?",
@@ -1571,51 +715,7 @@
               "ResultPath": "$.result",
               "Type": "Task"
             },
-            "Notify Approvers Pending - Notification Type": {
-              "Choices": [
-                {
-                  "Next": "Notify Approvers Pending - SNS",
-                  "StringEquals": "SNS",
-                  "Variable": "$.notification_service"
-                },
-                {
-                  "And": [
-                    {
-                      "Variable": "$.notification_service",
-                      "StringEquals": "SES"
-                    },
-                    {
-                      "Variable": "$.ses_source_arn",
-                      "StringEquals": ""
-                    }
-                  ],
-                  "Next": "Notify Approvers Pending - SES"
-                },
-                {
-                  "Next": "Notify Approvers Pending - Slack",
-                  "StringEquals": "Slack",
-                  "Variable": "$.notification_service"
-                },
-                {
-                  "And": [
-                    {
-                      "Variable": "$.notification_service",
-                      "StringEquals": "SES"
-                    },
-                    {
-                      "Not": {
-                        "Variable": "$.ses_source_arn",
-                        "StringEquals": ""
-                      }
-                    }
-                  ],
-                  "Next": "Notify Approvers Pending - SES CrossAccount"
-                }
-              ],
-              "Default": "Wait",
-              "Type": "Choice"
-            },
-            "Notify Approvers Pending - SES": {
+            "Notify Approvers Pending": {
               "Catch": [
                 {
                   "ErrorEquals": [
@@ -1627,161 +727,14 @@
               ],
               "Next": "Wait",
               "Parameters": {
-                "Destination": {
-                  "CcAddresses.$": "States.Array($.email)",
-                  "ToAddresses.$": "$.approvers"
-                },
-                "Message": {
-                  "Body": {
-                    "Html": {
-                      "Charset": "UTF-8",
-                      "Data.$": "States.Format('<html><body><p><b>{}</b> requests access to AWS, please <b>approve or reject this request</b> in <a href=\"{}\">TEAM</a>.</p><p><b>Account:</b> {} ({})<br /><b>Role:</b> {}<br /><b>Start Time:</b> {}<br /><b>Duration:</b> {} hours<br /><b>Justification:</b> {}<br /><b>Ticket Number:</b> {}<br /></p></body></html>',$.email,$.sso_login_url,$.accountName,$.accountId,$.startTime,$.time,$.justification,$.ticketNo)"
-                    }
-                  },
-                  "Subject": {
-                    "Data.$": "States.Format('{} requests access to AWS account {} - TEAM', $.email,$.accountName)"
-                  }
-                },
-                "Source.$": "$.ses_source_email"
-              },
-              "Resource": "arn:aws:states:::aws-sdk:ses:sendEmail",
-              "ResultPath": "$.lastTaskResult",
-              "Type": "Task"
-            },
-            "Notify Approvers Pending - SNS": {
-              "Catch": [
-                {
-                  "ErrorEquals": [
-                    "States.ALL"
-                  ],
-                  "Next": "Wait",
-                  "ResultPath": "$.error"
-                }
-              ],
-              "Next": "Wait",
-              "Parameters": {
-                "Message.$": "$",
-                "TopicArn.$": "$.notification_topic_arn"
-              },
-              "Resource": "arn:aws:states:::sns:publish",
-              "ResultPath": "$.lastTaskResult",
-              "Type": "Task"
-            },
-            "Notify Approvers Pending - Slack": {
-              "Catch": [
-                {
-                  "ErrorEquals": [
-                    "States.ALL"
-                  ],
-                  "Next": "Wait",
-                  "ResultPath": "$.error"
-                }
-              ],
-              "Next": "Wait",
-              "Parameters": {
-                "FunctionName.$": "$.fn_teamnotifyslack_arn",
+                "FunctionName.$": "$.fn_teamnotifications_arn",
                 "Payload.$": "$"
               },
               "Resource": "arn:aws:states:::lambda:invoke",
               "ResultPath": "$.lastTaskResult",
               "Type": "Task"
             },
-            "Notify Requester Expired - Notification Type": {
-              "Choices": [
-                {
-                  "Next": "Notify Requester Expired - SNS",
-                  "StringEquals": "SNS",
-                  "Variable": "$.notification_service"
-                },
-                {
-                  "And": [
-                    {
-                      "Variable": "$.notification_service",
-                      "StringEquals": "SES"
-                    },
-                    {
-                      "Variable": "$.ses_source_arn",
-                      "StringEquals": ""
-                    }
-                  ],
-                  "Next": "Notify Requester Expired - SES"
-                },
-                {
-                  "Next": "Notify Requester Expired - Slack",
-                  "StringEquals": "Slack",
-                  "Variable": "$.notification_service"
-                },
-                {
-                  "And": [
-                    {
-                      "Variable": "$.notification_service",
-                      "StringEquals": "SES"
-                    },
-                    {
-                      "Not": {
-                        "Variable": "$.ses_source_arn",
-                        "StringEquals": ""
-                      }
-                    }
-                  ],
-                  "Next": "Notify Requester Expired - SES CrossAccount"
-                }
-              ],
-              "Default": "Pass",
-              "Type": "Choice"
-            },
-            "Notify Requester Expired - SES": {
-              "Catch": [
-                {
-                  "ErrorEquals": [
-                    "States.ALL"
-                  ],
-                  "Next": "Pass",
-                  "ResultPath": "$.error"
-                }
-              ],
-              "Parameters": {
-                "Destination": {
-                  "CcAddresses.$": "$.approvers",
-                  "ToAddresses.$": "States.Array($.email)"
-                },
-                "Message": {
-                  "Body": {
-                    "Html": {
-                      "Charset": "UTF-8",
-                      "Data.$": "States.Format('<html><body><p>Your AWS access request has expired, please open <a href=\"{}\">TEAM</a> to submit a new request.</p><p><b>Account:</b> {} ({})<br /><b>Role:</b> {}<br /><b>Start Time:</b> {}<br /><b>Duration:</b> {} hours<br /><b>Justification:</b> {}<br /><b>Ticket Number:</b> {}<br /></p></body></html>',$.sso_login_url,$.accountName,$.accountId,$.startTime,$.time,$.justification,$.ticketNo)"
-                    }
-                  },
-                  "Subject": {
-                    "Data.$": "States.Format('Expired access request for {} to AWS account {} - TEAM', $.email, $.accountName)"
-                  }
-                },
-                "Source.$": "$.ses_source_email"
-              },
-              "Resource": "arn:aws:states:::aws-sdk:ses:sendEmail",
-              "ResultPath": "$.lastTaskResult",
-              "Type": "Task",
-              "End": true
-            },
-            "Notify Requester Expired - SNS": {
-              "Catch": [
-                {
-                  "ErrorEquals": [
-                    "States.ALL"
-                  ],
-                  "Next": "Pass"
-                }
-              ],
-              "End": true,
-              "Parameters": {
-                "Message.$": "$",
-                "TopicArn.$": "$.notification_topic_arn"
-              },
-              "Resource": "arn:aws:states:::sns:publish",
-              "ResultPath": "$.lastTaskResult",
-              "Type": "Task"
-            },
-            "Notify Requester Expired - Slack": {
+            "Notify Requester Expired": {
               "Catch": [
                 {
                   "ErrorEquals": [
@@ -1793,7 +746,7 @@
               ],
               "End": true,
               "Parameters": {
-                "FunctionName.$": "$.fn_teamnotifyslack_arn",
+                "FunctionName.$": "$.fn_teamnotifications_arn",
                 "Payload.$": "$"
               },
               "Resource": "arn:aws:states:::lambda:invoke",
@@ -1816,7 +769,7 @@
               "Type": "Choice"
             },
             "Update Request Status": {
-              "Next": "Notify Requester Expired - Notification Type",
+              "Next": "Notify Requester Expired",
               "Parameters": {
                 "FunctionName.$": "$.fn_teamstatus_arn",
                 "Payload.$": "$"
@@ -1842,74 +795,6 @@
               "Next": "DynamoDB GetStatus",
               "SecondsPath": "$.expire",
               "Type": "Wait"
-            },
-            "Notify Approvers Pending - SES CrossAccount": {
-              "Catch": [
-                {
-                  "ErrorEquals": [
-                    "States.ALL"
-                  ],
-                  "Next": "Wait",
-                  "ResultPath": "$.error"
-                }
-              ],
-              "Parameters": {
-                "Destination": {
-                  "CcAddresses.$": "States.Array($.email)",
-                  "ToAddresses.$": "$.approvers"
-                },
-                "Message": {
-                  "Body": {
-                    "Html": {
-                      "Charset": "UTF-8",
-                      "Data.$": "States.Format('<html><body><p><b>{}</b> requests access to AWS, please <b>approve or reject this request</b> in <a href=\"{}\">TEAM</a>.</p><p><b>Account:</b> {} ({})<br /><b>Role:</b> {}<br /><b>Start Time:</b> {}<br /><b>Duration:</b> {} hours<br /><b>Justification:</b> {}<br /><b>Ticket Number:</b> {}<br /></p></body></html>',$.email,$.sso_login_url,$.accountName,$.accountId,$.startTime,$.time,$.justification,$.ticketNo)"
-                    }
-                  },
-                  "Subject": {
-                    "Data.$": "States.Format('{} requests access to AWS account {} - TEAM', $.email,$.accountName)"
-                  }
-                },
-                "Source.$": "$.ses_source_email",
-                "SourceArn.$": "$.ses_source_arn"
-              },
-              "Resource": "arn:aws:states:::aws-sdk:ses:sendEmail",
-              "ResultPath": "$.lastTaskResult",
-              "Type": "Task",
-              "Next": "Wait"
-            },
-            "Notify Requester Expired - SES CrossAccount": {
-              "Catch": [
-                {
-                  "ErrorEquals": [
-                    "States.ALL"
-                  ],
-                  "Next": "Pass",
-                  "ResultPath": "$.error"
-                }
-              ],
-              "End": true,
-              "Parameters": {
-                "Destination": {
-                  "CcAddresses.$": "$.approvers",
-                  "ToAddresses.$": "States.Array($.email)"
-                },
-                "Message": {
-                  "Body": {
-                    "Html": {
-                      "Charset": "UTF-8",
-                      "Data.$": "States.Format('<html><body><p>Your AWS access request has expired, please open <a href=\"{}\">TEAM</a> to submit a new request.</p><p><b>Account:</b> {} ({})<br /><b>Role:</b> {}<br /><b>Start Time:</b> {}<br /><b>Duration:</b> {} hours<br /><b>Justification:</b> {}<br /><b>Ticket Number:</b> {}<br /></p></body></html>',$.sso_login_url,$.accountName,$.accountId,$.startTime,$.time,$.justification,$.ticketNo)"
-                    }
-                  },
-                  "Subject": {
-                    "Data.$": "States.Format('Expired access request for {} to AWS account {} - TEAM', $.email, $.accountName)"
-                  }
-                },
-                "Source.$": "$.ses_source_email",
-                "SourceArn.$": "$.ses_source_arn"
-              },
-              "Resource": "arn:aws:states:::aws-sdk:ses:sendEmail",
-              "ResultPath": "$.lastTaskResult",
-              "Type": "Task"
             }
           }
         },
@@ -1986,7 +871,7 @@
                   "Effect": "Allow",
                   "Action": ["lambda:InvokeFunction"],
                   "Resource": {
-                    "Ref": "functionteamNotifySlackArn"
+                    "Ref": "functionteamNotificationsArn"
                   }
                 },
                 {
@@ -2074,7 +959,7 @@
                   "Effect": "Allow",
                   "Action": ["lambda:InvokeFunction"],
                   "Resource": {
-                    "Ref": "functionteamNotifySlackArn"
+                    "Ref": "functionteamNotificationsArn"
                   }
                 },
                 {
@@ -2155,21 +1040,9 @@
                 },
                 {
                   "Effect": "Allow",
-                  "Action": "ses:SendEmail",
-                  "Resource": "*"
-                },
-                {
-                  "Effect": "Allow",
-                  "Action": "sns:Publish",
-                  "Resource": {
-                    "Fn::ImportValue": "NotificationTopicArn"
-                  }
-                },
-                {
-                  "Effect": "Allow",
                   "Action": ["lambda:InvokeFunction"],
                   "Resource": {
-                    "Ref": "functionteamNotifySlackArn"
+                    "Ref": "functionteamNotificationsArn"
                   }
                 },
                 {
@@ -2267,7 +1140,7 @@
                   "Effect": "Allow",
                   "Action": ["lambda:InvokeFunction"],
                   "Resource": {
-                    "Ref": "functionteamNotifySlackArn"
+                    "Ref": "functionteamNotificationsArn"
                   }
                 },
                 {
@@ -2358,7 +1231,7 @@
                   "Effect": "Allow",
                   "Action": ["lambda:InvokeFunction"],
                   "Resource": {
-                    "Ref": "functionteamNotifySlackArn"
+                    "Ref": "functionteamNotificationsArn"
                   }
                 },
                 {

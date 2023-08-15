@@ -111,7 +111,7 @@
             "Arn"
           ],
           "category": "function",
-          "resourceName": "teamNotifySlack"
+          "resourceName": "teamNotifications"
         }
       ],
       "providerPlugin": "awscloudformation",
@@ -174,7 +174,7 @@
             "Arn"
           ],
           "category": "function",
-          "resourceName": "teamNotifySlack"
+          "resourceName": "teamNotifications"
         }
       ],
       "providerPlugin": "awscloudformation",
@@ -325,7 +325,7 @@
       "providerPlugin": "awscloudformation",
       "service": "Lambda"
     },
-    "teamNotifySlack": {
+    "teamNotifications": {
       "build": true,
       "dependsOn": [
         {
@@ -588,19 +588,19 @@
         }
       ]
     },
-    "AMPLIFY_function_teamNotifySlack_deploymentBucketName": {
+    "AMPLIFY_function_teamNotifications_deploymentBucketName": {
       "usedBy": [
         {
           "category": "function",
-          "resourceName": "teamNotifySlack"
+          "resourceName": "teamNotifications"
         }
       ]
     },
-    "AMPLIFY_function_teamNotifySlack_s3Key": {
+    "AMPLIFY_function_teamNotifications_s3Key": {
       "usedBy": [
         {
           "category": "function",
-          "resourceName": "teamNotifySlack"
+          "resourceName": "teamNotifications"
         }
       ]
     },

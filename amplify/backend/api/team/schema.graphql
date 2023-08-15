@@ -93,7 +93,9 @@ type Settings
   ticketNo: Boolean
   approval: Boolean
   modifiedBy: String
-  notificationService: String
+  sesNotificationsEnabled: Boolean
+  snsNotificationsEnabled: Boolean
+  slackNotificationsEnabled: Boolean
   sesSourceEmail: String
   sesSourceArn: String
   slackToken: String
