@@ -99,6 +99,8 @@ type Settings
   sesSourceEmail: String
   sesSourceArn: String
   slackToken: String
+  teamAdminGroup: String
+  teamAuditorGroup: String
 }
 type data {
   name: String

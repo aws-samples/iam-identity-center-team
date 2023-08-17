@@ -9,11 +9,12 @@ import Container from "@awsui/components-react/container";
 import Header from "@awsui/components-react/header";
 import ColumnLayout from "@awsui/components-react/column-layout";
 import Button from "@awsui/components-react/button";
+import Select from "@awsui/components-react/select";
 import { ContentLayout, Modal, Toggle, Form, FormField, Input, Spinner } from "@awsui/components-react";
 import StatusIndicator from "@awsui/components-react/status-indicator";
 import { Divider } from "antd";
 import "../../index.css";
-import { getSetting, createSetting, updateSetting } from "../Shared/RequestService";
+import { getSetting, createSetting, updateSetting, fetchIdCGroups } from "../Shared/RequestService";
 
 function Settings(props) {
   const [duration, setDuration] = useState(null);
@@ -35,6 +36,18 @@ function Settings(props) {
   const [visible, setVisible] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
   const [item, setItem] = useState(null);
+  const [groups, setGroups] = useState([]);
+  const [groupStatus, setGroupStatus] = useState("");
+  const [teamAdminGroup, setTeamAdminGroup] = useState("");
+  const [teamAuditorGroup, setTeamAuditorGroup] = useState("");
+
+  function getGroups() {
+    setGroupStatus("loading");
+    fetchIdCGroups().then((data) => {
+      setGroups(data);
+      setGroupStatus("finished");
+    });
+  }
 
   const slackAppManifest = {
     display_information: {
@@ -77,9 +90,10 @@ function Settings(props) {
   }, []);
 
   function views() {
+      getGroups();
       setVisible(false);
       setSubmitLoading(false);
-      getSettings()
+      getSettings();
     };
   
     async function validate() {
@@ -132,6 +146,8 @@ function Settings(props) {
     setSesSourceEmail(item.sesSourceEmail);
     setSesSourceArn(item.sesSourceArn);
     setSlackToken(item.slackToken);
+    setTeamAdminGroup(item.teamAdminGroup);
+    setTeamAuditorGroup(item.teamAuditorGroup);
     setVisible(false);
   }
   async function handleSubmit() {
@@ -150,6 +166,8 @@ function Settings(props) {
         sesSourceEmail,
         sesSourceArn,
         slackToken,
+        teamAdminGroup,
+        teamAuditorGroup
       };
       const action = item === null ? createSetting : updateSetting;
       action(data).then(() => {
@@ -182,6 +200,8 @@ function Settings(props) {
         setSesSourceEmail(data.sesSourceEmail);
         setSesSourceArn(data.sesSourceArn);
         setSlackToken(data.slackToken);
+        setTeamAdminGroup(data.teamAdminGroup);
+        setTeamAuditorGroup(data.teamAuditorGroup);
       } else {
         setDuration("9");
         setExpiry("3");
@@ -194,6 +214,8 @@ function Settings(props) {
         setSesSourceEmail("");
         setSesSourceArn("");
         setSlackToken("");
+        setTeamAdminGroup("");
+        setTeamAuditorGroup("");
       }
     });
   }
@@ -216,41 +238,26 @@ function Settings(props) {
             </Header>
           }
         >
-          <ColumnLayout columns={4} variant="text-grid">
+          <ColumnLayout columns={3} variant="text-grid">
             <SpaceBetween size="l">
               <div>
-                <Box variant="h3">Timer settings</Box>
-                <Box variant="small">Request Form timer settings</Box>
+                <Box variant="h3">TEAM permissions</Box>
+                <Box variant="small">Controls TEAM admins and auditors</Box>
                 <Divider style={{ marginBottom: "7px", marginTop: "7px" }} />
               </div>
               <div>
-                <Box variant="awsui-key-label">Max request duration</Box>
-                <> {duration !== null ?  <div>{duration} hours</div> : <Spinner />  }</>
+                <Box variant="awsui-key-label">TEAM admin group</Box>
+                <> {teamAdminGroup !== null ?  <div>{teamAdminGroup}</div> : <Spinner />  }</>
               </div>
               <div>
-                <Box variant="awsui-key-label">Request expiry timeout</Box>
-                <> {expiry !== null ? <div>{expiry} hours</div> : <Spinner /> }</>
+                <Box variant="awsui-key-label">TEAM auditor group</Box>
+                <> {teamAuditorGroup !== null ?  <div>{teamAuditorGroup}</div> : <Spinner />  }</>
               </div>
             </SpaceBetween>
             <SpaceBetween size="l">
               <div>
-                <Box variant="h3">Mandatory fields</Box>
-                <Box variant="small">Request Form mandatory fields</Box>
-                <Divider style={{ marginBottom: "7px", marginTop: "7px" }} />
-              </div>
-              <div>
-                <Box variant="awsui-key-label">Comments</Box>
-                <> {comments !== null ? <div>{comments === true ? "On" : "Off"}</div> : <Spinner /> }</>
-              </div>
-              <div>
-                <Box variant="awsui-key-label">Ticket number</Box>
-                <> {ticketNo !== null ? <div>{ticketNo === true ? "On" : "Off"}</div> : <Spinner /> }</>
-              </div>
-            </SpaceBetween>
-            <SpaceBetween size="l">
-              <div>
-                <Box variant="h3">Workflow settings</Box>
-                <Box variant="small">Request approval workflow settings</Box>
+                <Box variant="h3">Request settings</Box>
+                <Box variant="small">Controls access request requirements</Box>
                 <Divider style={{ marginBottom: "7px", marginTop: "7px" }} />
               </div>
               <div>
@@ -258,11 +265,31 @@ function Settings(props) {
                 <> {approval !== null ? 
                 <div>
                   <StatusIndicator type={approval === true ? "success" : "stopped"}>
-                    {approval === true ? "Yes" : "No"}
+                    {approval === true ? "Required" : "Not required"}
                   </StatusIndicator>
                 </div>
                 :<Spinner /> 
                 }</>
+              </div>
+              <div>
+                <Box variant="awsui-key-label">Require justification</Box>
+                <> {comments !== null ? <div><StatusIndicator type={comments === true ? "success" : "stopped"}>
+                    {comments === true ? "Required" : "Not required"}
+                  </StatusIndicator></div> : <Spinner /> }</>
+              </div>
+              <div>
+                <Box variant="awsui-key-label">Require ticket number</Box>
+                <> {ticketNo !== null ? <div><StatusIndicator type={ticketNo === true ? "success" : "stopped"}>
+                    {ticketNo === true ? "Required" : "Not required"}
+                  </StatusIndicator></div> : <Spinner /> }</>
+              </div>
+              <div>
+                <Box variant="awsui-key-label">Maximum request duration</Box>
+                <> {duration !== null ?  <div>{duration} hours</div> : <Spinner />  }</>
+              </div>
+              <div>
+                <Box variant="awsui-key-label">Request expiry timeout</Box>
+                <> {expiry !== null ? <div>{expiry} hours</div> : <Spinner /> }</>
               </div>
             </SpaceBetween>
             <SpaceBetween size="l">
@@ -345,12 +372,103 @@ function Settings(props) {
           >
             <SpaceBetween direction="vertical" size="l">
               <div>
-                <Box variant="h3">Timer settings</Box>
-                <Box variant="small">Request Form timer settings</Box>
+                <Box variant="h3">TEAM permissions</Box>
+                <Box variant="small">Controls TEAM admins and auditors</Box>
                 <Divider style={{ marginBottom: "1px", marginTop: "7px" }} />
               </div>
               <FormField
-                label="Max request duration"
+                label="TEAM admin Group"
+                stretch
+                description="Group of users allowed to modify eligibility and approver policies"
+              >
+                <Select
+                  statusType={groupStatus}
+                  placeholder="Select Group"
+                  loadingText="Loading Groups"
+                  filteringType="auto"
+                  empty="No groups found"
+                  options={groups.map((group) => ({
+                    label: group.DisplayName,
+                    value: group.GroupId,
+                    description: group.GroupId,
+                  }))}
+                  selectedOption={{label: teamAdminGroup}}
+                  onChange={({detail}) => {
+                    setTeamAdminGroup(detail.selectedOption.label);
+                  }}
+                  selectedAriaLabel="selected"
+                />
+              </FormField>
+              <FormField
+                label="TEAM auditor Group"
+                stretch
+                description="Group of users allowed to audit access request in TEAM"
+              >
+                <Select
+                  statusType={groupStatus}
+                  placeholder="Select Group"
+                  loadingText="Loading Groups"
+                  filteringType="auto"
+                  empty="No groups found"
+                  options={groups.map((group) => ({
+                    label: group.DisplayName,
+                    value: group.GroupId,
+                    description: group.GroupId,
+                  }))}
+                  selectedOption={{label: teamAuditorGroup}}
+                  onChange={({detail}) => {
+                    setTeamAuditorGroup(detail.selectedOption.label);
+                  }}
+                  selectedAriaLabel="selected"
+                />
+              </FormField>
+              <div>
+                <Box variant="h3">Request settings</Box>
+                <Box variant="small">Controls access request requirements</Box>
+                <Divider style={{ marginBottom: "1px", marginTop: "7px" }} />
+              </div>
+              <div>
+              <FormField
+                label="Require approval of all requests"
+                stretch
+                description="Turn on/off approval workflow for all elevated access request"
+              >
+                <Toggle
+                  onChange={({ detail }) => setApproval(detail.checked)}
+                  checked={approval}
+                >
+                  Approval required
+                </Toggle>
+              </FormField>
+              <br />
+              <FormField
+                label="Require justification for all requests"
+                stretch
+                description="Determines if justification field is mandatory"
+              >
+                <Toggle
+                  onChange={({ detail }) => setComments(detail.checked)}
+                  checked={comments}
+                >
+                  Comments
+                </Toggle>
+              </FormField>
+              <br />
+              <FormField
+                label="Require ticket number for all requests"
+                stretch
+                description="Determines if ticket number field is mandatory"
+              >
+                <Toggle
+                  onChange={({ detail }) => setTicketNo(detail.checked)}
+                  checked={ticketNo}
+                >
+                  Ticket number
+                </Toggle>
+              </FormField>
+              <br />
+              <FormField
+                label="Maximum request duration"
                 stretch
                 description="Default maximum request duration in hours"
                 errorText={durationError}
@@ -364,6 +482,7 @@ function Settings(props) {
                   type="number"
                 />
               </FormField>
+              <br />
               <FormField
                 label="Request expiry timeout"
                 stretch
@@ -379,52 +498,7 @@ function Settings(props) {
                   type="number"
                 />
               </FormField>
-              <div>
-                <Box variant="h3">Mandatory fields</Box>
-                <Box variant="small">Request Form mandatory fields</Box>
-                <Divider style={{ marginBottom: "1px", marginTop: "7px" }} />
               </div>
-              <FormField
-                label="Comments"
-                stretch
-                description="Determines if comment field is mandatory"
-              >
-                <Toggle
-                  onChange={({ detail }) => setComments(detail.checked)}
-                  checked={comments}
-                >
-                  Comments
-                </Toggle>
-              </FormField>
-              <FormField
-                label="Ticket number"
-                stretch
-                description="Determines if ticket number field is mandatory"
-              >
-                <Toggle
-                  onChange={({ detail }) => setTicketNo(detail.checked)}
-                  checked={ticketNo}
-                >
-                  Ticket number
-                </Toggle>
-              </FormField>
-              <div>
-                <Box variant="h3">Workflow settings</Box>
-                <Box variant="small">Request approval workflow settings</Box>
-                <Divider style={{ marginBottom: "1px", marginTop: "7px" }} />
-              </div>
-              <FormField
-                label="Approval required"
-                stretch
-                description="Turn on/off approval workflow for all elevated access request"
-              >
-                <Toggle
-                  onChange={({ detail }) => setApproval(detail.checked)}
-                  checked={approval}
-                >
-                  Approval required
-                </Toggle>
-              </FormField>
               <div>
                 <Box variant="h3">Notification settings</Box>
                 <Box variant="small">Notification settings for request and approval events</Box>

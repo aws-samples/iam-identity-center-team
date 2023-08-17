@@ -264,6 +264,8 @@ export const getSettings = /* GraphQL */ `
       sesSourceEmail
       sesSourceArn
       slackToken
+      teamAdminGroup
+      teamAuditorGroup
     }
   }
 `;
@@ -290,6 +292,8 @@ export const listSettings = /* GraphQL */ `
         sesSourceEmail
         sesSourceArn
         slackToken
+        teamAdminGroup
+        teamAuditorGroup
       }
       nextToken
     }

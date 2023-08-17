@@ -241,6 +241,8 @@ export const createSettings = /* GraphQL */ `
       sesSourceEmail
       sesSourceArn
       slackToken
+      teamAdminGroup
+      teamAuditorGroup
     }
   }
 `;
@@ -265,6 +267,8 @@ export const updateSettings = /* GraphQL */ `
       sesSourceEmail
       sesSourceArn
       slackToken
+      teamAdminGroup
+      teamAuditorGroup
     }
   }
 `;
@@ -289,6 +293,8 @@ export const deleteSettings = /* GraphQL */ `
       sesSourceEmail
       sesSourceArn
       slackToken
+      teamAdminGroup
+      teamAuditorGroup
     }
   }
 `;
