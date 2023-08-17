@@ -257,7 +257,7 @@ function Settings(props) {
                 <Box variant="awsui-key-label">Approval required</Box>
                 <> {approval !== null ? 
                 <div>
-                  <StatusIndicator type={approval === true ? "success" : "error"}>
+                  <StatusIndicator type={approval === true ? "success" : "stopped"}>
                     {approval === true ? "Yes" : "No"}
                   </StatusIndicator>
                 </div>
@@ -275,7 +275,7 @@ function Settings(props) {
                 <Box variant="awsui-key-label">Email notifications</Box>
                 <> {sesNotificationsEnabled !== null ? 
                 <div>
-                  <StatusIndicator type={sesNotificationsEnabled === true ? "success" : "error"}>
+                  <StatusIndicator type={sesNotificationsEnabled === true ? "success" : "stopped"}>
                     {sesNotificationsEnabled === true ? sesSourceEmail : "Disabled"}
                   </StatusIndicator>
                 </div>
@@ -295,7 +295,7 @@ function Settings(props) {
                 <Box variant="awsui-key-label">SNS notifications</Box>
                 <> {snsNotificationsEnabled !== null ? 
                 <div>
-                  <StatusIndicator type={snsNotificationsEnabled === true ? "success" : "error"}>
+                  <StatusIndicator type={snsNotificationsEnabled === true ? "success" : "stopped"}>
                     {snsNotificationsEnabled === true ? "Enabled" : "Disabled"}
                   </StatusIndicator>
                 </div>
@@ -306,7 +306,7 @@ function Settings(props) {
                 <Box variant="awsui-key-label">Slack notifications</Box>
                 <> {slackNotificationsEnabled !== null ? 
                 <div>
-                  <StatusIndicator type={slackNotificationsEnabled === true ? "success" : "error"}>
+                  <StatusIndicator type={slackNotificationsEnabled === true ? "success" : "stopped"}>
                     {slackNotificationsEnabled === true ? "Enabled" : "Disabled"}
                   </StatusIndicator>
                 </div>
