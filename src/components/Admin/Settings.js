@@ -562,7 +562,7 @@ function Settings(props) {
                 <FormField
                   label="Require approval of all requests"
                   stretch
-                  description="Turn on/off approval workflow for all elevated access request"
+                  description="Determines if approval is required for all elevated access request"
                 >
                   <Toggle
                     onChange={({ detail }) => setApproval(detail.checked)}
@@ -575,7 +575,7 @@ function Settings(props) {
                 <FormField
                   label="Require comment request approvals"
                   stretch
-                  description="Determines if comment field is mandatory for all  elevated access request approvals"
+                  description="Determines if comment field is mandatory for TEAM approvals"
                 >
                   <Toggle
                     onChange={({ detail }) => setComments(detail.checked)}
@@ -588,7 +588,7 @@ function Settings(props) {
                 <FormField
                   label="Require ticket number for all requests"
                   stretch
-                  description="Determines if ticket number field is mandatory for all elevated access request"
+                  description="Determines if ticket number field is mandatory for elevated access request"
                 >
                   <Toggle
                     onChange={({ detail }) => setTicketNo(detail.checked)}
