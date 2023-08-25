@@ -4,6 +4,9 @@ Parameters:
   Source:
     Type: String
     Description: Email notification source
+  BranchName:
+    Type: String
+    Description: Branch to deploy
   Login:
     Type: String
     Description: IAM IDC Login URL
@@ -24,7 +27,7 @@ Resources:
     Properties:
       ServiceToken: !GetAtt 'TriggerBuildLambda.Arn'
       appId: !GetAtt AmplifyApp.AppId
-      branchName: main
+      branchName: !Ref BranchName
       branch: !GetAtt AmplifyBranch.Arn
 
   AmplifyRole:
@@ -105,7 +108,7 @@ Resources:
   AmplifyBranch:
     Type: AWS::Amplify::Branch
     Properties:
-      BranchName: main
+      BranchName: !Ref BranchName
       AppId: !GetAtt AmplifyApp.AppId
       EnableAutoBuild: true
       EnvironmentVariables: 
@@ -121,7 +124,7 @@ Resources:
           Value: !Ref tags
       Tags:
         - Key: Branch
-          Value: main
+          Value: !Ref BranchName
   
   TriggerBuildLambda:
     Type: AWS::Lambda::Function

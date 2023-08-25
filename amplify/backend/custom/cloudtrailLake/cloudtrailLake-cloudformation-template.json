@@ -3,48 +3,73 @@
     "Parameters": {
       "env": {
         "Type": "String"
+      },
+      "ReadWriteLogs": {
+        "Type": "String"
       }
     },
     "Conditions": {
-        "IsOrganizationsSupported": {
-            "Fn::Not": [
-                {
-                    "Fn::Equals": [
-                        {
-                            "Ref": "AWS::Partition"
-                        },
-                        "aws-cn"
-                    ]
-                }
+      "IsOrganizationsSupported": {
+        "Fn::Not": [
+          {
+            "Fn::Equals": [
+              {
+                "Ref": "AWS::Partition"
+              },
+              "aws-cn"
             ]
-        }
+          }
+        ]
+      }
     },
     "Resources": {
-        "myEventDataStore": {
-            "Type": "AWS::CloudTrail::EventDataStore",
-            "Properties": {
-                "Name": { "Ref" : "AWS::StackName" },
-                "MultiRegionEnabled": true,
-                "RetentionPeriod": 365,
-                "OrganizationEnabled": {
-                    "Fn::If": [
-                        "IsOrganizationsSupported",
-                        true,
-                        {
-                            "Ref": "AWS::NoValue"
-                        }
-                    ]
+      "myEventDataStore": {
+        "Type": "AWS::CloudTrail::EventDataStore",
+        "Properties": {
+          "Name": {
+            "Ref": "AWS::StackName"
+          },
+          "MultiRegionEnabled": true,
+          "RetentionPeriod": 7,
+          "OrganizationEnabled": {
+            "Fn::If": [
+              "IsOrganizationsSupported",
+              true,
+              {
+                "Ref": "AWS::NoValue"
+              }
+            ]
+          },
+          "TerminationProtectionEnabled": false,
+          "AdvancedEventSelectors": [
+            {
+              "FieldSelectors": [
+                {
+                  "Field": "readOnly",
+                  "Equals": [
+                    {
+                        "Ref": "ReadWriteLogs"
+                    }
+                  ]
                 },
-                "TerminationProtectionEnabled": false
+                {
+                  "Field": "eventCategory",
+                  "Equals": [
+                    "Management"
+                  ]
+                }
+              ]
             }
+          ]
         }
+      }
     },
     "Outputs": {
-        "EventDataStoreOutput": {
-            "Description": "The event data store ID",
-            "Value": {
-                "Ref":"myEventDataStore"
-            }
+      "EventDataStoreOutput": {
+        "Description": "The event data store ID",
+        "Value": {
+          "Ref": "myEventDataStore"
         }
+      }
     }
-}
+  }
