@@ -4,12 +4,12 @@ Parameters:
   Source:
     Type: String
     Description: Email notification source
-  BranchName:
-    Type: String
-    Description: Branch to deploy
   Login:
     Type: String
     Description: IAM IDC Login URL
+  ReadWriteLogs:
+    Type: "String"
+    Description: "Read and Write CloudTrail logs"
   teamAdminGroup:
     Type: String
     Description: TEAM application Admin group
@@ -27,7 +27,7 @@ Resources:
     Properties:
       ServiceToken: !GetAtt 'TriggerBuildLambda.Arn'
       appId: !GetAtt AmplifyApp.AppId
-      branchName: !Ref BranchName
+      branchName: main
       branch: !GetAtt AmplifyBranch.Arn
 
   AmplifyRole:
@@ -108,7 +108,7 @@ Resources:
   AmplifyBranch:
     Type: AWS::Amplify::Branch
     Properties:
-      BranchName: !Ref BranchName
+      BranchName: main
       AppId: !GetAtt AmplifyApp.AppId
       EnableAutoBuild: true
       EnvironmentVariables: 
@@ -116,6 +116,8 @@ Resources:
           Value: !Ref Source
         - Name: SSO_LOGIN
           Value: !Ref Login
+        - Name: READ_WRITE_LOGS
+          Value: !Ref ReadWriteLogs
         - Name: TEAM_ADMIN_GROUP
           Value: !Ref teamAdminGroup
         - Name: TEAM_AUDITOR_GROUP
@@ -124,7 +126,7 @@ Resources:
           Value: !Ref tags
       Tags:
         - Key: Branch
-          Value: !Ref BranchName
+          Value: main
   
   TriggerBuildLambda:
     Type: AWS::Lambda::Function
