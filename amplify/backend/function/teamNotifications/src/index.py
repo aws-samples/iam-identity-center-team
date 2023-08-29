@@ -166,7 +166,8 @@ def lambda_handler(event: dict, context):
     ):
         # Notifications are disabled or configuration is invalid
         return
-
+    
+    approval_required = event["approvalRequired"]
     request_status = event["status"]
     granted = (
         event.get("grant", {})
@@ -217,7 +218,7 @@ def lambda_handler(event: dict, context):
             slack_recipients = [requester]
             slack_message = "Your AWS access request has expired."
             email_to_addresses = [requester]
-            email_cc_addresses = approvers
+            email_cc_addresses = approvers if approval_required else []
             subject = f"Expired access request for {requester} to AWS account {account} - TEAM"
             email_message_html = f'<html><body><p>Your AWS access request has expired, please open <a href="{login_url}">TEAM</a> to submit a new request.</p><p><b>Account:</b> {account}<br /><b>Role:</b> {role}<br /><b>Start Time:</b> {request_start_time}<br /><b>Duration:</b> {duration_hours} hours<br /><b>Justification:</b> {justification}<br /><b>Ticket Number:</b> {ticket}<br /></p></body></html>'
         case "ended":
@@ -225,7 +226,7 @@ def lambda_handler(event: dict, context):
             slack_recipients = [requester]
             slack_message = "Your AWS access session has ended."
             email_to_addresses = [requester]
-            email_cc_addresses = approvers
+            email_cc_addresses = approvers if approval_required else []
             subject = f"AWS access session ended for {requester} to AWS account {account} - TEAM"
             email_message_html = f'<html><body><p>Your AWS access session has ended, please open <a href="{login_url}">TEAM</a> to view session activity logs.</p><p><b>Account:</b> {account}<br /><b>Role:</b> {role}<br /><b>Start Time:</b> {request_start_time}<br /><b>Duration:</b> {duration_hours} hours<br /><b>Justification:</b> {justification}<br /><b>Ticket Number:</b> {ticket}<br /></p></body></html>'
         case "granted":
@@ -233,7 +234,7 @@ def lambda_handler(event: dict, context):
             slack_recipients = [requester]
             slack_message = "Your AWS access session has started."
             email_to_addresses = [requester]
-            email_cc_addresses = approvers
+            email_cc_addresses = approvers if approval_required else []
             subject = f"AWS access session started for {requester} to AWS account {account} - TEAM"
             email_message_html = f'<html><body><p>Your AWS access session has started. Open <a href="{login_url}">TEAM</a> to manage AWS access requests.</p><p><b>Account:</b> {account}<br /><b>Role:</b> {role}<br /><b>Start Time:</b> {request_start_time}<br /><b>Duration:</b> {duration_hours} hours<br /><b>Justification:</b> {justification}<br /><b>Ticket Number:</b> {ticket}<br /></p></body></html>'
         case "approved":
