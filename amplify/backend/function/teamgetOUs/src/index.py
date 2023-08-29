@@ -16,7 +16,7 @@ def getOUs(id):
         )
         results = response["OrganizationalUnits"]
         while "NextToken" in response:
-            response = client.list_accounts(NextToken=response["NextToken"])
+            response = client.list_organizational_units_for_parent(NextToken=response["NextToken"])
             results.extend(response["OrganizationalUnits"])
         return results
     except ClientError as e:
