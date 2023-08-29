@@ -21,6 +21,9 @@ Parameters:
     Description: TEAM application tags
     Default: ""
 
+Conditions:
+  IsEmptyReadWriteLogs: !Equals [!Ref ReadWriteLogs, ""]
+
 Resources:
   TriggerAmplifyBuild:
     Type: Custom::TriggerAmplifyBuild
@@ -117,7 +120,10 @@ Resources:
         - Name: SSO_LOGIN
           Value: !Ref Login
         - Name: READ_WRITE_LOGS
-          Value: !Ref ReadWriteLogs
+          Value: !If
+            - IsEmptyReadWriteLogs
+            - "true"
+            - !Ref ReadWriteLogs
         - Name: TEAM_ADMIN_GROUP
           Value: !Ref teamAdminGroup
         - Name: TEAM_AUDITOR_GROUP

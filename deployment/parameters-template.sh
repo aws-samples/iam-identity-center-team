@@ -21,4 +21,3 @@ TEAM_ACCOUNT_PROFILE=team_account_profile
 TEAM_ADMIN_GROUP="team_admin_group_name"
 TEAM_AUDITOR_GROUP="team_auditor_group_name"
 TAGS="project=iam-identity-center-team environment=prod"
-READ_WRITE_LOGS=true
