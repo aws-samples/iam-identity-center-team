@@ -222,11 +222,11 @@ def lambda_handler(event: dict, context):
         case "scheduled":
             # Notify requester request scheduled
             slack_recipients = [requester]
-            slack_message = f"Your AWS access request is scheduled for {request_start_time}."
+            slack_message = f"Your AWS access session is scheduled."
             email_to_addresses = [requester]
             email_cc_addresses = []
             subject = f"Expired access request for {requester} to AWS account {account} - TEAM"
-            email_message_html = f'<html><body><p>Your AWS access session is scheduled for {request_start_time}, please open <a href="{login_url}">TEAM</a> to manage requests.</p><p><b>Account:</b> {account}<br /><b>Role:</b> {role}<br /><b>Start Time:</b> {request_start_time}<br /><b>Duration:</b> {duration_hours} hours<br /><b>Justification:</b> {justification}<br /><b>Ticket Number:</b> {ticket}<br /></p></body></html>'
+            email_message_html = f'<html><body><p>Your AWS access session is scheduled, please open <a href="{login_url}">TEAM</a> to manage requests.</p><p><b>Account:</b> {account}<br /><b>Role:</b> {role}<br /><b>Start Time:</b> {request_start_time}<br /><b>Duration:</b> {duration_hours} hours<br /><b>Justification:</b> {justification}<br /><b>Ticket Number:</b> {ticket}<br /></p></body></html>'
         case "expired":
             # Notify requester request expired
             slack_recipients = [requester]
