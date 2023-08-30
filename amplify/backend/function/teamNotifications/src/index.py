@@ -187,6 +187,8 @@ def lambda_handler(event: dict, context):
             request_status = "ended"
         if granted and not ended:
             request_status = "granted"
+    if request_status == "pending" and granted:
+        request_status = "granted"
     event.update(
         {
             "status": request_status,
