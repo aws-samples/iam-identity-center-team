@@ -21,7 +21,7 @@ export AWS_PROFILE=$TEAM_ACCOUNT_PROFILE
 
 cd ..
 
-aws codecommit create-repository --repository-name team-idc-app --repository-description "Temporary Elevated Access Management (TEAM) Application"
+aws codecommit create-repository --region $REGION --repository-name team-idc-app --repository-description "Temporary Elevated Access Management (TEAM) Application"
 git remote remove origin
 git remote add origin codecommit::$REGION://team-idc-app
 git push origin main

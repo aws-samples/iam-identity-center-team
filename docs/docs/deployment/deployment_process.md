@@ -64,6 +64,7 @@ TEAM_ACCOUNT_PROFILE=TeamAccountProfileName
 TEAM_ADMIN_GROUP=team_admin_group_name
 TEAM_AUDITOR_GROUP=team_auditor_group_name
 TAGS="tag1=value1 tag2=value2"
+READ_WRITE_LOGS=true
 ```
 
 ---
