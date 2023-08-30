@@ -206,13 +206,14 @@ def lambda_handler(event: dict, context):
 
     match request_status:
         case "pending":
-            # Notify approvers pending request
-            slack_recipients = approvers
-            slack_message = f"<mailto:{requester}|{requester}> requests access to AWS, please approve or reject this request in TEAM."
-            email_to_addresses = approvers
-            email_cc_addresses = [requester]
-            subject = f"{requester} requests access to AWS account {account} - TEAM"
-            email_message_html = f'<html><body><p><b>{requester}</b> requests access to AWS, please <b>approve or reject this request</b> in <a href="{login_url}">TEAM</a>.</p><p><b>Account:</b> {account}<br /><b>Role:</b> {role}<br /><b>Start Time:</b> {request_start_time}<br /><b>Duration:</b> {duration_hours} hours<br /><b>Justification:</b> {justification}<br /><b>Ticket Number:</b> {ticket}<br /></p></body></html>'
+            if approval_required:
+                # Notify approvers pending request
+                slack_recipients = approvers
+                slack_message = f"<mailto:{requester}|{requester}> requests access to AWS, please approve or reject this request in TEAM."
+                email_to_addresses = approvers
+                email_cc_addresses = [requester]
+                subject = f"{requester} requests access to AWS account {account} - TEAM"
+                email_message_html = f'<html><body><p><b>{requester}</b> requests access to AWS, please <b>approve or reject this request</b> in <a href="{login_url}">TEAM</a>.</p><p><b>Account:</b> {account}<br /><b>Role:</b> {role}<br /><b>Start Time:</b> {request_start_time}<br /><b>Duration:</b> {duration_hours} hours<br /><b>Justification:</b> {justification}<br /><b>Ticket Number:</b> {ticket}<br /></p></body></html>'
         case "expired":
             # Notify requester request expired
             slack_recipients = [requester]
