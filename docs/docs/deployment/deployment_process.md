@@ -64,7 +64,7 @@ TEAM_ACCOUNT_PROFILE=TeamAccountProfileName
 TEAM_ADMIN_GROUP=team_admin_group_name
 TEAM_AUDITOR_GROUP=team_auditor_group_name
 TAGS="tag1=value1 tag2=value2"
-CLOUDTRAIL_AUDIT_LOGS=true
+CLOUDTRAIL_AUDIT_LOGS=read_write
 ```
 
 ---
