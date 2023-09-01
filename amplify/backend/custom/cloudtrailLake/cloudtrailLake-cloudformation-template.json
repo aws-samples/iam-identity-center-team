@@ -1,50 +1,131 @@
 {
-    "AWSTemplateFormatVersion": "2010-09-09",
-    "Parameters": {
-      "env": {
-        "Type": "String"
-      }
+  "AWSTemplateFormatVersion":"2010-09-09",
+  "Parameters":{
+    "env":{
+      "Type":"String"
     },
-    "Conditions": {
-        "IsOrganizationsSupported": {
-            "Fn::Not": [
-                {
-                    "Fn::Equals": [
-                        {
-                            "Ref": "AWS::Partition"
-                        },
-                        "aws-cn"
-                    ]
-                }
-            ]
-        }
-    },
-    "Resources": {
-        "myEventDataStore": {
-            "Type": "AWS::CloudTrail::EventDataStore",
-            "Properties": {
-                "Name": { "Ref" : "AWS::StackName" },
-                "MultiRegionEnabled": true,
-                "RetentionPeriod": 365,
-                "OrganizationEnabled": {
-                    "Fn::If": [
-                        "IsOrganizationsSupported",
-                        true,
-                        {
-                            "Ref": "AWS::NoValue"
-                        }
-                    ]
-                },
-                "TerminationProtectionEnabled": false
-            }
-        }
-    },
-    "Outputs": {
-        "EventDataStoreOutput": {
-            "Description": "The event data store ID",
-            "Value": {
-                "Ref":"myEventDataStore"
-            }
-        }
+    "CloudTrailAuditLogs":{
+      "Type":"String",
+      "AllowedValues":[
+        "read_write",
+        "read",
+        "write",
+        "none"
+      ]
     }
+  },
+  "Conditions":{
+    "IsOrganizationsSupported":{
+      "Fn::Not":[
+        {
+          "Fn::Equals":[
+            {
+              "Ref":"AWS::Partition"
+            },
+            "aws-cn"
+          ]
+        }
+      ]
+    },
+    "IsReadAndWriteEnabled":{
+      "Fn::Equals":[
+        {
+          "Ref":"CloudTrailAuditLogs"
+        },
+        "read_write"
+      ]
+    },
+    "IsReadOnlyEnabled":{
+      "Fn::Equals":[
+        {
+          "Ref":"CloudTrailAuditLogs"
+        },
+        "read"
+      ]
+    },
+    "IsAuditLogsDisabled":{
+      "Fn::Equals":[
+        {
+          "Ref":"CloudTrailAuditLogs"
+        },
+        "none"
+      ]
+    }
+  },
+  "Resources":{
+    "myEventDataStore":{
+      "Type":"AWS::CloudTrail::EventDataStore",
+      "Properties":{
+        "Name":{
+          "Ref":"AWS::StackName"
+        },
+        "MultiRegionEnabled":true,
+        "IngestionEnabled":{
+          "Fn::If":[
+            "IsAuditLogsDisabled",
+            false,
+            true
+          ]
+        },
+        "RetentionPeriod":7,
+        "OrganizationEnabled":{
+          "Fn::If":[
+            "IsOrganizationsSupported",
+            true,
+            {
+              "Ref":"AWS::NoValue"
+            }
+          ]
+        },
+        "TerminationProtectionEnabled":false,
+        "AdvancedEventSelectors":[
+          {
+            "Fn::If":[
+              "IsReadAndWriteEnabled",
+              {
+                "FieldSelectors":[
+                  {
+                    "Field":"eventCategory",
+                    "Equals":[
+                      "Management"
+                    ]
+                  }
+                ]
+              },
+              {
+                "FieldSelectors":[
+                  {
+                    "Field":"readOnly",
+                    "Equals":[
+                      {
+                        "Fn::If":[
+                          "IsReadOnlyEnabled",
+                          true,
+                          false
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "Field":"eventCategory",
+                    "Equals":[
+                      "Management"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "Outputs":{
+    "EventDataStoreOutput":{
+      "Description":"The event data store ID",
+      "Value":{
+        "Ref":"myEventDataStore"
+      }
+    }
+  }
 }
