@@ -6,7 +6,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const { AWS_APP_ID, AWS_BRANCH, EMAIL_SOURCE, SSO_LOGIN, TEAM_ADMIN_GROUP, TEAM_AUDITOR_GROUP, TAGS } = process.env;
+const { AWS_APP_ID, AWS_BRANCH, EMAIL_SOURCE, SSO_LOGIN, TEAM_ADMIN_GROUP, TEAM_AUDITOR_GROUP, TAGS, CLOUDTRAIL_AUDIT_LOGS } = process.env;
 
 async function update_auth_parameters() {
   console.log(`updating amplify config for branch "${AWS_BRANCH}"...`);
@@ -105,6 +105,23 @@ async function update_tag_parameters() {
   fs.writeFileSync(tagsParametersJsonPath, JSON.stringify(tagsArray, null, 2));
 }
 
+async function update_cloudtrail_parameters() {
+  console.log(`updating amplify/backend/custom/cloudtrailLake/parameters.json"...`);
+
+  const cloudtrailParametersJsonPath = path.resolve(
+    `./amplify/backend/custom/cloudtrailLake/parameters.json`
+  );
+
+  const cloudtrailParametersJson = require(cloudtrailParametersJsonPath);
+
+  cloudtrailParametersJson.CloudTrailAuditLogs = CLOUDTRAIL_AUDIT_LOGS;
+  
+  fs.writeFileSync(
+    cloudtrailParametersJsonPath,
+    JSON.stringify(cloudtrailParametersJson, null, 4)
+  );
+}
+
 
 
 update_custom_parameters();
@@ -112,3 +129,4 @@ update_auth_parameters();
 update_react_parameters();
 update_groups_parameters();
 update_tag_parameters();
+update_cloudtrail_parameters();
