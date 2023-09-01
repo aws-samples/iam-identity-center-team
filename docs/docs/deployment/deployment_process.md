@@ -50,7 +50,11 @@ Required:
 
 Optional:
 - **TAGS** - Tags that should be propagated to nested stacks and underlying resources
-- **CLOUDTRAIL_AUDIT_LOGS** - CloudTrail Event Data Store will capture READ and WRITE logs by default (`read_write`) but can be configure to capture only READ logs (`read`), only WRITE logs (`write`) or no logs (`none`). There is an additional option  This can decrease your CloudTrail cost.
+- **CLOUDTRAIL_AUDIT_LOGS** - CloudTrail Event Data Store logging configuration. Options:
+  - `read_write` - record read and write events
+  - `read` - record only read events
+  - `write` - record only write events
+  - `none` - disable event logging
 
 For example:
 

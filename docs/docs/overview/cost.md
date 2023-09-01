@@ -19,7 +19,7 @@ The TEAM solution consists of numerous AWS serverless services. As cost is accru
 - [AWS CloudTrail Lake](https://aws.amazon.com/cloudtrail/pricing/)
 - [AWS IAM Identity Center](https://aws.amazon.com/iam/identity-center/) (free)
 
-## Managing CloudTrail Lake cost 
+## Managing CloudTrail Lake cost 
 
 TEAM uses [AWS CloudTrail Lake](https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-lake.html) for querying, auditing and logging API activities and actions performed by a user during the period of elevated access. For CloudTrail Lake, you pay for ingestion and storage together, where the billing is based on the amount of uncompressed data ingested during the month. When you run queries in Lake, you pay based upon the amount of data scanned. 
 
