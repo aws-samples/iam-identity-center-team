@@ -31,7 +31,7 @@ then
   --parameter-overrides \
     Source=$EMAIL_SOURCE \
     Login=$IDC_LOGIN_URL \
-    ReadWriteLogs=$READ_WRITE_LOGS \
+    CloudTrailAuditLogs=$CLOUDTRAIL_AUDIT_LOGS \
     teamAdminGroup="$TEAM_ADMIN_GROUP" \
     teamAuditGroup="$TEAM_AUDITOR_GROUP" \
     tags="$TAGS" \
@@ -43,7 +43,7 @@ else
   --parameter-overrides \
     Source=$EMAIL_SOURCE \
     Login=$IDC_LOGIN_URL \
-    ReadWriteLogs=$READ_WRITE_LOGS \
+    CloudTrailAuditLogs=$CLOUDTRAIL_AUDIT_LOGS \
     teamAdminGroup="$TEAM_ADMIN_GROUP" \
     teamAuditGroup="$TEAM_AUDITOR_GROUP" \
     tags="$TAGS" \

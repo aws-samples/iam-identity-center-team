@@ -7,8 +7,13 @@ Parameters:
   Login:
     Type: String
     Description: IAM IDC Login URL
-  ReadWriteLogs:
+  CloudTrailAuditLogs:
     Type: "String"
+    AllowedValues:
+      - read_write
+      - read
+      - write
+      - none
     Description: "Read and Write CloudTrail logs"
   teamAdminGroup:
     Type: String
@@ -22,7 +27,7 @@ Parameters:
     Default: ""
 
 Conditions:
-  IsEmptyReadWriteLogs: !Equals [!Ref ReadWriteLogs, ""]
+  IsEmptyCloudTrailAuditLogs: !Equals [!Ref CloudTrailAuditLogs, ""]
 
 Resources:
   TriggerAmplifyBuild:
@@ -119,11 +124,11 @@ Resources:
           Value: !Ref Source
         - Name: SSO_LOGIN
           Value: !Ref Login
-        - Name: READ_WRITE_LOGS
+        - Name: CLOUDTRAIL_AUDIT_LOGS
           Value: !If
-            - IsEmptyReadWriteLogs
-            - "true"
-            - !Ref ReadWriteLogs
+            - IsEmptyCloudTrailAuditLogs
+            - "read_write"
+            - !Ref CloudTrailAuditLogs
         - Name: TEAM_ADMIN_GROUP
           Value: !Ref teamAdminGroup
         - Name: TEAM_AUDITOR_GROUP

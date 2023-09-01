@@ -50,7 +50,7 @@ Required:
 
 Optional:
 - **TAGS** - Tags that should be propagated to nested stacks and underlying resources
-- **READ_WRITE_LOGS** - CloudTrail Event Data Store will capture READ and WRITE logs by default (`true`) but can be configure to capture only WRITE logs (`false`). This can decrease your CloudTrail cost.
+- **CLOUDTRAIL_AUDIT_LOGS** - CloudTrail Event Data Store will capture READ and WRITE logs by default (`read_write`) but can be configure to capture only READ logs (`read`), only WRITE logs (`write`) or no logs (`none`). There is an additional option  This can decrease your CloudTrail cost.
 
 For example:
 
@@ -64,7 +64,7 @@ TEAM_ACCOUNT_PROFILE=TeamAccountProfileName
 TEAM_ADMIN_GROUP=team_admin_group_name
 TEAM_AUDITOR_GROUP=team_auditor_group_name
 TAGS="tag1=value1 tag2=value2"
-READ_WRITE_LOGS=true
+CLOUDTRAIL_AUDIT_LOGS=true
 ```
 
 ---
