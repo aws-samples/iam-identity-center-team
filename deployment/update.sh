@@ -24,31 +24,33 @@ git remote add origin codecommit::$REGION://team-idc-app
 git remote add team https://github.com/aws-samples/iam-identity-center-team.git
 git pull team main
 
+set +xe
+version=$(git describe --tags --abbrev=0 2>/dev/null)
+set -xe
+
+if [ -z "$version" ]; then
+    version=$(git rev-parse --short HEAD)
+fi
+
 if [[ ! -z "$TAGS" ]];
 then
-  aws cloudformation deploy --region $REGION --template-file template.yml \
-  --stack-name TEAM-IDC-APP \
-  --parameter-overrides \
-    Source=$EMAIL_SOURCE \
-    Login=$IDC_LOGIN_URL \
-    CloudTrailAuditLogs=$CLOUDTRAIL_AUDIT_LOGS \
-    teamAdminGroup="$TEAM_ADMIN_GROUP" \
-    teamAuditGroup="$TEAM_AUDITOR_GROUP" \
-    tags="$TAGS" \
-  --tags $TAGS \
-  --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
+    TAGS="$TAGS version=$version"
 else
-  aws cloudformation deploy --region $REGION --template-file template.yml \
-  --stack-name TEAM-IDC-APP \
-  --parameter-overrides \
-    Source=$EMAIL_SOURCE \
-    Login=$IDC_LOGIN_URL \
-    CloudTrailAuditLogs=$CLOUDTRAIL_AUDIT_LOGS \
-    teamAdminGroup="$TEAM_ADMIN_GROUP" \
-    teamAuditGroup="$TEAM_AUDITOR_GROUP" \
-    tags="$TAGS" \
-  --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
+    TAGS="version=$version"
 fi
+
+aws cloudformation deploy --region $REGION --template-file template.yml \
+--stack-name TEAM-IDC-APP \
+--parameter-overrides \
+  Source=$EMAIL_SOURCE \
+  BranchName=$BRANCH \
+  Login=$IDC_LOGIN_URL \
+  CloudTrailAuditLogs=$CLOUDTRAIL_AUDIT_LOGS \
+  teamAdminGroup="$TEAM_ADMIN_GROUP" \
+  teamAuditGroup="$TEAM_AUDITOR_GROUP" \
+  tags="$TAGS" \
+--tags $TAGS \
+--no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
 
 git push origin main
 git remote remove team
