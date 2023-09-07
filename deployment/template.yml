@@ -9,6 +9,12 @@ Parameters:
     Description: IAM IDC Login URL
   CloudTrailAuditLogs:
     Type: "String"
+    AllowedValues:
+      - read_write
+      - read
+      - write
+      - none
+      - ""
     Description: "Read and Write CloudTrail logs"
   teamAdminGroup:
     Type: String
