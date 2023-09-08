@@ -230,7 +230,7 @@ def invoke_approval_sm(request, sm_arn, notification_config, team_config):
 sso_instance = list_existing_sso_instances()
 
 
-def get_request_data(data, expire):
+def get_request_data(data, expire, approval_required):
     request = {
         "email": data.get("email", {}).get("S"),
         "username": data["username"]["S"],
@@ -249,6 +249,7 @@ def get_request_data(data, expire):
         "instanceARN": sso_instance['InstanceArn'],
         "approvers": [approver["S"] for approver in data.get("approvers", {}).get("L",[]) if approver["S"] != data.get("email", {}).get("S")],
         "expire": expire,
+        "approvalRequired": approval_required
     }
     return request
 
@@ -282,7 +283,7 @@ def get_eligibility(request, userId):
 def check_settings():
     settings = get_settings()
     item_settings = settings.get("Item", {})
-    approval_globally_required = item_settings.get("approval", True)
+    approval_required = item_settings.get("approval", True)
     expiry = int(item_settings.get("expiry", 3)) * 60 * 60
     max_duration = item_settings.get("duration", "9")
     ses_notifications_enabled = item_settings.get("sesNotificationsEnabled", False)
@@ -299,15 +300,14 @@ def check_settings():
         "notification_topic_arn": notification_topic_arn,
     }
     return {
-        "approval_required": approval_globally_required, 
+        "approval_required": approval_required, 
         "expiry": expiry, 
         "max_duration": max_duration,
         "notification_config": notification_config,
     }
 
         
-def invoke_workflow(request, notification_config, team_config):
-    approval_required = request["approval_required"]
+def invoke_workflow(request, approval_required, notification_config, team_config):
     workflow = None
     if approval_required and request["status"] == "pending":
         print("sending approval")
@@ -318,9 +318,6 @@ def invoke_workflow(request, notification_config, team_config):
     elif approval_required and request["status"] == "rejected" and request["email"] != request["approver"]:
         print("rejecting request")
         workflow = reject
-    elif not approval_required and request["status"] == "pending":
-        print("scheduling session, approval not required")
-        workflow = schedule
     elif request["status"] == "revoked":
         print("revoking session")
         workflow = revoke
@@ -503,10 +500,10 @@ def handler(event, context):
     request_id = data["id"]["S"]
     if request_is_updated(status,data,username,request_id):
         settings = check_settings()
-        approval_globally_required = settings["approval_required"]
+        approval_required = settings["approval_required"]
         notification_config = settings["notification_config"]
         expiry_time = settings["expiry"]
-        request = get_request_data(data, expiry_time)
+        request = get_request_data(data, expiry_time, approval_required)
         if int(request["time"]) > int(settings["max_duration"]):
             print("Error: Invalid Duration")
             input = {
@@ -519,11 +516,10 @@ def handler(event, context):
         request["userId"] = userId
         eligible = get_eligibility(request, userId)
         if eligible:
-            if not approval_globally_required and (eligible["approval"] == False):
-                request["approvalRequired"] = False
-            else:
-                request["approvalRequired"] = True
-            invoke_workflow(request, notification_config, team_config)
+            if approval_required:
+                approval_required = eligible["approval"]
+                request["approvalRequired"] = eligible["approval"]
+            invoke_workflow(request, approval_required, notification_config, team_config)
     else:
         print("Request not updated")
         
