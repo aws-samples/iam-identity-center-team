@@ -14,6 +14,7 @@ Parameters:
       - read
       - write
       - none
+      - ""
     Description: "Read and Write CloudTrail logs"
   teamAdminGroup:
     Type: String
