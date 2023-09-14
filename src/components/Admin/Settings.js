@@ -282,9 +282,9 @@ function Settings(props) {
                   {approval !== null ? (
                     <div>
                       <StatusIndicator
-                        type={approval === true ? "success" : "stopped"}
+                        type={approval === true ? "info" : "warning"}
                       >
-                        {approval === true ? "Required" : "Not required"}
+                        {approval === true ? "Set by eligibility policy" : "Approval not required"}
                       </StatusIndicator>
                     </div>
                   ) : (
@@ -560,9 +560,9 @@ function Settings(props) {
               </div>
               <div>
                 <FormField
-                  label="Require approval of all requests"
+                  label="Eligibility policies can require approval"
                   stretch
-                  description="Determines if approval is required for all elevated access request"
+                  description="Determines if eligibility policies can require approval. If disabled, approval will not be required for requests."
                 >
                   <Toggle
                     onChange={({ detail }) => setApproval(detail.checked)}
@@ -573,9 +573,9 @@ function Settings(props) {
                 </FormField>
                 <br />
                 <FormField
-                  label="Require comment request approvals"
+                  label="Require request justification"
                   stretch
-                  description="Determines if comment field is mandatory for TEAM approvals"
+                  description="Determines if justification field is mandatory for requests"
                 >
                   <Toggle
                     onChange={({ detail }) => setComments(detail.checked)}
@@ -588,7 +588,7 @@ function Settings(props) {
                 <FormField
                   label="Require ticket number for all requests"
                   stretch
-                  description="Determines if ticket number field is mandatory for elevated access request"
+                  description="Determines if ticket number field is mandatory for requests"
                 >
                   <Toggle
                     onChange={({ detail }) => setTicketNo(detail.checked)}
