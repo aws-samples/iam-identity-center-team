@@ -13,6 +13,12 @@ Parameters:
       - none
       - ""
     Description: "Read and Write CloudTrail logs"
+  teamAdminGroup:
+    Type: String
+    Description: TEAM application Admin group
+  teamAuditGroup:
+    Type: String
+    Description: TEAM application Auditor group
   tags:
     Type: String
     Description: TEAM application tags
@@ -119,6 +125,10 @@ Resources:
             - IsEmptyCloudTrailAuditLogs
             - "read_write"
             - !Ref CloudTrailAuditLogs
+        - Name: TEAM_ADMIN_GROUP
+          Value: !Ref teamAdminGroup
+        - Name: TEAM_AUDITOR_GROUP
+          Value: !Ref teamAuditGroup
         - Name: TAGS
           Value: !Ref tags
       Tags:
