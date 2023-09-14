@@ -36,6 +36,7 @@ Create a new file named **parameters.sh** in the **deployment** directory. Copy 
 
 **Parameters**
 
+Required:
 - **IDC_LOGIN_URL** - AWS IAM Identity Center Login URL
 - **REGION** - AWS region where the application will be deployed.
     > This must be the same region AWS IAM Identity Center is deployed in
@@ -45,7 +46,14 @@ Create a new file named **parameters.sh** in the **deployment** directory. Copy 
 - **TEAM_ACCOUNT_PROFILE** - Named profile for TEAM Application deployment Account
 - **TEAM_ADMIN_GROUP** - Name of IAM Identity Center group for TEAM administrators
 - **TEAM_AUDITOR_GROUP** - Name of IAM Identity Center group for TEAM auditors
+
+Optional:
 - **TAGS** - Tags that should be propagated to nested stacks and underlying resources
+- **CLOUDTRAIL_AUDIT_LOGS** - CloudTrail Event Data Store logging configuration. Options:
+  - `read_write` - record read and write events
+  - `read` - record only read events
+  - `write` - record only write events
+  - `none` - disable event logging
 
 For example:
 
@@ -58,6 +66,7 @@ TEAM_ACCOUNT_PROFILE=TeamAccountProfileName
 TEAM_ADMIN_GROUP="team_admin_group_name"
 TEAM_AUDITOR_GROUP="team_auditor_group_name"
 TAGS="tag1=value1 tag2=value2"
+CLOUDTRAIL_AUDIT_LOGS=read_write
 ```
 
 ---

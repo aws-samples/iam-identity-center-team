@@ -96,8 +96,12 @@ function Landing(props) {
                     href="#"
                     variant="primary"
                     onClick={() => {
-                      history.push("/requests/request");
-                      props.setActiveHref("/sessions/active");
+                      if (selectedOption.id === "1") {
+                        history.push("/requests/request");
+                      } else if (selectedOption.id === "2") {
+                        history.push("/approvals/approve");
+                      }
+                      props.setActiveHref("/sessions/active")
                     }}
                   >
                     Next steps

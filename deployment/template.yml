@@ -4,10 +4,22 @@ Parameters:
   Login:
     Type: String
     Description: IAM IDC Login URL
+  CloudTrailAuditLogs:
+    Type: "String"
+    AllowedValues:
+      - read_write
+      - read
+      - write
+      - none
+      - ""
+    Description: "Read and Write CloudTrail logs"
   tags:
     Type: String
     Description: TEAM application tags
     Default: ""
+
+Conditions:
+  IsEmptyCloudTrailAuditLogs: !Equals [!Ref CloudTrailAuditLogs, ""]
 
 Resources:
   TriggerAmplifyBuild:
@@ -102,6 +114,11 @@ Resources:
       EnvironmentVariables: 
         - Name: SSO_LOGIN
           Value: !Ref Login
+        - Name: CLOUDTRAIL_AUDIT_LOGS
+          Value: !If
+            - IsEmptyCloudTrailAuditLogs
+            - "read_write"
+            - !Ref CloudTrailAuditLogs
         - Name: TAGS
           Value: !Ref tags
       Tags:

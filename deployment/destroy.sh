@@ -17,11 +17,11 @@
 
 export AWS_PROFILE=$TEAM_ACCOUNT_PROFILE
 
-appId=`aws amplify list-apps --output json | jq -r '.apps[] | select(.name=="TEAM-IDC-APP") | .appId' `
-stackName=`aws amplify get-backend-environment --app-id $appId --environment-name main --output json | jq -r '.backendEnvironment | .stackName'`
+appId=`aws amplify list-apps --region $REGION --output json | jq -r '.apps[] | select(.name=="TEAM-IDC-APP") | .appId' `
+stackName=`aws amplify get-backend-environment --region $REGION --app-id $appId --environment-name main --output json | jq -r '.backendEnvironment | .stackName'`
 
-aws cloudformation delete-stack --stack-name $stackName
+aws cloudformation delete-stack --region $REGION --stack-name $stackName
 
-aws cloudformation delete-stack --stack-name TEAM-IDC-APP
+aws cloudformation delete-stack --region $REGION --stack-name TEAM-IDC-APP
 
-aws codecommit delete-repository --repository-name team-idc-app
+aws codecommit delete-repository --region $REGION \--repository-name team-idc-app
