@@ -363,7 +363,7 @@ function Settings(props) {
                 </>
               </div>
               <div>
-                <Box variant="awsui-keyƒ-label">TEAM auditor group</Box>
+                <Box variant="awsui-key-label">TEAM auditor group</Box>
                 <>
                   {" "}
                   {teamAuditorGroup !== null ? (
