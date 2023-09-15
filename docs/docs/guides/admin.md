@@ -42,8 +42,8 @@ Before TEAM application can be used fully, an administrator is required to confi
     {: .note}
 9. Specify a *Max duration* in hours that can be requested by an entity.
   > If a user belongs to multiple groups with different policies, the effective *max duration* is the maximum value across the policies
-10. Use *Approval required* tickbox to specify if approval is required or not for elevated access requested.
-  > If a user belongs to multiple groups with different policies, an approval required policy will take precedence over an approval not required policy. This configuration is disregarded if approval required is turned off globally in the TEAM settings
+10. Use *Approval required* tickbox to specify if approval is required or not for elevated access requested. Note: This configuration is disregarded if the approval workflow is disabled globally in the TEAM settings.
+  > If a user belongs to multiple groups with different policies, an approval required policy will take precedence over an approval not required policy.
 10. Click on *Add eligibiliy policy*.
 
 ### Eligibility policy configuration demo
@@ -78,8 +78,8 @@ An administrator can configure global TEAM application settings, such as:
   - **TEAM admin group**: Deteremines the group of users who can administer the TEAM application.
   - **TEAM auditor group**: Determines the group of users who can audit access request activity in TEAM.
 - Request settings
-  - **Approval required**: Determines if approval is turned on or off for all elevated access request.
-    > If this setting is turned on, the approval configuration in the eligibility policy  will determine if approval is required or not for an entity (user or group).
+  - **Approval workflow**: Determines if eligibility policies can require request approval.
+    > If this setting is disabled, approval will not be required for elevated access if the requester is eligible.
   - **Require justification**: Determines if the **justification** input form field is mandatory when creating a TEAM elevated access request.
   - **Require ticket number**: Determines if users are required to provide a ticket number for issue tracking when making an elevated access request or configuring admin policies.
   - **Maximum request duration**: Determines the maximum elevated access duration in hours (between 1-8000 hours / ~ 1 year) that can be requested by all users.
