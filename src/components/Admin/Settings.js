@@ -293,7 +293,7 @@ function Settings(props) {
                 </>
               </div>
               <div>
-                <Box variant="awsui-key-label">Comment</Box>
+                <Box variant="awsui-key-label">Request justification</Box>
                 <>
                   {" "}
                   {comments !== null ? (
@@ -560,7 +560,7 @@ function Settings(props) {
               </div>
               <div>
                 <FormField
-                  label="Eligibility policies can require approval"
+                  label="Approval workflow"
                   stretch
                   description="Determines if eligibility policies can require approval. If disabled, approval will not be required for requests."
                 >
@@ -568,12 +568,12 @@ function Settings(props) {
                     onChange={({ detail }) => setApproval(detail.checked)}
                     checked={approval}
                   >
-                    Approval workflow
+                    Eligibility policies can require approval
                   </Toggle>
                 </FormField>
                 <br />
                 <FormField
-                  label="Require request justification"
+                  label="Request justification"
                   stretch
                   description="Determines if justification field is mandatory for requests"
                 >
@@ -581,12 +581,12 @@ function Settings(props) {
                     onChange={({ detail }) => setComments(detail.checked)}
                     checked={comments}
                   >
-                    Comments
+                    Require request justification
                   </Toggle>
                 </FormField>
                 <br />
                 <FormField
-                  label="Require ticket number for all requests"
+                  label="Ticket number"
                   stretch
                   description="Determines if ticket number field is mandatory for requests"
                 >
@@ -594,7 +594,7 @@ function Settings(props) {
                     onChange={({ detail }) => setTicketNo(detail.checked)}
                     checked={ticketNo}
                   >
-                    Ticket number
+                    Require ticket number for all requests
                   </Toggle>
                 </FormField>
                 <br />
