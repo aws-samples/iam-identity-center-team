@@ -6,6 +6,7 @@ from slack_sdk import WebClient
 import os
 import json
 import boto3
+from datetime import datetime, timezone
 from dateutil import parser, tz
 
 session = boto3.Session()
@@ -166,7 +167,7 @@ def lambda_handler(event: dict, context):
     ):
         # Notifications are disabled or configuration is invalid
         return
-    
+
     approval_required = event["approvalRequired"]
     request_status = event["status"]
     granted = (
@@ -181,17 +182,17 @@ def lambda_handler(event: dict, context):
         .get("Status", "")
         == "IN_PROGRESS"
     )
-    # This is updated in the DDB table after the event is generated, so we update it here
-    if request_status == "approved":
-        if ended:
-            request_status = "ended"
-        if granted and not ended:
-            request_status = "granted"
-    if request_status == "pending":
-        if granted:
-            request_status = "granted"
-        if not granted and not approval_required:
-            request_status = "scheduled"
+    # These statuses are updated in the DDB table after the event is generated, so we update it here
+    if ended:
+        request_status = "ended"
+    if (
+        (request_status == "approved" or request_status == "pending")
+        and granted
+        and not ended
+    ):
+        request_status = "granted"
+    if not granted and not approval_required:
+        request_status = "scheduled"
     event.update(
         {
             "status": request_status,
@@ -220,6 +221,11 @@ def lambda_handler(event: dict, context):
                 subject = f"{requester} requests access to AWS account {account} - TEAM"
                 email_message_html = f'<html><body><p><b>{requester}</b> requests access to AWS, please <b>approve or reject this request</b> in <a href="{login_url}">TEAM</a>.</p><p><b>Account:</b> {account}<br /><b>Role:</b> {role}<br /><b>Start Time:</b> {request_start_time}<br /><b>Duration:</b> {duration_hours} hours<br /><b>Justification:</b> {justification}<br /><b>Ticket Number:</b> {ticket}<br /></p></body></html>'
         case "scheduled":
+            # Don't need to send a notification if the request start time has already passed
+            if datetime.now(timezone.utc) > parser.parse(request_start_time).astimezone(
+                timezone.utc
+            ):
+                exit
             # Notify requester request scheduled
             slack_recipients = [requester]
             slack_message = f"Your AWS access session is scheduled."
