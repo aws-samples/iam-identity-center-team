@@ -46,6 +46,8 @@ async function update_react_parameters() {
   const reactParametersJsonPath = path.resolve(`./src/parameters.json`);
   const reactParametersJson = require(reactParametersJsonPath);
   reactParametersJson.Login = SSO_LOGIN;
+  reactParametersJson.teamAdminGroup = TEAM_ADMIN_GROUP;
+  reactParametersJson.teamAuditorGroup = TEAM_AUDITOR_GROUP;
 
   fs.writeFileSync(
     reactParametersJsonPath,

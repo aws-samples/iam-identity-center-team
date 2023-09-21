@@ -10,6 +10,7 @@ import Header from "@awsui/components-react/header";
 import ColumnLayout from "@awsui/components-react/column-layout";
 import Button from "@awsui/components-react/button";
 import Select from "@awsui/components-react/select";
+import params from "../../parameters.json";
 import {
   ContentLayout,
   Modal,
@@ -65,13 +66,13 @@ function Settings(props) {
 
   const slackAppManifest = {
     display_information: {
-      name: "AWS IAM TEAM",
-      description: "AWS Temporary Elevated Access Management",
+      name: "TEAM",
+      description: "Temporary Elevated Access Management for AWS IAM Identity Center",
       background_color: "#252F3E",
     },
     features: {
       bot_user: {
-        display_name: "AWS IAM TEAM",
+        display_name: "TEAM",
         always_online: false,
       },
     },
@@ -164,6 +165,7 @@ function Settings(props) {
   }
   function handleDismiss() {
     // Reset item states
+    if (item) {
     setDuration(item.duration);
     setExpiry(item.expiry);
     setComments(item.comments);
@@ -177,6 +179,7 @@ function Settings(props) {
     setSlackToken(item.slackToken);
     setTeamAdminGroup(item.teamAdminGroup);
     setTeamAuditorGroup(item.teamAuditorGroup);
+    }
     setVisible(false);
   }
   async function handleSubmit() {
@@ -242,8 +245,8 @@ function Settings(props) {
         setSesSourceEmail("");
         setSesSourceArn("");
         setSlackToken("");
-        setTeamAdminGroup("");
-        setTeamAuditorGroup("");
+        setTeamAdminGroup(params.teamAdminGroup);
+        setTeamAuditorGroup(params.teamAuditorGroup);
       }
     });
   }
