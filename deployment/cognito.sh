@@ -16,7 +16,8 @@
 
 . "./parameters.sh"
 
-export AWS_PROFILE=$TEAM_ACCOUNT_PROFILE
+# export AWS_PROFILE=$TEAM_ACCOUNT_PROFILE
+export AWS_PROFILE=$ORG_MASTER_PROFILE
 
 cognitoUserpoolId=`aws cognito-idp list-user-pools --region $REGION --max-results 10 --output json | jq -r '.UserPools[] | select(.Name | contains("team06dbb7fc")) | .Id'`
 clientID=`aws cognito-idp list-user-pool-clients --region $REGION --user-pool-id $cognitoUserpoolId --output json | jq -r '.UserPoolClients[] | select(.ClientName | contains("clientWeb")) | .ClientId'`

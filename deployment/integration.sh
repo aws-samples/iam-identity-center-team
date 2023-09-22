@@ -17,7 +17,8 @@
 
 . "./parameters.sh"
 
-export AWS_PROFILE=$TEAM_ACCOUNT_PROFILE
+# export AWS_PROFILE=$TEAM_ACCOUNT_PROFILE
+export AWS_PROFILE=$ORG_MASTER_PROFILE
 
 green='\033[0;32m'
 clear='\033[0m'

@@ -17,7 +17,8 @@ set -xe
 
 . "./parameters.sh"
 
-export AWS_PROFILE=$TEAM_ACCOUNT_PROFILE
+# export AWS_PROFILE=$TEAM_ACCOUNT_PROFILE
+export AWS_PROFILE=$ORG_MASTER_PROFILE
 
 cd ..
 

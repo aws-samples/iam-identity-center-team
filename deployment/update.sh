@@ -17,12 +17,17 @@ set -xe
 
 . "./parameters.sh"
 
-export AWS_PROFILE=$TEAM_ACCOUNT_PROFILE
+# export AWS_PROFILE=$TEAM_ACCOUNT_PROFILE
+export AWS_PROFILE=$ORG_MASTER_PROFILE
 
 git remote remove origin
 git remote add origin codecommit::$REGION://team-idc-app
-git remote add team https://github.com/aws-samples/iam-identity-center-team.git
-git pull team main
+# git remote add team https://github.com/aws-samples/iam-identity-center-team.git
+# git pull team main
+git add .
+git commit -m "Update"
+git checkout main
+git merge feature/allow-deployment-in-mgmt
 
 if [[ ! -z "$TAGS" ]];
 then
@@ -50,5 +55,6 @@ else
   --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
 fi
 
-git push origin main
-git remote remove team
+# git push origin main
+git push origin main 
+# git remote remove team
