@@ -24,8 +24,6 @@ git remote remove origin
 git remote add origin codecommit::$REGION://team-idc-app
 # git remote add team https://github.com/aws-samples/iam-identity-center-team.git
 # git pull team main
-git add .
-git commit -m "Update"
 git checkout main
 git merge feature/allow-deployment-in-mgmt
 
@@ -57,4 +55,5 @@ fi
 
 # git push origin main
 git push origin main 
+git checkout feature/allow-deployment-in-mgmt
 # git remote remove team
