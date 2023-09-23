@@ -274,7 +274,7 @@ function Settings(props) {
               <div>
                 <Box variant="h3">Request settings</Box>
                 <Box variant="small">
-                  Controls elevated access request settings
+                  Elevated access request settings
                 </Box>
                 <Divider style={{ marginBottom: "7px", marginTop: "7px" }} />
               </div>
@@ -285,9 +285,9 @@ function Settings(props) {
                   {approval !== null ? (
                     <div>
                       <StatusIndicator
-                        type={approval === true ? "info" : "warning"}
+                        type={approval === true ? "success" : "stopped"}
                       >
-                        {approval === true ? "Set by eligibility policy" : "Approval not required"}
+                        {approval === true ? "Enabled (Managed in eligibility policy)" : "Disbaled"}
                       </StatusIndicator>
                     </div>
                   ) : (
@@ -296,7 +296,7 @@ function Settings(props) {
                 </>
               </div>
               <div>
-                <Box variant="awsui-key-label">Request justification</Box>
+                <Box variant="awsui-key-label">Comments</Box>
                 <>
                   {" "}
                   {comments !== null ? (
@@ -506,14 +506,14 @@ function Settings(props) {
           >
             <SpaceBetween direction="vertical" size="l">
               <div>
-                <Box variant="h3">TEAM permissions</Box>
-                <Box variant="small">Controls TEAM admins and auditors</Box>
+                <Box variant="h3">Group settings</Box>
+                <Box variant="small">TEAM admin and auditor group settings</Box>
                 <Divider style={{ marginBottom: "1px", marginTop: "7px" }} />
               </div>
               <FormField
                 label="TEAM admin Group"
                 stretch
-                description="Group of users allowed to modify eligibility and approver policies"
+                description="Group of users responsible for managing TEAM administrative configurations "
               >
                 <Select
                   statusType={groupStatus}
@@ -536,7 +536,7 @@ function Settings(props) {
               <FormField
                 label="TEAM auditor Group"
                 stretch
-                description="Group of users allowed to audit access request in TEAM"
+                description="Group of users allowed to audit TEAM elevated access requests"
               >
                 <Select
                   statusType={groupStatus}
@@ -565,39 +565,39 @@ function Settings(props) {
                 <FormField
                   label="Approval workflow"
                   stretch
-                  description="Determines if eligibility policies can require approval. If disabled, approval will not be required for requests."
+                  description="If disabled, approval will not be required for all elevated access requests. If enabled, approval requirement is managed in eligibility policy configuration"
                 >
                   <Toggle
                     onChange={({ detail }) => setApproval(detail.checked)}
                     checked={approval}
                   >
-                    Eligibility policies can require approval
+                    {approval ? "Enabled" : "Disabled"}
                   </Toggle>
                 </FormField>
                 <br />
                 <FormField
-                  label="Request justification"
+                  label="Comments"
                   stretch
-                  description="Determines if justification field is mandatory for requests"
+                  description="Determines if comment field is mandatory for all elevated access request approvals"
                 >
                   <Toggle
                     onChange={({ detail }) => setComments(detail.checked)}
                     checked={comments}
                   >
-                    Require request justification
+                    {comments ? "Required" : "Not required"}
                   </Toggle>
                 </FormField>
                 <br />
                 <FormField
                   label="Ticket number"
                   stretch
-                  description="Determines if ticket number field is mandatory for requests"
+                  description="Determines if ticket number field is mandatory for elevated access requests"
                 >
                   <Toggle
                     onChange={({ detail }) => setTicketNo(detail.checked)}
                     checked={ticketNo}
                   >
-                    Require ticket number for all requests
+                    {ticketNo ? "Required" : "Not required"}
                   </Toggle>
                 </FormField>
                 <br />
