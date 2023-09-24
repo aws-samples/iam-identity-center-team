@@ -26,6 +26,9 @@ export type AmplifyDependentResourcesAttributes = {
     "cloudtrailLake": {
       "EventDataStoreOutput": "string"
     },
+    "sns": {
+      "NotificationTopicArn": "string"
+    },
     "stepfunctions": {
       "ApprovalSMOutput": "string",
       "GrantSMOutput": "string",
@@ -36,6 +39,13 @@ export type AmplifyDependentResourcesAttributes = {
   },
   "function": {
     "teamListGroups": {
+      "Arn": "string",
+      "LambdaExecutionRole": "string",
+      "LambdaExecutionRoleArn": "string",
+      "Name": "string",
+      "Region": "string"
+    },
+    "teamNotifications": {
       "Arn": "string",
       "LambdaExecutionRole": "string",
       "LambdaExecutionRoleArn": "string",
@@ -135,27 +145,6 @@ export type AmplifyDependentResourcesAttributes = {
       "LambdaExecutionRoleArn": "string",
       "Name": "string",
       "Region": "string"
-    },
-    "teamupdateRequest": {
-      "Arn": "string",
-      "LambdaExecutionRole": "string",
-      "LambdaExecutionRoleArn": "string",
-      "Name": "string",
-      "Region": "string"
-    },
-    "teamvalidateRequest": {
-      "Arn": "string",
-      "LambdaExecutionRole": "string",
-      "LambdaExecutionRoleArn": "string",
-      "Name": "string",
-      "Region": "string"
-    },
-    "teamNotifySlack": {
-      "Arn": "string",
-      "LambdaExecutionRole": "string",
-      "LambdaExecutionRoleArn": "string",
-      "Name": "string",
-      "Region": "string"
-    },
+    }
   }
 }

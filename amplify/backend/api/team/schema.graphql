@@ -169,6 +169,7 @@ type OUs {
   Id: String!
   Arn: String!
   Name: String!
+  Children:[OUs]
 }
 type Permissions {
   Name: String!

@@ -21,6 +21,7 @@ import {
   Select,
   ColumnLayout,
   Input,
+  Spinner
 } from "@awsui/components-react";
 import { useCollection } from "@awsui/collection-hooks";
 import {
@@ -33,6 +34,7 @@ import {
   fetchIdCGroups,
   getSetting
 } from "../Shared/RequestService";
+import Ous from "../Shared/Ous";
 import "../../index.css";
 
 const COLUMN_DEFINITIONS = [
@@ -252,6 +254,7 @@ function Approvers(props) {
   const [approver, setApprover] = useState([]);
   const [ticketRequired, setTicketRequired] = useState(true);
 
+
   useEffect(() => {
     views();
     props.addNotification([]);
@@ -455,7 +458,6 @@ function Approvers(props) {
     </div>
   );
 
-
   return (
     <div className="container">
       <Table
@@ -617,26 +619,13 @@ function Approvers(props) {
                 description="Organizational Unit"
                 errorText={resourceError}
               >
-                <Multiselect
-                  statusType={ouStatus}
-                  placeholder="Select OUs"
-                  loadingText="Loading OUs"
-                  filteringType="auto"
-                  empty="No options"
-                  options={ous.map((ou) => ({
-                    label: ou.Name,
-                    value: ou.Id,
-                    description: ou.Id,
-                    disabled: allItems.map(({ id }) => id).includes(ou.Id),
-                  }))}
-                  selectedOptions={resource}
-                  onChange={(event) => {
-                    setResourceError();
-                    onResourceChange(event.detail.selectedOptions);
-                  }}
-                  selectedAriaLabel="selected"
-                  deselectAriaLabel={(e) => `Remove ${e.label}`}
-                />
+                {ous.length === 1 ? (<Ous
+                  options={ous}
+                  setResource={setResource}
+                  resource={resource}
+                  action="create"
+                  allItems={allItems}
+                  />) : <Spinner size="large"/>}
               </FormField>
             )}
             <FormField

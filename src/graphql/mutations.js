@@ -233,8 +233,6 @@ export const createSettings = /* GraphQL */ `
       ticketNo
       approval
       modifiedBy
-      createdAt
-      updatedAt
       sesNotificationsEnabled
       snsNotificationsEnabled
       slackNotificationsEnabled
@@ -243,6 +241,8 @@ export const createSettings = /* GraphQL */ `
       slackToken
       teamAdminGroup
       teamAuditorGroup
+      createdAt
+      updatedAt
     }
   }
 `;
@@ -259,8 +259,6 @@ export const updateSettings = /* GraphQL */ `
       ticketNo
       approval
       modifiedBy
-      createdAt
-      updatedAt
       sesNotificationsEnabled
       snsNotificationsEnabled
       slackNotificationsEnabled
@@ -269,6 +267,8 @@ export const updateSettings = /* GraphQL */ `
       slackToken
       teamAdminGroup
       teamAuditorGroup
+      createdAt
+      updatedAt
     }
   }
 `;
@@ -285,8 +285,6 @@ export const deleteSettings = /* GraphQL */ `
       ticketNo
       approval
       modifiedBy
-      createdAt
-      updatedAt
       sesNotificationsEnabled
       snsNotificationsEnabled
       slackNotificationsEnabled
@@ -295,6 +293,8 @@ export const deleteSettings = /* GraphQL */ `
       slackToken
       teamAdminGroup
       teamAuditorGroup
+      createdAt
+      updatedAt
     }
   }
 `;

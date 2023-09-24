@@ -22,8 +22,10 @@ import {
   ColumnLayout,
   Toggle,
   Input,
+  Spinner
 } from "@awsui/components-react";
 import { useCollection } from "@awsui/collection-hooks";
+import Ous from "../Shared/Ous";
 import {
   fetchAccounts,
   fetchOUs,
@@ -818,7 +820,13 @@ function Eligible(props) {
               description="list of Eligible OUs"
               errorText={ouError}
             >
-              <Multiselect
+                {ous.length === 1 ? (<Ous
+                  options={ous}
+                  setResource={setOU}
+                  resource={ou}
+                  />) : <Spinner size="large"/>}
+
+              {/* <Multiselect
                 statusType={ouStatus}
                 placeholder="Select OUs"
                 loadingText="Loading OUs"
@@ -836,7 +844,7 @@ function Eligible(props) {
                 }}
                 selectedAriaLabel="selected"
                 deselectAriaLabel={(e) => `Remove ${e.label}`}
-              />
+              /> */}
             </FormField>
             <FormField
               label="Permission"
@@ -1014,7 +1022,12 @@ function Eligible(props) {
               description="list of Eligible OUs"
               errorText={ouError}
             >
-              <Multiselect
+              {ous.length === 1 ? (<Ous
+                  options={ous}
+                  setResource={setOU}
+                  resource={ou}
+                  />) : <Spinner size="large"/>}
+              {/* <Multiselect
                 statusType={ouStatus}
                 placeholder="Select OUs"
                 loadingText="Loading OUs"
@@ -1032,7 +1045,7 @@ function Eligible(props) {
                 }}
                 selectedAriaLabel="selected"
                 deselectAriaLabel={(e) => `Remove ${e.label}`}
-              />
+              /> */}
             </FormField>
             <FormField
               label="Permission"

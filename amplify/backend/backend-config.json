@@ -87,12 +87,12 @@
       "providerPlugin": "awscloudformation",
       "service": "customCloudformation"
     },
-    "sns": {
+    "s3bucketSecurity": {
       "dependsOn": [],
       "providerPlugin": "awscloudformation",
       "service": "customCloudformation"
     },
-    "s3bucketSecurity": {
+    "sns": {
       "dependsOn": [],
       "providerPlugin": "awscloudformation",
       "service": "customCloudformation"
@@ -128,6 +128,20 @@
           ],
           "category": "function",
           "resourceName": "teamapplicationboto3layer"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
+    "teamNotifications": {
+      "build": true,
+      "dependsOn": [
+        {
+          "attributes": [
+            "GraphQLAPIIdOutput"
+          ],
+          "category": "api",
+          "resourceName": "team"
         }
       ],
       "providerPlugin": "awscloudformation",
@@ -324,20 +338,6 @@
       ],
       "providerPlugin": "awscloudformation",
       "service": "Lambda"
-    },
-    "teamNotifications": {
-      "build": true,
-      "dependsOn": [
-        {
-          "attributes": [
-            "GraphQLAPIIdOutput"
-          ],
-          "category": "api",
-          "resourceName": "team"
-        }
-      ],
-      "providerPlugin": "awscloudformation",
-      "service": "Lambda"
     }
   },
   "hosting": {
@@ -361,6 +361,22 @@
         {
           "category": "function",
           "resourceName": "teamListGroups"
+        }
+      ]
+    },
+    "AMPLIFY_function_teamNotifications_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teamNotifications"
+        }
+      ]
+    },
+    "AMPLIFY_function_teamNotifications_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teamNotifications"
         }
       ]
     },
@@ -585,22 +601,6 @@
         {
           "category": "function",
           "resourceName": "teamqueryLogs"
-        }
-      ]
-    },
-    "AMPLIFY_function_teamNotifications_deploymentBucketName": {
-      "usedBy": [
-        {
-          "category": "function",
-          "resourceName": "teamNotifications"
-        }
-      ]
-    },
-    "AMPLIFY_function_teamNotifications_s3Key": {
-      "usedBy": [
-        {
-          "category": "function",
-          "resourceName": "teamNotifications"
         }
       ]
     },

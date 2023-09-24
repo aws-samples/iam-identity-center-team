@@ -256,8 +256,6 @@ export const getSettings = /* GraphQL */ `
       ticketNo
       approval
       modifiedBy
-      createdAt
-      updatedAt
       sesNotificationsEnabled
       snsNotificationsEnabled
       slackNotificationsEnabled
@@ -266,6 +264,8 @@ export const getSettings = /* GraphQL */ `
       slackToken
       teamAdminGroup
       teamAuditorGroup
+      createdAt
+      updatedAt
     }
   }
 `;
@@ -284,8 +284,6 @@ export const listSettings = /* GraphQL */ `
         ticketNo
         approval
         modifiedBy
-        createdAt
-        updatedAt
         sesNotificationsEnabled
         snsNotificationsEnabled
         slackNotificationsEnabled
@@ -294,6 +292,8 @@ export const listSettings = /* GraphQL */ `
         slackToken
         teamAdminGroup
         teamAuditorGroup
+        createdAt
+        updatedAt
       }
       nextToken
     }
@@ -374,6 +374,16 @@ export const getOUs = /* GraphQL */ `
       Id
       Arn
       Name
+      Children {
+        Id
+        Arn
+        Name
+        Children {
+          Id
+          Arn
+          Name
+        }
+      }
     }
   }
 `;
