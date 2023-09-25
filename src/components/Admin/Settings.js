@@ -578,7 +578,7 @@ function Settings(props) {
                 <FormField
                   label="Comments"
                   stretch
-                  description="Determines if comment field is mandatory for all elevated access request approvals"
+                  description="Determines if comment field is mandatory for all elevated access requests"
                 >
                   <Toggle
                     onChange={({ detail }) => setComments(detail.checked)}
