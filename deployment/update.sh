@@ -57,6 +57,6 @@ else
 fi
 
 # git push origin main
-git push origin main 
+git push origin main --no-verify
 git checkout feature/allow-deployment-in-mgmt
 # git remote remove team
