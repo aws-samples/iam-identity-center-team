@@ -287,7 +287,7 @@ function Settings(props) {
                       <StatusIndicator
                         type={approval === true ? "success" : "stopped"}
                       >
-                        {approval === true ? "Enabled (Managed in eligibility policy)" : "Disbaled"}
+                        {approval === true ? "Enabled (Managed in eligibility policy)" : "Disabled"}
                       </StatusIndicator>
                     </div>
                   ) : (
@@ -513,7 +513,7 @@ function Settings(props) {
               <FormField
                 label="TEAM admin Group"
                 stretch
-                description="Group of users responsible for managing TEAM administrative configurations "
+                description="Group of users responsible for managing TEAM administrative configurations"
               >
                 <Select
                   statusType={groupStatus}
