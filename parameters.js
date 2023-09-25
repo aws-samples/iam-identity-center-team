@@ -45,6 +45,7 @@ async function update_react_parameters() {
   const reactParametersJsonPath = path.resolve(`./src/parameters.json`);
   const reactParametersJson = require(reactParametersJsonPath);
   reactParametersJson.Login = SSO_LOGIN;
+  console.log("Team Account param:");
   console.log(TEAM_ACCOUNT);
   if (TEAM_ACCOUNT === undefined) {
     reactParametersJson.DeploymentType = "management"
