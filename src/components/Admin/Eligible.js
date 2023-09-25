@@ -791,7 +791,7 @@ function Eligible(props) {
             <FormField
               label="Accounts"
               stretch
-              description="list of Eligible Accounts"
+              description="List of Eligible Accounts"
               errorText={accountError}
             >
               <Multiselect
@@ -817,7 +817,7 @@ function Eligible(props) {
             <FormField
               label="OUs"
               stretch
-              description="list of Eligible OUs"
+              description="List of Eligible OUs"
               errorText={ouError}
             >
                 {ous.length === 1 ? (<Ous
@@ -849,7 +849,7 @@ function Eligible(props) {
             <FormField
               label="Permission"
               stretch
-              description="list of Eligible Permissions"
+              description="List of Eligible Permissions"
               errorText={permissionError}
             >
               <Multiselect
@@ -993,7 +993,7 @@ function Eligible(props) {
             <FormField
               label="Account"
               stretch
-              description="list of Eligible Accounts"
+              description="List of Eligible Accounts"
               errorText={accountError}
             >
               <Multiselect
@@ -1019,7 +1019,7 @@ function Eligible(props) {
             <FormField
               label="OU"
               stretch
-              description="list of Eligible OUs"
+              description="List of Eligible OUs"
               errorText={ouError}
             >
               {ous.length === 1 ? (<Ous
@@ -1050,7 +1050,7 @@ function Eligible(props) {
             <FormField
               label="Permission"
               stretch
-              description="list of Eligible Permissions"
+              description="List of Eligible Permissions"
               errorText={permissionError}
             >
               <Multiselect
