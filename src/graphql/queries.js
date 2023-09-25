@@ -382,6 +382,31 @@ export const getOUs = /* GraphQL */ `
           Id
           Arn
           Name
+          Children {
+            Id
+            Arn
+            Name
+            Children {
+              Id
+              Arn
+              Name
+              Children {
+                Id
+                Arn
+                Name
+                Children {
+                  Id
+                  Arn
+                  Name
+                  Children {
+                    Id
+                    Arn
+                    Name
+                  }
+                }
+              }
+            }
+          }
         }
       }
     }
