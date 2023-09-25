@@ -17,8 +17,11 @@ set -xe
 
 . "./parameters.sh"
 
-# export AWS_PROFILE=$TEAM_ACCOUNT_PROFILE
-export AWS_PROFILE=$ORG_MASTER_PROFILE
+if [ -z "$TEAM_ACCOUNT" ]; then 
+  export AWS_PROFILE=$ORG_MASTER_PROFILE
+else 
+  export AWS_PROFILE=$TEAM_ACCOUNT_PROFILE
+fi
 
 git remote remove origin
 git remote add origin codecommit::$REGION://team-idc-app
