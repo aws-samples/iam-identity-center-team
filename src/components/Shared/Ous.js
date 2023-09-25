@@ -17,93 +17,111 @@ import Checkbox from '@awsui/components-react/checkbox';
 import Box from '@awsui/components-react/box';
 import "../../index.css";
 
-const Hierarchy = ({options,resource, onSelect,handleToggle,action,allItems}) => {
+const Hierarchy = ({ options, resource, onSelect, handleToggle, action, allItems }) => {
   return (
-  <div>
-  <ul>
-  {options.map(option => 
-    <li>
-    <ExpandableSection
-      variant="footer"
-      header={
-        <>
-      <Checkbox
-      onChange={({detail}) => {
-        handleToggle(option,detail.checked)
-        }}
-      checked={resource.some(item => item.value === option.Id)}
-      disabled={action ? allItems.some(item => item.id === options.Id) : false}
-    >
-      
-      <div>
-        <Box>{option.Name}</Box>
-        <Box variant="awsui-key-label">{option.Id}</Box>
-      </div>
-    </Checkbox>
-    </>
-    }
-    >
-    {option.Children && (
-        <Hierarchy 
-        options={option.Children}
-        resource={resource}
-        onSelect={onSelect}
-        handleToggle={handleToggle}
-        />
-      )}
-    </ExpandableSection>
-    </li>
+    <div>
+      <ul>
+        {options.map(option => (
+          <li key={option.Id}>
+            {(option.Children.length === 0) ? (
+              <li>
+                <Checkbox
+                  onChange={({ detail }) => {
+                    handleToggle(option, detail.checked)
+                  }}
+                  checked={resource.some(item => item.value === option.Id)}
+                  disabled={action ? allItems.some(item => item.id === options.Id) : false}
+                >
+                  <div>
+                    <Box>{option.Name}</Box>
+                    <Box variant="awsui-key-label">{option.Id}</Box>
+                  </div>
+                </Checkbox>
+              </li>
+            ) : (
+              <li>
+                <ExpandableSection
+                  variant="footer"
+                  header={
+                    <>
+                      <Checkbox
+                        onChange={({ detail }) => {
+                          handleToggle(option, detail.checked)
+                        }}
+                        checked={resource.some(item => item.value === option.Id)}
+                        disabled={action ? allItems.some(item => item.id === options.Id) : false}
+                      >
+
+                          <div>
+                            <Box>{option.Name}</Box>
+                            <Box variant="awsui-key-label">{option.Id}</Box>
+                          </div>
+                        </Checkbox>
+                      </>
+                    }
+                  >
+                    <Hierarchy
+                      options={option.Children}
+                      resource={resource}
+                      onSelect={onSelect}
+                      handleToggle={handleToggle}
+                    />
+                  </ExpandableSection>
+              </li>
+            )}
+          </li>
+        ))}
+      </ul>
+    </div>
   )
 }
-</ul>
-</div>)
-}
 
-function Ous({options,setResource,resource=[],action=null,allItems=[]}){
-    console.log(action)
-    console.log(allItems)
-    const handleSelect = (selected) => {
-        console.log(selected)
-        setResource(selected)
-      };
-    
-      const handleToggle = (value,checked) => {
-        const data = {label:value.Name, value:value.Id}
-        if (checked) {
-          handleSelect([...resource, data]);
-        } else {
-          handleSelect(resource.filter(option => option.value !== data.value));
-        }
-        console.log(resource)
-      };
-    ;
+function Ous({ options, setResource, resource = [], action = null, allItems = [] }) {
+  console.log(action)
+  console.log(allItems)
+  const handleSelect = (selected) => {
+    console.log(selected)
+    setResource(selected)
+  };
+
+  const handleToggle = (value, checked) => {
+    const data = { label: value.Name, value: value.Id }
+    if (checked) {
+      handleSelect([...resource, data]);
+    } else {
+      handleSelect(resource.filter(option => option.value !== data.value));
+    }
+    console.log(resource)
+  };
+  ;
 
   return (
     <ExpandableSection
       variant="footer"
       header={
         <div>
-      <Checkbox
-      onChange={({detail}) => {
-        handleToggle(options[0],detail.checked)}}
-      checked={resource.some(item => item.value === options[0].Id)}
-      disabled={action ? allItems.some(item => item.id === options[0].Id) : false}
-      >
-      <div>
-        <Box>{options[0].Name}</Box>
-        <Box variant="awsui-key-label">{options[0].Id}</Box>
-      </div>
-    </Checkbox>
-    </div>
+          <Checkbox
+            onChange={({ detail }) => {
+              handleToggle(options[0], detail.checked)
+            }}
+            checked={resource.some(item => item.value === options[0].Id)}
+            disabled={action ? allItems.some(item => item.id === options[0].Id) : false}
+          >
+            <div>
+              <Box>{options[0].Name}</Box>
+              <Box variant="awsui-key-label">{options[0].Id}</Box>
+            </div>
+          </Checkbox>
+        </div>
       }
-      >
-      <Hierarchy 
-      options={options[0].Children}
-      resource={resource}
-      onSelect={handleSelect}
-      handleToggle={handleToggle}
-      action={action}
-      allItems={allItems}
+    >
+      <Hierarchy
+        options={options[0].Children}
+        resource={resource}
+        onSelect={handleSelect}
+        handleToggle={handleToggle}
+        action={action}
+        allItems={allItems}
       />
     </ExpandableSection>
   );
