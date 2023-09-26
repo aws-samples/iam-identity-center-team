@@ -17,60 +17,62 @@ import Checkbox from '@awsui/components-react/checkbox';
 import Box from '@awsui/components-react/box';
 import "../../index.css";
 
-const CheckboxWithLabel = ({
-  option,
-  resources,
-  handleToggle
-}) => {
-  const checked = resources.some(item => item.value === option.Id);
+const Hierarchy = ({ options, resource, onSelect, handleToggle, action, allItems }) => {
   return (
-    <Checkbox
-      onChange={({ detail }) => {
-        handleToggle(option, detail.checked)
-      }}
-      checked={checked}
-    >
-      <div>
-        <Box>{option.Name}</Box>
-        <Box variant="awsui-key-label">{option.Id}</Box>
-      </div>
-    </Checkbox>
-  )
-}
+    <div>
+      <ul>
+        {options.map(option => (
+          <li key={option.Id}>
+            {(option.Children.length === 0) ? (
+              <li>
+                <Checkbox
+                  onChange={({ detail }) => {
+                    handleToggle(option, detail.checked)
+                  }}
+                  checked={resource.some(item => item.value === option.Id)}
+                  disabled={action ? allItems.some(item => item.id === options.Id) : false}
+                >
+                  <div>
+                    <Box>{option.Name}</Box>
+                    <Box variant="awsui-key-label">{option.Id}</Box>
+                  </div>
+                </Checkbox>
+              </li>
+            ) : (
+              <li>
+                <ExpandableSection
+                  variant="footer"
+                  header={
+                    <>
+                      <Checkbox
+                        onChange={({ detail }) => {
+                          handleToggle(option, detail.checked)
+                        }}
+                        checked={resource.some(item => item.value === option.Id)}
+                        disabled={action ? allItems.some(item => item.id === options.Id) : false}
+                      >
 
-const Hierarchy = ({ options, resources, onSelect, handleToggle }) => {
-  return (
-    <ul>
-      {options.map(option => (
-        <li key={option.Id}>
-          {(option.Children.length === 0) ? (
-            <CheckboxWithLabel
-              option={option}
-              resources={resources}
-              handleToggle={handleToggle}
-            />
-          ) : (
-              <ExpandableSection
-                variant="footer"
-                header={
-                  <CheckboxWithLabel
-                    option={option}
-                    resources={resources}
-                    handleToggle={handleToggle}
-                  />
-                }
-              >
-                <Hierarchy
-                  options={option.Children}
-                  resources={resources}
-                  onSelect={onSelect}
-                  handleToggle={handleToggle}
-                />
-              </ExpandableSection>
-          )}
-        </li>
-      ))}
-    </ul>
+                          <div>
+                            <Box>{option.Name}</Box>
+                            <Box variant="awsui-key-label">{option.Id}</Box>
+                          </div>
+                        </Checkbox>
+                      </>
+                    }
+                  >
+                    <Hierarchy
+                      options={option.Children}
+                      resource={resource}
+                      onSelect={onSelect}
+                      handleToggle={handleToggle}
+                    />
+                  </ExpandableSection>
+              </li>
+            )}
+          </li>
+        ))}
+      </ul>
+    </div>
   )
 }
 
