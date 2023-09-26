@@ -25,9 +25,10 @@ fi
 
 git remote remove origin
 git remote add origin codecommit::$REGION://team-idc-app
-git remote add team https://github.com/aws-samples/iam-identity-center-team.git
-git pull team main
-
+# git remote add team https://github.com/aws-samples/iam-identity-center-team.git
+# git pull team main
+git checkout main
+git merge feature/allow-deployment-in-mgmt
 
 if [[ ! -z "$TAGS" ]];
 then
@@ -58,4 +59,4 @@ else
 fi
 
 git push origin main
-git remote remove team
+# git remote remove team
