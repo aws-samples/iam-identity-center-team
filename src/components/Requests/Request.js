@@ -25,6 +25,7 @@ import {
   getMgmtAccountPs
 } from "../Shared/RequestService";
 import { useHistory } from "react-router-dom";
+import params from "../../parameters.json";
 
 function Request(props) {
   const [email, setEmail] = useState("");
@@ -200,6 +201,8 @@ function Request(props) {
 
   async function validate() {
     let error = false;
+    console.log("validating");
+    console.log(params.DeploymentType);
     if (!duration || isNaN(duration) || Number(duration) > Number(maxDuration) || Number(duration) < 1) {
       setDurationError(`Enter number between 1-${maxDuration}`);
       error = true;
@@ -208,7 +211,7 @@ function Request(props) {
       setRoleError("Select a role");
       error = true;
     }
-    if (role && mgmtPs.permissions.includes(role.value)) {
+    if (params.DeploymentType == "delegated" && role && mgmtPs.permissions.includes(role.value)) {
       setRoleError("Permission set is assigned to management account and cannot be requested")
       error = true;
     }

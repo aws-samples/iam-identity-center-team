@@ -88,6 +88,9 @@
             },
             "API_TEAM_GRAPHQLAPIENDPOINTOUTPUT": {
               "Ref": "apiteamGraphQLAPIEndpointOutput"
+            },
+            "ACCOUNT_ID": {
+              "Ref": "AWS::AccountId"
             }
           }
         },
