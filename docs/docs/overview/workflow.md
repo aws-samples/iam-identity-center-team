@@ -53,16 +53,16 @@ The requester or a group they belong to in IAM Identity Center must have an asso
 - Requester submits elevated access request
 
 ### Step 4: Approve elevated access
-After the requester submits the request, a group of approvers are notified by email. Approver groups for an account or groups of accounts are defined by approval policy created by the admin persona.
+After the requester submits the request, a group of approvers are notified. Approver groups for an account or groups of accounts are defined by approval policy created by the admin persona.
 - An approver logs in to the TEAM application to either approve or reject an elevated access request.
-- TEAM notifies the requester by email that their request is approved and elevated access will be active at the start date and time specified in the request.
+- TEAM notifies the requester that their request is approved and elevated access will be active at the start date and time specified in the request.
 
 
 ### Step 5: Activate elevated access
 After a request is approved, the TEAM application waits until the start date and time specified in the request and then automatically activates access.
 To activate elevated access:
 - TEAM orchestration workflow creates a temporary permission set assignment, which links the requester’s user identity in IAM Identity Center with the permission set and account in their request.
-- TEAM notifies the requester by email that their request is active
+- TEAM notifies the requester that their request is active
 
 ### Step 6: Invoke elevated access
 During the time period in which elevated access is active, a requester can invoke sessions to access the AWS target environment with the scope (permission set and AWS account) approved in the request.

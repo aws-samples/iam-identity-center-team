@@ -63,7 +63,7 @@ As a requester, you already belong to a group used in at least one *eligibility 
 {: .note}
 
 ## 🦁 Step 3: Approve elevated access
-Once you submit your request, approvers are notified by email. Approvers are notified when any request is created which falls within the scope of what they are authorized to approve, based on the *approval policies* defined earlier.
+Once you submit your request, approvers are notified. Approvers are notified when any request is created which falls within the scope of what they are authorized to approve, based on the *approval policies* defined earlier.
 
 Now we’ll switch to the **approver** persona. As an approver, you access the TEAM application in exactly the same way as the other personas.
 
@@ -75,7 +75,7 @@ You can open a pending request to view the information provided by the requester
 <source src="https://d3f99z5n3ls8r1.cloudfront.net/videos/approver_guides/approve_request.mov">
 </video>
 
-Once you approve or reject a request, the original requester is notified by email.
+Once you approve or reject a request, the original requester is notified.
 
 ### 🦓 Step 3.1: View approved/rejected requests
 
@@ -84,7 +84,7 @@ Now we’ll switch back to the **requester** persona. As a requester, you can se
 ## 🦓 Step 4: Activate elevated access
 After a request is approved, the TEAM application waits until the start date and time specified in the request and then automatically activates access.
 
-> To activate access, the TEAM orchestration workflow creates a temporary [permission set assignment](https://docs.aws.amazon.com/singlesignon/latest/userguide/useraccess.html), which links the requester’s user identity in Identity Center with the permission set and AWS account specified in their request. Following this, TEAM notifies the requester by email that their request is now active.
+> To activate access, the TEAM orchestration workflow creates a temporary [permission set assignment](https://docs.aws.amazon.com/singlesignon/latest/userguide/useraccess.html), which links the requester’s user identity in Identity Center with the permission set and AWS account specified in their request. Following this, TEAM notifies the requester that their request is now active.
 {: .note}
 
 To see all active requests, select **Active access** in the left-hand navigation under **Elevated access**. You can choose **View details** to view details for an active request.
@@ -124,7 +124,7 @@ Elevated access ends when either:
 
 When elevated access ends or is revoked, the TEAM orchestration workflow automatically deletes the temporary permission set assignment for this request. This unlinks the permission set, the AWS account, and the user in Identity center.
 
-The requester is then notified by email that their elevated access has ended.
+The requester is then notified that their elevated access has ended.
 
 ## 🦒 Step 9: View session activity logs
 

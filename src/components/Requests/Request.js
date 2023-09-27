@@ -201,8 +201,6 @@ function Request(props) {
 
   async function validate() {
     let error = false;
-    console.log("validating");
-    console.log(params.DeploymentType);
     if (!duration || isNaN(duration) || Number(duration) > Number(maxDuration) || Number(duration) < 1) {
       setDurationError(`Enter number between 1-${maxDuration}`);
       error = true;

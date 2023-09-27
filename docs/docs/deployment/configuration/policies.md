@@ -27,5 +27,5 @@ Refer to the [policy overview]({% link docs/overview/policies.md %}) section for
 
 Now that the admin persona has defined eligibility and approval policies, TEAM is ready for use.
 
-### 🚀 Next Steps: Follow an [end-to-end TEAM walkthrough]({% link docs/guides/walkthrough.md %}).
+### 🚀 Next Steps: Configure [notifications]({% link docs/deployment/configuration/notifications.md %}).
 {: .no_toc}
