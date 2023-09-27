@@ -25,6 +25,7 @@ import {
   getMgmtAccountPs
 } from "../Shared/RequestService";
 import { useHistory } from "react-router-dom";
+import params from "../../parameters.json";
 
 function Request(props) {
   const [email, setEmail] = useState("");
@@ -208,7 +209,7 @@ function Request(props) {
       setRoleError("Select a role");
       error = true;
     }
-    if (role && mgmtPs.permissions.includes(role.value)) {
+    if (params.DeploymentType == "delegated" && role && mgmtPs.permissions.includes(role.value)) {
       setRoleError("Permission set is assigned to management account and cannot be requested")
       error = true;
     }

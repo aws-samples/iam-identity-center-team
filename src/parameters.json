@@ -1,3 +1,4 @@
 {
-  "Login": "sso login URL"
+  "Login": "sso login URL",
+  "DeploymentType": "deployment type"
 }

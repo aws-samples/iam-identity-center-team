@@ -128,3 +128,18 @@ Go to Amplify console: **AWS Amplify -> All apps -> TEAM-IDC-APP -> Hosting envi
 
 ### 🚀 Next Step: [Configure TEAM Application]({% link docs/deployment/configuration/index.md %})
 {: .no_toc}
+
+## Deploying TEAM into management account
+> We strongly recommend and encourage deploying TEAM into a **delegated admin account** (**not management account**) as per [AWS best practice](https://docs.aws.amazon.com/organizations/latest/userguide/orgs_best-practices_mgmt-acct.html#best-practices_mgmt-use). If you have a valid use case for deploying in the management account, please proceed with caution and consider the necessity of stringent management account access controls.
+{: .warning}
+
+To deploy TEAM into management account:
+
+1. Instead of using **parameters-template.sh** file, use the provided **parameters-mgmt-template.sh** as a template for your **paramaters.sh** file. This file omits the following parameters:
+   - **TEAM_ACCOUNT**
+   - **TEAM_ACCOUNT_PROFILE**
+
+    and uses **ORG_MASTER_PROFILE** to deploy the solution.
+
+2. Do **not** run the initialisation script **init.sh**. You can proceed straight to running the deployment script **deploy.sh**.
+

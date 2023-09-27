@@ -77,10 +77,7 @@ const Hierarchy = ({ options, resource, onSelect, handleToggle, action, allItems
 }
 
 function Ous({ options, setResource, resource = [], action = null, allItems = [] }) {
-  console.log(action)
-  console.log(allItems)
   const handleSelect = (selected) => {
-    console.log(selected)
     setResource(selected)
   };
 
@@ -91,7 +88,6 @@ function Ous({ options, setResource, resource = [], action = null, allItems = []
     } else {
       handleSelect(resource.filter(option => option.value !== data.value));
     }
-    console.log(resource)
   };
   ;
 

@@ -11,7 +11,23 @@ policy_table_name = os.getenv("POLICY_TABLE_NAME")
 dynamodb = boto3.resource('dynamodb')
 policy_table = dynamodb.Table(policy_table_name)
 
+ACCOUNT_ID = os.environ['ACCOUNT_ID']
+
+
+def get_mgmt_account_id():
+    org_client = boto3.client('organizations')
+    try:
+        response = org_client.describe_organization()
+        return response['Organization']['MasterAccountId']
+    except ClientError as e:
+        print(e.response['Error']['Message'])
+
+
+mgmt_account_id = get_mgmt_account_id()
+
+
 def list_account_for_ou(ouId):
+    deployed_in_mgmt = True if ACCOUNT_ID == mgmt_account_id else False
     account = []
     client = boto3.client('organizations')
     try:
@@ -20,10 +36,16 @@ def list_account_for_ou(ouId):
 
         for page in paginator:
             for acct in page['Accounts']:
-                account.extend([{"name": acct['Name'], 'id':acct['Id']}])
+                if not deployed_in_mgmt:
+                    if acct['Id'] != mgmt_account_id:
+                        account.extend(
+                            [{"name": acct['Name'], 'id':acct['Id']}])
+                else:
+                    account.extend([{"name": acct['Name'], 'id':acct['Id']}])
         return account
     except ClientError as e:
         print(e.response['Error']['Message'])
+
 
 def get_entitlements(id):
     response = policy_table.get_item(
@@ -53,11 +75,11 @@ def handler(event, context):
             maxDuration = int(duration)
         policy = {}
         policy['accounts'] = entitlement['Item']['accounts']
-        
+
         for ou in entitlement["Item"]["ous"]:
             data = list_account_for_ou(ou["id"])
             policy['accounts'].extend(data)
-            
+
         policy['permissions'] = entitlement['Item']['permissions']
         policy['approvalRequired'] = entitlement['Item']['approvalRequired']
         policy['duration'] = str(maxDuration)

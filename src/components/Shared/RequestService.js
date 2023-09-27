@@ -198,7 +198,6 @@ export async function getAllApprovers() {
     data = data.concat(request.data.listApprovers.items);
     nextToken = request.data.listApprovers.nextToken;
     } while (nextToken);
-    console.log(data)
     return data;
   } catch (err) {
     console.log("error fetching approvers");
@@ -408,7 +407,6 @@ export async function getAllEligibility() {
     data = data.concat(request.data.listEligibilities.items);
     nextToken = request.data.listEligibilities.nextToken;
   } while (nextToken);
-  console.log(data)
     return data;
   } catch (err) {
     console.log("error fetching eligibility", err);

@@ -1071,7 +1071,9 @@
                     "iam:List*",
                     "iam:CreateRole",
                     "iam:DeleteRole",
-                    "iam:DetachRolePolicy"
+                    "iam:DetachRolePolicy",
+                    "iam:AttachRolePolicy",
+                    "iam:PutRolePolicy"
                   ],
                   "Resource": "*"
                 },

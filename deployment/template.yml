@@ -23,6 +23,9 @@ Parameters:
     Type: String
     Description: TEAM application tags
     Default: ""
+  teamAccount:
+    Type: String
+    Description: TEAM deployment account ID
 
 Conditions:
   IsEmptyCloudTrailAuditLogs: !Equals [!Ref CloudTrailAuditLogs, ""]
@@ -120,6 +123,8 @@ Resources:
       EnvironmentVariables: 
         - Name: SSO_LOGIN
           Value: !Ref Login
+        - Name: TEAM_ACCOUNT
+          Value: !Ref teamAccount
         - Name: CLOUDTRAIL_AUDIT_LOGS
           Value: !If
             - IsEmptyCloudTrailAuditLogs

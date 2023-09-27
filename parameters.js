@@ -6,7 +6,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const { AWS_APP_ID, AWS_BRANCH, SSO_LOGIN, TEAM_ADMIN_GROUP, TEAM_AUDITOR_GROUP, TAGS, CLOUDTRAIL_AUDIT_LOGS } = process.env;
+const { AWS_APP_ID, AWS_BRANCH, SSO_LOGIN, TEAM_ADMIN_GROUP, TEAM_AUDITOR_GROUP, TAGS, CLOUDTRAIL_AUDIT_LOGS, TEAM_ACCOUNT } = process.env;
 
 async function update_auth_parameters() {
   console.log(`updating amplify config for branch "${AWS_BRANCH}"...`);
@@ -42,12 +42,21 @@ async function update_auth_parameters() {
 }
 async function update_react_parameters() {
   console.log(`updating react parameters"...`);
-
   const reactParametersJsonPath = path.resolve(`./src/parameters.json`);
   const reactParametersJson = require(reactParametersJsonPath);
   reactParametersJson.Login = SSO_LOGIN;
+
+  console.log("Team Account param:");
+  console.log(TEAM_ACCOUNT);
+  if (TEAM_ACCOUNT === undefined) {
+    reactParametersJson.DeploymentType = "management"
+  } else {
+    reactParametersJson.DeploymentType = "delegated"
+  };
+
   reactParametersJson.teamAdminGroup = TEAM_ADMIN_GROUP;
   reactParametersJson.teamAuditorGroup = TEAM_AUDITOR_GROUP;
+
 
   fs.writeFileSync(
     reactParametersJsonPath,
