@@ -92,25 +92,26 @@
       "providerPlugin": "awscloudformation",
       "service": "customCloudformation"
     },
+    "sns": {
+      "dependsOn": [],
+      "providerPlugin": "awscloudformation",
+      "service": "customCloudformation"
+    },
     "stepfunctions": {
       "dependsOn": [
         {
           "attributes": [
-            "GraphQLAPIIdOutput",
-            "GraphQLAPIEndpointOutput"
-          ],
-          "category": "api",
-          "resourceName": "team"
-        },
-        {
-          "attributes": [
-            "Name",
-            "Arn",
-            "Region",
-            "LambdaExecutionRole"
+            "Arn"
           ],
           "category": "function",
           "resourceName": "teamStatus"
+        },
+        {
+          "attributes": [
+            "Arn"
+          ],
+          "category": "function",
+          "resourceName": "teamNotifications"
         }
       ],
       "providerPlugin": "awscloudformation",
@@ -127,6 +128,20 @@
           ],
           "category": "function",
           "resourceName": "teamapplicationboto3layer"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
+    "teamNotifications": {
+      "build": true,
+      "dependsOn": [
+        {
+          "attributes": [
+            "GraphQLAPIIdOutput"
+          ],
+          "category": "api",
+          "resourceName": "team"
         }
       ],
       "providerPlugin": "awscloudformation",
@@ -160,6 +175,20 @@
           ],
           "category": "custom",
           "resourceName": "stepfunctions"
+        },
+        {
+          "attributes": [
+            "Arn"
+          ],
+          "category": "function",
+          "resourceName": "teamStatus"
+        },
+        {
+          "attributes": [
+            "Arn"
+          ],
+          "category": "function",
+          "resourceName": "teamNotifications"
         }
       ],
       "providerPlugin": "awscloudformation",
@@ -332,6 +361,22 @@
         {
           "category": "function",
           "resourceName": "teamListGroups"
+        }
+      ]
+    },
+    "AMPLIFY_function_teamNotifications_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teamNotifications"
+        }
+      ]
+    },
+    "AMPLIFY_function_teamNotifications_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teamNotifications"
         }
       ]
     },

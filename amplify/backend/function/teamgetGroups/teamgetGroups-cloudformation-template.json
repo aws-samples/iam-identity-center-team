@@ -2,11 +2,6 @@
   "AWSTemplateFormatVersion": "2010-09-09",
   "Description": "Lambda Function resource stack creation using Amplify CLI",
   "Parameters": {
-    "CloudWatchRule": {
-      "Type": "String",
-      "Default": "NONE",
-      "Description": " Schedule Expression"
-    },
     "deploymentBucketName": {
       "Type": "String"
     },
@@ -100,6 +95,11 @@
             },
             "AUTH_AWSPIM06DBB7FC_USERPOOLID": {
               "Ref": "authteam06dbb7fcUserPoolId"
+            },
+            "SETTINGS_TABLE_NAME": {
+              "Fn::ImportValue": {
+                "Fn::Sub": "${apiteamGraphQLAPIIdOutput}:GetAtt:SettingsTable:Name"
+              }
             },
             "TEAM_ADMIN_GROUP": {
               "Ref": "teamAdminGroup"
@@ -201,6 +201,17 @@
                   }
                 ]
               }
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "dynamodb:GetItem"
+              ],
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/Settings-*"
+                }
+              ]
             }
           ]
         }

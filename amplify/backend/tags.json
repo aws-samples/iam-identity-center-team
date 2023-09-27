@@ -1,1 +1,10 @@
-[]
+[
+  {
+    "Key": "project",
+    "Value": "iam-identity-center-team"
+  },
+  {
+    "Key": "environment",
+    "Value": "prod"
+  }
+]

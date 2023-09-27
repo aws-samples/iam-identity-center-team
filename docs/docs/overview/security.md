@@ -29,7 +29,7 @@ Some AWS services used by TEAM are regional services, such as Amazon Cognito and
 If this is a concern, consider setting up [emergency access to the AWS Management Console](https://docs.aws.amazon.com/singlesignon/latest/userguide/emergency-access.html) or some other means to provide [break glass access](https://docs.aws.amazon.com/whitepapers/latest/organizing-your-aws-environment/break-glass-access.html).
 
 ## Management account access
-The management account of your organization is a highly privileged account and to adhere to the principal of least privilege, AWS recommeds that you [restrict access to the management account](https://docs.aws.amazon.com/organizations/latest/userguide/orgs_best-practices_mgmt-acct.html#best-practices_mgmt-use) to as few people as possible.
+The management account of your organization is a highly privileged account and to adhere to the principal of least privilege, AWS recommends that you [restrict access to the management account](https://docs.aws.amazon.com/organizations/latest/userguide/orgs_best-practices_mgmt-acct.html#best-practices_mgmt-use) to as few people as possible.
 TEAM is designed to be deployed in an account that is a [delegated admin](https://docs.aws.amazon.com/singlesignon/latest/userguide/delegated-admin.html) for IAM Identity Center. The delegated administrator feature is intended to minimize the number of task that require access to the management account.
 
 > The delegated adminstrator account (and TEAM) by design cannot be used to perform the following tasks:

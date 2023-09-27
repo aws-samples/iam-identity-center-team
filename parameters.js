@@ -6,7 +6,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const { AWS_APP_ID, AWS_BRANCH, EMAIL_SOURCE, SSO_LOGIN, TEAM_ADMIN_GROUP, TEAM_AUDITOR_GROUP, TAGS, CLOUDTRAIL_AUDIT_LOGS, TEAM_ACCOUNT } = process.env;
+const { AWS_APP_ID, AWS_BRANCH, SSO_LOGIN, TEAM_ADMIN_GROUP, TEAM_AUDITOR_GROUP, TAGS, CLOUDTRAIL_AUDIT_LOGS, TEAM_ACCOUNT } = process.env;
 
 async function update_auth_parameters() {
   console.log(`updating amplify config for branch "${AWS_BRANCH}"...`);
@@ -45,6 +45,7 @@ async function update_react_parameters() {
   const reactParametersJsonPath = path.resolve(`./src/parameters.json`);
   const reactParametersJson = require(reactParametersJsonPath);
   reactParametersJson.Login = SSO_LOGIN;
+
   console.log("Team Account param:");
   console.log(TEAM_ACCOUNT);
   if (TEAM_ACCOUNT === undefined) {
@@ -53,27 +54,13 @@ async function update_react_parameters() {
     reactParametersJson.DeploymentType = "delegated"
   };
 
+  reactParametersJson.teamAdminGroup = TEAM_ADMIN_GROUP;
+  reactParametersJson.teamAuditorGroup = TEAM_AUDITOR_GROUP;
+
 
   fs.writeFileSync(
     reactParametersJsonPath,
     JSON.stringify(reactParametersJson, null, 4)
-  );
-}
-
-async function update_custom_parameters() {
-  console.log(`updating stepfunctions custom parameters"...`);
-
-  const customParametersJsonPath = path.resolve(
-    `./amplify/backend/custom/stepfunctions/parameters.json`
-  );
-  const customParametersJson = require(customParametersJsonPath);
-
-  customParametersJson.Source = EMAIL_SOURCE;
-  customParametersJson.Login = SSO_LOGIN;
-
-  fs.writeFileSync(
-    customParametersJsonPath,
-    JSON.stringify(customParametersJson, null, 4)
   );
 }
 
@@ -91,6 +78,22 @@ async function update_groups_parameters() {
   fs.writeFileSync(
     groupsParametersJsonPath,
     JSON.stringify(groupsParametersJson, null, 4)
+  );
+}
+
+async function update_router_parameters() {
+  console.log(`updating teamRouter lambda parameters"...`);
+
+  const routerParametersJsonPath = path.resolve(
+    `./amplify/backend/function/teamRouter/parameters.json`
+  );
+  const routerParametersJson = require(routerParametersJsonPath);
+
+  routerParametersJson.SSOLoginUrl = SSO_LOGIN;
+
+  fs.writeFileSync(
+    routerParametersJsonPath,
+    JSON.stringify(routerParametersJson, null, 4)
   );
 }
 
@@ -129,11 +132,26 @@ async function update_cloudtrail_parameters() {
   );
 }
 
+async function update_cloudtrail_parameters() {
+  console.log(`updating amplify/backend/custom/cloudtrailLake/parameters.json"...`);
 
+  const cloudtrailParametersJsonPath = path.resolve(
+    `./amplify/backend/custom/cloudtrailLake/parameters.json`
+  );
 
-update_custom_parameters();
+  const cloudtrailParametersJson = require(cloudtrailParametersJsonPath);
+
+  cloudtrailParametersJson.CloudTrailAuditLogs = CLOUDTRAIL_AUDIT_LOGS;
+  
+  fs.writeFileSync(
+    cloudtrailParametersJsonPath,
+    JSON.stringify(cloudtrailParametersJson, null, 4)
+  );
+}
+
 update_auth_parameters();
 update_react_parameters();
 update_groups_parameters();
+update_router_parameters()
 update_tag_parameters();
 update_cloudtrail_parameters();

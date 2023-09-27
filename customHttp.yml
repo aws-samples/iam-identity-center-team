@@ -10,4 +10,4 @@ customHeaders:
       - key: 'X-Content-Type-Options'
         value: 'nosniff'
       - key: 'Content-Security-Policy'
-        value: default-src 'self'; img-src 'self'; connect-src https://*.amazonaws.com https://*.amazoncognito.com wss://*.amazonaws.com; font-src 'self' data:; style-src 'self' 'unsafe-inline';
+        value: default-src 'self'; img-src 'self' data:; connect-src https://*.amazonaws.com https://*.amazoncognito.com wss://*.amazonaws.com; font-src 'self' data:; style-src 'self' 'unsafe-inline';

@@ -233,6 +233,14 @@ export const createSettings = /* GraphQL */ `
       ticketNo
       approval
       modifiedBy
+      sesNotificationsEnabled
+      snsNotificationsEnabled
+      slackNotificationsEnabled
+      sesSourceEmail
+      sesSourceArn
+      slackToken
+      teamAdminGroup
+      teamAuditorGroup
       createdAt
       updatedAt
     }
@@ -251,6 +259,14 @@ export const updateSettings = /* GraphQL */ `
       ticketNo
       approval
       modifiedBy
+      sesNotificationsEnabled
+      snsNotificationsEnabled
+      slackNotificationsEnabled
+      sesSourceEmail
+      sesSourceArn
+      slackToken
+      teamAdminGroup
+      teamAuditorGroup
       createdAt
       updatedAt
     }
@@ -269,6 +285,14 @@ export const deleteSettings = /* GraphQL */ `
       ticketNo
       approval
       modifiedBy
+      sesNotificationsEnabled
+      snsNotificationsEnabled
+      slackNotificationsEnabled
+      sesSourceEmail
+      sesSourceArn
+      slackToken
+      teamAdminGroup
+      teamAuditorGroup
       createdAt
       updatedAt
     }

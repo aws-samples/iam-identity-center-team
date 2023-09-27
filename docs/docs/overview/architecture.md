@@ -62,7 +62,7 @@ The Approval Step Functions workflow is invoked when a TEAM request is newly cre
 <!-- ![Solution components](/docs/assets/images/approval.png) -->
 
 The Approval state machine performs the following functions:
-- Notifies members of the approval group delegated for the requested account of the new request via email
+- Notifies members of the approval group delegated for the requested account of the new request
 - Waits for 1 hour (configurable) and checks if the request has been actioned or not.
 - If the request has not been actioned it changes the status to ***expired***
 
@@ -75,7 +75,7 @@ The reject workflow is also invoked when a request when has not been approved or
 
 The Reject state machine performs the following functions:
 - Determines if the request was ***rejected*** or ***cancelled***
-- If the status is ***rejected***, notifies the requester about the request rejection via email
+- If the status is ***rejected***, notifies the requester about the request rejection
 - If the status is ***cancelled***, notifies the requester and approver group that the request has been cancelled.
 
 ### Schedule workflow
@@ -87,7 +87,7 @@ The Schedule Step Functions workflow is invoked when a TEAM request is approved 
 
 The Schedule state machine performs the following functions:
 - Updates the TEAM request status to ***scheduled***
-- Notifies the requester about the request approval via email
+- Notifies the requester about the request approval
 - Waits until the start time specified in the request
 - Invoke the ***Grant*** State machine workflow at the requested elevated access start time
 
@@ -101,7 +101,7 @@ The Grant Step Function  workflow is invoked by the ***Schedule*** state machine
 The Grant state machine performs the following functions:
 - Assigns the requested permission set and account to the requester identity in IAM Identity Center, thus providing the requester elevated access to the requested account
 - Updates the TEAM request status to ***in progress***
-- Notifies the requester that elevated access has started via email
+- Notifies the requester that elevated access has started
 - Waits for the elevated access duration(in hours) specified in the initial request
 - Invokes the **Revoke** State machine once the requested duration elapses
 

@@ -33,6 +33,8 @@ function Nav(props) {
   const [User, setUser] = useState();
   const [group, setGroup] = useState();
 
+  console.log(props)
+
   async function fetchUser() {
     try {
       setUser(props.user.attributes.email);

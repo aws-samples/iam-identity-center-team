@@ -16,7 +16,7 @@ parent: Guides
 {:toc}
 </details>
 
-When a user requests elevated access to an account, if you are a member of the approver group for that account/OU, you will receive an email prompting you to log into the TEAM app and either approve or reject the elevated access request.
+When a user requests elevated access to an account, if you are a member of the approver group for that account/OU, you will receive a notification prompting you to log into the TEAM app and either approve or reject the elevated access request.
 ## Approve or reject elevated access
 1. Log into the application.
 2. In the left-hand menu go to *Approvals* &rarr; *Approve requests*.

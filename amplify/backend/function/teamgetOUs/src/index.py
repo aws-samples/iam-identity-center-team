@@ -21,17 +21,19 @@ def getOUs(id):
         return results
     except ClientError as e:
         print(e.response['Error']['Message'])
-
-
-def listOUs(id):
-    OUs = getOUs(id)
-    for OU in OUs:
-        OUs.extend(getOUs(OU["Id"]))
-    return OUs
-
+        
+def get_ou_tree(ou_id):
+    ou_list = []
+    ous = getOUs(ou_id)
+    for ou in ous:
+        sub_ous = get_ou_tree(ou["Id"])
+        ou["Children"] = sub_ous
+        ou_list.append(ou)
+    return ou_list
 
 def handler(event, context):
-    response = client.list_roots()
-    rootOU = response['Roots']
-    OUs = listOUs(rootOU[0]['Id'])
-    return (rootOU + OUs)
+    OUs = client.list_roots().get('Roots')
+    root_ou_id = OUs[0].get('Id')
+    ou_tree = get_ou_tree(root_ou_id)
+    OUs[0]["Children"] = ou_tree
+    return OUs

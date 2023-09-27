@@ -1,0 +1,38 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Parameters": {
+    "env": {
+      "Type": "String"
+    }
+  },
+  "Resources": {
+    "snsNotificationTopic": {
+      "Type": "AWS::SNS::Topic",
+      "Properties": {
+        "TopicName": {
+          "Fn::Join": [
+            "",
+            [
+              "TeamNotifications",
+              "-",
+              {
+                "Ref": "env"
+              }
+            ]
+          ]
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "NotificationTopicArn": {
+      "Description": "The ARN of the SNS topic where TEAM notifications will be sent",
+      "Value": {
+        "Ref": "snsNotificationTopic"
+      },
+      "Export": {
+        "Name": "NotificationTopicArn"
+      }
+    }
+  }
+}

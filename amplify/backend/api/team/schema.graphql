@@ -93,6 +93,14 @@ type Settings
   ticketNo: Boolean
   approval: Boolean
   modifiedBy: String
+  sesNotificationsEnabled: Boolean
+  snsNotificationsEnabled: Boolean
+  slackNotificationsEnabled: Boolean
+  sesSourceEmail: String
+  sesSourceArn: String
+  slackToken: String
+  teamAdminGroup: String
+  teamAuditorGroup: String
 }
 type data {
   name: String
@@ -101,7 +109,7 @@ type data {
 input DataInput {
   name: String
   id: String
- }
+}
 type Eligibility
   @model
   @auth(
@@ -161,6 +169,7 @@ type OUs {
   Id: String!
   Arn: String!
   Name: String!
+  Children:[OUs]
 }
 type Permissions {
   Name: String!
