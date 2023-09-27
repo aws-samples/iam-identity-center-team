@@ -32,7 +32,7 @@ function Header(props) {
         visible={visible}
         onDismiss={() => setVisible(false)}
       >
-        🚀 TEAM now supports multiple notification sources including email notification via Amazon SES, Slack notifications via a custom Slack app, and custom notificatons via Amazon SNS. Notifications can be configured from the Settings page.
+        🚀 TEAM now supports multiple notification sources including email notification via Amazon SES, Slack notifications via a custom Slack app, and custom notifications via Amazon SNS. Notifications can be configured from the Settings page.
       </Alert>
     );
   }
