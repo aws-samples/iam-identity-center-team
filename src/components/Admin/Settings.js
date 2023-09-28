@@ -166,19 +166,19 @@ function Settings(props) {
   function handleDismiss() {
     // Reset item states
     if (item) {
-      setDuration(item.duration || "9");
-      setExpiry(item.expiry || "3");
-      setComments(item.comments || true);
-      setTicketNo(item.ticketNo || true);
-      setApproval(item.approval || true);
-      setSesNotificationsEnabled(item.sesNotificationsEnabled || false);
-      setSnsNotificationsEnabled(item.snsNotificationsEnabled || false);
-      setSlackNotificationsEnabled(item.slackNotificationsEnabled || false);
-      setSesSourceEmail(item.sesSourceEmail || "");
-      setSesSourceArn(item.sesSourceArn || "" );
-      setSlackToken(item.slackToken || "");
-      setTeamAdminGroup(item.teamAdminGroup || params.teamAdminGroup);
-      setTeamAuditorGroup(item.teamAuditorGroup || params.teamAuditorGroup);
+      setDuration(item.duration ?? "9");
+      setExpiry(item.expiry ?? "3");
+      setComments(item.comments ?? true);
+      setTicketNo(item.ticketNo ?? true);
+      setApproval(item.approval ?? true);
+      setSesNotificationsEnabled(item.sesNotificationsEnabled ?? false);
+      setSnsNotificationsEnabled(item.snsNotificationsEnabled ?? false);
+      setSlackNotificationsEnabled(item.slackNotificationsEnabled ?? false);
+      setSesSourceEmail(item.sesSourceEmail ?? "");
+      setSesSourceArn(item.sesSourceArn ?? "" );
+      setSlackToken(item.slackToken ?? "");
+      setTeamAdminGroup(item.teamAdminGroup ?? params.teamAdminGroup);
+      setTeamAuditorGroup(item.teamAuditorGroup ?? params.teamAuditorGroup);
     }
     setVisible(false);
   }
@@ -218,20 +218,20 @@ function Settings(props) {
 
   function getSettings() {
     getSetting("settings").then((data) => {
-      setItem(data || null);
-      setDuration(data.duration || "9");
-      setExpiry(data.expiry || "3");
-      setComments(data.comments || true);
-      setTicketNo(data.ticketNo || true);
-      setApproval(data.approval || true);
-      setSesNotificationsEnabled(data.sesNotificationsEnabled || false);
-      setSnsNotificationsEnabled(data.snsNotificationsEnabled || false);
-      setSlackNotificationsEnabled(data.slackNotificationsEnabled || false);
-      setSesSourceEmail(data.sesSourceEmail || "");
-      setSesSourceArn(data.sesSourceArn || "" );
-      setSlackToken(data.slackToken || "");
-      setTeamAdminGroup(data.teamAdminGroup || params.teamAdminGroup);
-      setTeamAuditorGroup(data.teamAuditorGroup || params.teamAuditorGroup);
+      setItem(data ?? null);
+      setDuration(data?.duration ?? "9");
+      setExpiry(data?.expiry ?? "3");
+      setComments(data?.comments ?? true);
+      setTicketNo(data?.ticketNo ?? true);
+      setApproval(data?.approval ?? true);
+      setSesNotificationsEnabled(data?.sesNotificationsEnabled ?? false);
+      setSnsNotificationsEnabled(data?.snsNotificationsEnabled ?? false);
+      setSlackNotificationsEnabled(data?.slackNotificationsEnabled ?? false);
+      setSesSourceEmail(data?.sesSourceEmail ?? "");
+      setSesSourceArn(data?.sesSourceArn ?? "" );
+      setSlackToken(data?.slackToken ?? "");
+      setTeamAdminGroup(data?.teamAdminGroup ?? params.teamAdminGroup);
+      setTeamAuditorGroup(data?.teamAuditorGroup ?? params.teamAuditorGroup);
     });
   }
 
