@@ -26,9 +26,14 @@ Parameters:
   teamAccount:
     Type: String
     Description: TEAM deployment account ID
+  customAmplifyDomain:
+    Type: String
+    Description: Custom domain for the TEAM application
+    Default: ""
 
 Conditions:
   IsEmptyCloudTrailAuditLogs: !Equals [!Ref CloudTrailAuditLogs, ""]
+  UseCustomAmplifyDomain: !Not [ !Equals [!Ref customAmplifyDomain, ""] ]
 
 Resources:
   TriggerAmplifyBuild:
@@ -136,6 +141,11 @@ Resources:
           Value: !Ref teamAuditGroup
         - Name: TAGS
           Value: !Ref tags
+        - Name: AMPLIFY_CUSTOM_DOMAIN
+          Value: !If
+            - UseCustomAmplifyDomain
+            - !Ref customAmplifyDomain
+            - !Ref AWS::NoValue
       Tags:
         - Key: Branch
           Value: main
