@@ -244,6 +244,7 @@ def get_request_data(data, expire, approval_required):
         "time": data["duration"]["S"],
         "startTime": data["startTime"]["S"],
         "justification": data["justification"]["S"],
+        "ticketNo": data.get("ticketNo", {}).get("S"),
         "approver": data.get("approver", {}).get("S"),
         "revoker": data.get("revoker", {}).get("S"),
         "instanceARN": sso_instance['InstanceArn'],
