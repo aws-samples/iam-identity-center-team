@@ -22,10 +22,10 @@ set +e
 
 export AWS_PROFILE=$ORG_MASTER_PROFILE
 
-idc=`aws organizations list-delegated-administrators --service-principal sso.amazonaws.com --region $REGION --output json | jq -r '.DelegatedAdministrators[] | select(.Id=='\"$TEAM_ACCOUNT\"') | .Id'`
-cloudtrail=`aws organizations list-delegated-administrators --service-principal cloudtrail.amazonaws.com --region $REGION --output json | jq -r '.DelegatedAdministrators[] | select(.Id=='\"$TEAM_ACCOUNT\"') | .Id'`
-accountManager=`aws organizations list-delegated-administrators --service-principal account.amazonaws.com --region $REGION --output json | jq -r '.DelegatedAdministrators[] | select(.Id=='\"$TEAM_ACCOUNT\"') | .Id'`
-serviceRole=`aws iam get-role --role-name AWSServiceRoleForCloudTrail --region $REGION `
+idc=$(aws organizations list-delegated-administrators --service-principal sso.amazonaws.com --region $REGION --output json | jq -r '.DelegatedAdministrators[] | select(.Id=='\"$TEAM_ACCOUNT\"') | .Id')
+cloudtrail=$(aws organizations list-delegated-administrators --service-principal cloudtrail.amazonaws.com --region $REGION --output json | jq -r '.DelegatedAdministrators[] | select(.Id=='\"$TEAM_ACCOUNT\"') | .Id')
+accountManager=$(aws organizations list-delegated-administrators --service-principal account.amazonaws.com --region $REGION --output json | jq -r '.DelegatedAdministrators[] | select(.Id=='\"$TEAM_ACCOUNT\"') | .Id')
+serviceRole=$(aws iam get-role --role-name AWSServiceRoleForCloudTrail --region $REGION )
 
 # Enable trusted access for account management
 aws organizations enable-aws-service-access --service-principal account.amazonaws.com --region $REGION
