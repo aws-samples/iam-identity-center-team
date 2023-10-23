@@ -28,7 +28,7 @@ git remote add origin codecommit::$REGION://team-idc-app
 git remote add team https://github.com/aws-samples/iam-identity-center-team.git
 git pull team main
 
-if [[ ! -z "$TAGS" ]];
+if [[ -n "$TAGS" ]];
 then
   aws cloudformation deploy --region $REGION --template-file template.yml \
   --stack-name TEAM-IDC-APP \

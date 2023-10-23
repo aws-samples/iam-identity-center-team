@@ -31,7 +31,7 @@ git remote add origin codecommit::$REGION://team-idc-app
 git push origin main
 
 cd ./deployment
-if [[ ! -z "$TAGS" ]];
+if [[ -n "$TAGS" ]];
 then
   aws cloudformation deploy --region $REGION --template-file template.yml \
   --stack-name TEAM-IDC-APP \
