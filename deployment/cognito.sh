@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # Copyright 2023 Amazon Web Services, Inc
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,13 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#!/usr/bin/env bash
-
 . "./parameters.sh"
 
-if [ -z "$TEAM_ACCOUNT" ]; then 
+if [ -z "$TEAM_ACCOUNT" ]; then
   export AWS_PROFILE=$ORG_MASTER_PROFILE
-else 
+else
   export AWS_PROFILE=$TEAM_ACCOUNT_PROFILE
 fi
 
