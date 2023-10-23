@@ -24,10 +24,10 @@ fi
 
 green='\033[0;32m'
 clear='\033[0m'
-cognitoUserpoolId=$(aws cognito-idp list-user-pools --region $REGION --max-results 10 --output json | jq -r '.UserPools[] | select(.Name | contains("team06dbb7fc")) | .Id')
-cognitouserpoolhostedUIdomain=$(aws cognito-idp describe-user-pool --region $REGION --user-pool-id $cognitoUserpoolId --output json | jq -r '.UserPool.Domain')
-applicationURL=$(aws amplify list-apps --region $REGION --output json | jq -r '.apps[] | select(.name=="TEAM-IDC-APP") | .defaultDomain' )
-clientID=$(aws cognito-idp list-user-pool-clients --region $REGION --user-pool-id $cognitoUserpoolId --output json | jq -r '.UserPoolClients[] | select(.ClientName | contains("clientWeb")) | .ClientId')
+cognitoUserpoolId=$(aws cognito-idp list-user-pools --region "$REGION" --max-results 10 --output json | jq -r '.UserPools[] | select(.Name | contains("team06dbb7fc")) | .Id')
+cognitouserpoolhostedUIdomain=$(aws cognito-idp describe-user-pool --region "$REGION" --user-pool-id "$cognitoUserpoolId" --output json | jq -r '.UserPool.Domain')
+applicationURL=$(aws amplify list-apps --region "$REGION" --output json | jq -r '.apps[] | select(.name=="TEAM-IDC-APP") | .defaultDomain' )
+clientID=$(aws cognito-idp list-user-pool-clients --region "$REGION" --user-pool-id "$cognitoUserpoolId" --output json | jq -r '.UserPoolClients[] | select(.ClientName | contains("clientWeb")) | .ClientId')
 
 hostedUIdomain=$cognitouserpoolhostedUIdomain.auth.$REGION.amazoncognito.com
 appURL=https://main.$applicationURL

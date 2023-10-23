@@ -30,11 +30,11 @@ git pull team main
 
 if [[ -n "$TAGS" ]];
 then
-  aws cloudformation deploy --region $REGION --template-file template.yml \
+  aws cloudformation deploy --region "$REGION" --template-file template.yml \
   --stack-name TEAM-IDC-APP \
   --parameter-overrides \
-    Login=$IDC_LOGIN_URL \
-    CloudTrailAuditLogs=$CLOUDTRAIL_AUDIT_LOGS \
+    Login="$IDC_LOGIN_URL" \
+    CloudTrailAuditLogs="$CLOUDTRAIL_AUDIT_LOGS" \
     teamAdminGroup="$TEAM_ADMIN_GROUP" \
     teamAuditGroup="$TEAM_AUDITOR_GROUP" \
     tags="$TAGS" \
@@ -42,11 +42,11 @@ then
   --tags $TAGS \
   --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
 else
-  aws cloudformation deploy --region $REGION --template-file template.yml \
+  aws cloudformation deploy --region "$REGION" --template-file template.yml \
   --stack-name TEAM-IDC-APP \
   --parameter-overrides \
-    Login=$IDC_LOGIN_URL \
-    CloudTrailAuditLogs=$CLOUDTRAIL_AUDIT_LOGS \
+    Login="$IDC_LOGIN_URL" \
+    CloudTrailAuditLogs="$CLOUDTRAIL_AUDIT_LOGS" \
     teamAdminGroup="$TEAM_ADMIN_GROUP" \
     teamAuditGroup="$TEAM_AUDITOR_GROUP" \
     tags="$TAGS" \
