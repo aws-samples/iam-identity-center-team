@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # Copyright 2022 Amazon Web Services, Inc
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,7 +16,6 @@
 # This script should be deployed in the Organisation Management account
 # The script enables delegated admin for AWS Account Management, AWS IAM IdC and CloudTrail Lake
 
-#!/usr/bin/env bash
 set +e
 
 . "./parameters.sh"
@@ -47,7 +47,7 @@ fi
 aws organizations enable-aws-service-access --service-principal cloudtrail.amazonaws.com --region $REGION
 
 if [ -z "$serviceRole" ]; then
-    aws iam create-service-linked-role --aws-service-name cloudtrail.amazonaws.com --region $REGION 
+    aws iam create-service-linked-role --aws-service-name cloudtrail.amazonaws.com --region $REGION
 fi
 
 # Enable Delegated Admin for CloudTrail
