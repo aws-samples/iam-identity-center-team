@@ -35,6 +35,7 @@ then
   --parameter-overrides \
     Login=$IDC_LOGIN_URL \
     CloudTrailAuditLogs=$CLOUDTRAIL_AUDIT_LOGS \
+    CloudTrailRetentionPeriod=$CLOUDTRAIL_RETENTION_PERIOD \
     teamAdminGroup="$TEAM_ADMIN_GROUP" \
     teamAuditGroup="$TEAM_AUDITOR_GROUP" \
     tags="$TAGS" \
@@ -47,6 +48,7 @@ else
   --parameter-overrides \
     Login=$IDC_LOGIN_URL \
     CloudTrailAuditLogs=$CLOUDTRAIL_AUDIT_LOGS \
+    CloudTrailRetentionPeriod=$CLOUDTRAIL_RETENTION_PERIOD \
     teamAdminGroup="$TEAM_ADMIN_GROUP" \
     teamAuditGroup="$TEAM_AUDITOR_GROUP" \
     tags="$TAGS" \

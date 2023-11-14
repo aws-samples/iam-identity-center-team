@@ -1,3 +1,4 @@
 {
-    "CloudTrailAuditLogs": "read_write"
+    "CloudTrailAuditLogs": "read_write",
+    "RetentionPeriod": 7
 }

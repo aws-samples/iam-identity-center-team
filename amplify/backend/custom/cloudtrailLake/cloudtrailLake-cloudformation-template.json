@@ -12,6 +12,12 @@
         "write",
         "none"
       ]
+    },
+    "RetentionPeriod":{
+      "Type":"Number",
+      "Default":7,
+      "MinValue":7,
+      "MaxValue":2557
     }
   },
   "Conditions":{
@@ -67,7 +73,7 @@
             true
           ]
         },
-        "RetentionPeriod":7,
+        "RetentionPeriod": { "Ref":"RetentionPeriod" },
         "OrganizationEnabled":{
           "Fn::If":[
             "IsOrganizationsSupported",

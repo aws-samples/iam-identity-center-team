@@ -13,6 +13,10 @@ Parameters:
       - none
       - ""
     Description: "Read and Write CloudTrail logs"
+  CloudTrailRetentionPeriod:
+    Type: Number
+    Description: "CloudTrail retention period (days)"
+    Default: 7
   teamAdminGroup:
     Type: String
     Description: TEAM application Admin group
@@ -58,7 +62,7 @@ Resources:
               - sts:AssumeRole 
       Path: /
       ManagedPolicyArns:
-        - "arn:aws:iam::aws:policy/AdministratorAccess"      
+        - "arn:aws:iam::aws:policy/AdministratorAccess"
 
   AmplifyApp:
     Type: "AWS::Amplify::App"
@@ -120,7 +124,7 @@ Resources:
       BranchName: main
       AppId: !GetAtt AmplifyApp.AppId
       EnableAutoBuild: true
-      EnvironmentVariables: 
+      EnvironmentVariables:
         - Name: SSO_LOGIN
           Value: !Ref Login
         - Name: TEAM_ACCOUNT
@@ -130,6 +134,8 @@ Resources:
             - IsEmptyCloudTrailAuditLogs
             - "read_write"
             - !Ref CloudTrailAuditLogs
+        - Name: CLOUDTRAIL_RETENTION_PERIOD
+          Value: !Ref CloudTrailRetentionPeriod
         - Name: TEAM_ADMIN_GROUP
           Value: !Ref teamAdminGroup
         - Name: TEAM_AUDITOR_GROUP

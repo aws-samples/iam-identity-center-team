@@ -6,7 +6,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const { AWS_APP_ID, AWS_BRANCH, SSO_LOGIN, TEAM_ADMIN_GROUP, TEAM_AUDITOR_GROUP, TAGS, CLOUDTRAIL_AUDIT_LOGS, TEAM_ACCOUNT } = process.env;
+const { AWS_APP_ID, AWS_BRANCH, SSO_LOGIN, TEAM_ADMIN_GROUP, TEAM_AUDITOR_GROUP, TAGS, CLOUDTRAIL_AUDIT_LOGS, CLOUDTRAIL_RETENTION_PERIOD, TEAM_ACCOUNT } = process.env;
 
 async function update_auth_parameters() {
   console.log(`updating amplify config for branch "${AWS_BRANCH}"...`);
@@ -125,23 +125,7 @@ async function update_cloudtrail_parameters() {
   const cloudtrailParametersJson = require(cloudtrailParametersJsonPath);
 
   cloudtrailParametersJson.CloudTrailAuditLogs = CLOUDTRAIL_AUDIT_LOGS;
-  
-  fs.writeFileSync(
-    cloudtrailParametersJsonPath,
-    JSON.stringify(cloudtrailParametersJson, null, 4)
-  );
-}
-
-async function update_cloudtrail_parameters() {
-  console.log(`updating amplify/backend/custom/cloudtrailLake/parameters.json"...`);
-
-  const cloudtrailParametersJsonPath = path.resolve(
-    `./amplify/backend/custom/cloudtrailLake/parameters.json`
-  );
-
-  const cloudtrailParametersJson = require(cloudtrailParametersJsonPath);
-
-  cloudtrailParametersJson.CloudTrailAuditLogs = CLOUDTRAIL_AUDIT_LOGS;
+  cloudtrailParametersJson.RetentionPeriod = CLOUDTRAIL_RETENTION_PERIOD;
   
   fs.writeFileSync(
     cloudtrailParametersJsonPath,
