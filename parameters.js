@@ -6,7 +6,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const { AWS_APP_ID, AWS_BRANCH, SSO_LOGIN, TEAM_ADMIN_GROUP, TEAM_AUDITOR_GROUP, TAGS, CLOUDTRAIL_AUDIT_LOGS, CLOUDTRAIL_RETENTION_PERIOD, TEAM_ACCOUNT } = process.env;
+const { AWS_APP_ID, AWS_BRANCH, SSO_LOGIN, TEAM_ADMIN_GROUP, TEAM_AUDITOR_GROUP, TAGS, CLOUDTRAIL_AUDIT_LOGS, CLOUDTRAIL_RETENTION_PERIOD, CLOUDTRAIL_BILLING_MODE, TEAM_ACCOUNT } = process.env;
 
 async function update_auth_parameters() {
   console.log(`updating amplify config for branch "${AWS_BRANCH}"...`);
@@ -126,6 +126,7 @@ async function update_cloudtrail_parameters() {
 
   cloudtrailParametersJson.CloudTrailAuditLogs = CLOUDTRAIL_AUDIT_LOGS;
   cloudtrailParametersJson.RetentionPeriod = CLOUDTRAIL_RETENTION_PERIOD;
+  cloudtrailParametersJson.BillingMOde = CLOUDTRAIL_BILLING_MODE;
   
   fs.writeFileSync(
     cloudtrailParametersJsonPath,

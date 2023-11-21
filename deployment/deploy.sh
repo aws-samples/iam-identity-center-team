@@ -39,6 +39,7 @@ then
     Login=$IDC_LOGIN_URL \
     CloudTrailAuditLogs=$CLOUDTRAIL_AUDIT_LOGS \
     CloudTrailRetentionPeriod=$CLOUDTRAIL_RETENTION_PERIOD \
+    CloudTrailBillingMode=$CLOUDTRAIL_BILLING_MODE \
     teamAdminGroup="$TEAM_ADMIN_GROUP" \
     teamAuditGroup="$TEAM_AUDITOR_GROUP" \
     tags="$TAGS" \
@@ -52,6 +53,7 @@ else
     Login=$IDC_LOGIN_URL \
     CloudTrailAuditLogs=$CLOUDTRAIL_AUDIT_LOGS \
     CloudTrailRetentionPeriod=$CLOUDTRAIL_RETENTION_PERIOD \
+    CloudTrailBillingMode=$CLOUDTRAIL_BILLING_MODE \
     teamAdminGroup="$TEAM_ADMIN_GROUP" \
     teamAuditGroup="$TEAM_AUDITOR_GROUP" \
     tags="$TAGS" \

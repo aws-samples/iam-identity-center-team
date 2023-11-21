@@ -54,7 +54,8 @@ Optional:
   - `read` - record only read events
   - `write` - record only write events
   - `none` - disable event logging
-- **CLOUDTRAIL_RETENTION_PERIOD** - CloudTrail Event Data Store [retention period](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-cloudtrail-eventdatastore.html#cfn-cloudtrail-eventdatastore-retentionperiod) (in days), default 7 (min 7, max 2557).
+- **CLOUDTRAIL_RETENTION_PERIOD** - CloudTrail Event Data Store [retention period](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-cloudtrail-eventdatastore.html#cfn-cloudtrail-eventdatastore-retentionperiod) (in days), default 7 (min 7, max 3653).
+- **CLOUDTRAIL_BILLING_MODE** - CloudTrail Event Data Store [billing mode](https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-lake-manage-costs.html) (default is `EXTENDABLE_RETENTION_PRICING`).
 
 For example:
 

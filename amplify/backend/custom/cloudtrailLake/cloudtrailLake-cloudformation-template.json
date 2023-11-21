@@ -17,7 +17,15 @@
       "Type":"Number",
       "Default":7,
       "MinValue":7,
-      "MaxValue":2557
+      "MaxValue":3653
+    },
+    "BillingMode":{
+      "Type":"String",
+      "Default":"EXTENDABLE_RETENTION_PRICING",
+      "AllowedValues":[
+        "EXTENDABLE_RETENTION_PRICING",
+        "FIXED_RETENTION_PRICING"
+      ]
     }
   },
   "Conditions":{
@@ -74,6 +82,7 @@
           ]
         },
         "RetentionPeriod": { "Ref":"RetentionPeriod" },
+        "BillingMode": { "Ref":"BillingMode" },
         "OrganizationEnabled":{
           "Fn::If":[
             "IsOrganizationsSupported",

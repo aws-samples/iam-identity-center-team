@@ -1,4 +1,5 @@
 {
     "CloudTrailAuditLogs": "read_write",
-    "RetentionPeriod": 7
+    "RetentionPeriod": 7,
+    "BillingMode": "EXTENDABLE_RETENTION_PRICING"
 }
