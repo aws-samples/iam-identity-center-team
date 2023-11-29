@@ -15,7 +15,7 @@ The TEAM solution consists of numerous AWS serverless services. As cost is accru
 - [Amazon DynamoDB](https://aws.amazon.com/dynamodb/pricing)
 - [AWS Lambda](https://aws.amazon.com/lambda/pricing)
 - [AWS Step Functions](https://aws.amazon.com/step-functions/pricing)
-- [Amazon Cognito](https://aws.amazon.com/es/cognito/pricing)
+- [Amazon Cognito](https://aws.amazon.com/cognito/pricing)
 - [AWS CloudTrail Lake](https://aws.amazon.com/cloudtrail/pricing/)
 - [AWS IAM Identity Center](https://aws.amazon.com/iam/identity-center/) (free)
 
