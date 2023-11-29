@@ -20,7 +20,7 @@ TEAM consists of the following components:
 - [AWS Lambda](https://aws.amazon.com/lambda/) backed middleware component that contains logic for routing TEAM elevated access requests to the orchestration layer.
 - [AWS Step Functions](https://aws.amazon.com/step-functions/) orchestration workflow component that automates the process of notification, granting and removal of elevated access.
 - Auditing and visibility component powered by [AWS CloudTrail Lake](https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-lake.html) for veiwing elevated access session activity logs.
-- Security component backed by [Amazon Cognito](https://aws.amazon.com/es/cognito/) for managing group and user based authentication and application authorization.
+- Security component backed by [Amazon Cognito](https://aws.amazon.com/cognito/) for managing group and user based authentication and application authorization.
 
 The TEAM application is built, deployed and hosted on [AWS Amplify](https://aws.amazon.com/amplify/).
 
