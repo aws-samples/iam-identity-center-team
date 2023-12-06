@@ -24,6 +24,7 @@ To clone the TEAM amplify fullstack project, execute the following command insid
 
 ```sh
 git clone https://github.com/aws-samples/iam-identity-center-team.git
+cd !$:t
 ```
 
 This creates a directory named **iam-identity-center-team** in your current directory.
@@ -32,7 +33,15 @@ This creates a directory named **iam-identity-center-team** in your current dire
 
 ## Update deployment parameters
 
-Create a new file named **parameters.sh** in the **deployment** directory. Copy the contents of the file **parameters-template.sh** to the new file. Update the parameters in the **parameters.sh** file as follows:
+Create a new file named **parameters.sh** in the **deployment** directory. Copy the contents of the file **parameters-template.sh** to the new file. 
+
+```sh
+cd deployment
+cp -n parameters-template.sh parameters.sh
+```
+
+
+Update the parameters in the **parameters.sh** file as follows:
 
 **Parameters**
 
@@ -83,8 +92,8 @@ The **init.sh** bash script in the **deployment** folder configures the followin
 Execute the following command in the root directory to deploy the script
 
 ```sh
-$ cd deployment
-$ ./init.sh
+cd deployment
+./init.sh
 ```
 
 If the init.sh script is deployed successfully, the output should be similar as shown below
@@ -109,8 +118,8 @@ The **deploy.sh** bash script in the **deployment** folder performs the followin
 Execute the following command in the root directory to deploy the script
 
 ```sh
-$ cd deployment
-$ ./deploy.sh
+cd deployment
+./deploy.sh
 ```
 
 Once the deployment script has completed execution and the cloudformation stack has been created successfully, go to the AWS Amplify console to monitor the status of the TEAM application deployment.

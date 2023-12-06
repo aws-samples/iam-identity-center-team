@@ -27,8 +27,8 @@ The **integration.sh** bash script in the **deployment** folder can be used to o
 Execute the following command in the root directory to deploy the **integration.sh** script:
 
 ```sh
-$ cd deployment
-$ ./integration.sh
+cd deployment
+./integration.sh
 ```
 
 The result should be similar to the below:

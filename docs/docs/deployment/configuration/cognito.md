@@ -36,8 +36,8 @@ The **cognito.sh** bash script in the **deployment** folder performs the followi
 Execute the following command in the root directory to deploy the script
 
 ```sh
-$ cd deployment
-$ ./cognito.sh
+cd deployment
+./cognito.sh
 ```
 The **cognito.sh** script should be deployed successfully without any errors.
 
