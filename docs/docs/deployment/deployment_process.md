@@ -24,7 +24,6 @@ To clone the TEAM amplify fullstack project, execute the following command insid
 
 ```sh
 git clone https://github.com/aws-samples/iam-identity-center-team.git
-cd !$:t
 ```
 
 This creates a directory named **iam-identity-center-team** in your current directory.
