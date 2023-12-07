@@ -56,9 +56,82 @@ Resources:
                 - amplify.amazonaws.com
             Action:
               - sts:AssumeRole 
-      Path: /
-      ManagedPolicyArns:
-        - "arn:aws:iam::aws:policy/AdministratorAccess"      
+      Policies:
+        - PolicyName: AmplifyPermissions
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - amplify:UpdateBranch
+                  - amplify:GetBackendEnvironment
+                  - amplify:ListApps
+                  - amplify:GetApp
+                  - amplify:CreateBackendEnvironment
+                  - s3:PutEncryptionConfiguration
+                  - s3:CreateBucket
+                  - cloudformation:DescribeStackEvents
+                  - cloudformation:UpdateStack
+                  - cloudformation:DescribeStack
+                  - cloudformation:ListStackResources
+                  - cloudformation:GetTemplateSummary
+                  - iam:ListRolePolicies
+                  - iam:ListAttachedRolePolicies
+                  - iam:GetRole
+                  - iam:GetRolePolicy
+                  - iam:PutRolePolicy
+                  - iam:CreateRole
+                  - iam:CreatePolicy
+                  - iam:AttachRolePolicy
+                  - iam:CreateServiceLinkedRole
+                  - lambda:CreateEventSourceMapping
+                  - lambda:GetRuntimeManagementConfig
+                  - lambda:GetFunctionCodeSigningConfig
+                  - lambda:GetFunction
+                  - lambda:CreateFunction
+                  - lambda:AddLayerVersionPermission
+                  - lambda:PublishLayerVersion
+                  - kms:Decrypt
+                  - kms:Encrypt
+                  - kms:DescribeKey
+                  - kms:CreateGrant
+                  - kms:GetKeyRotationStatus
+                  - kms:GetKeyPolicy
+                  - kms:EnableKeyRotation
+                  - kms:CreateKey
+                  - states:CreateStateMachine
+                  - states:DescribeStateMachine
+                  - logs:DescribeLogGroups
+                  - logs:PutRetentionPolicy
+                  - logs:CreateLogGroup
+                  - appsync:GetGraphqlApi
+                  - appsync:CreateResolver
+                  - appsync:GetFunction
+                  - appsync:CreateFunction
+                  - appsync:CreateDataSource
+                  - appsync:GetSchemaCreationStatus
+                  - appsync:StartSchemaCreation
+                  - appsync:CreateGraphqlApi
+                  - dynamodb:DescribeTimeToLive
+                  - dynamodb:DescribeTable
+                  - dynamodb:DescribeKinesisStreamingDestination
+                  - dynamodb:DescribeContributorInsights
+                  - dynamodb:DescribeContinuousBackups
+                  - dynamodb:UpdateContinuousBackups
+                  - dynamodb:CreateTable
+                  - dynamodb:UpdateTimeToLive
+                  - cognito-idp:CreateGroup
+                  - cognito-idp:DescribeUserPool
+                  - cognito-idp:CreateUserPoolClient
+                  - cognito-idp:CreateUserPool
+                  - cognito-identity:DescribeIdentityPool
+                  - cognito-identity:SetIdentityPoolRoles
+                  - cognito-identity:CreateIdentityPool
+                  - cloudtrail:CreateEventDataStore
+                  - ssm:GetParametersByPath
+                  - sns:*
+                  - codecommit:*
+                Resource: "*"     
 
   AmplifyApp:
     Type: "AWS::Amplify::App"
