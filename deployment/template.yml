@@ -142,6 +142,8 @@ Resources:
                   - cloudtrail:AddTags
                   - ssm:GetParametersByPath
                   - organizations:ListAWSServiceAccessForOrganization
+                  - codecommit:*
+                  - sns:*
                 Resource: "*"     
 
   AmplifyApp:
