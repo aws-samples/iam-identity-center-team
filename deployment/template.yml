@@ -70,10 +70,14 @@ Resources:
                   - amplify:CreateBackendEnvironment
                   - s3:PutEncryptionConfiguration
                   - s3:CreateBucket
+                  - s3:PutBucketTagging
+                  - cloudformation:CreateStack
                   - cloudformation:DescribeStackEvents
                   - cloudformation:UpdateStack
-                  - cloudformation:DescribeStack
+                  - cloudformation:DescribeStacks
+                  - cloudformation:ListStacks
                   - cloudformation:ListStackResources
+                  - cloudformation:GetTemplate
                   - cloudformation:GetTemplateSummary
                   - iam:ListRolePolicies
                   - iam:ListAttachedRolePolicies
@@ -84,10 +88,12 @@ Resources:
                   - iam:CreatePolicy
                   - iam:AttachRolePolicy
                   - iam:CreateServiceLinkedRole
+                  - iam:PutRolePolicy
                   - lambda:CreateEventSourceMapping
                   - lambda:GetRuntimeManagementConfig
                   - lambda:GetFunctionCodeSigningConfig
                   - lambda:GetFunction
+                  - lambda:GetEventSourceMapping
                   - lambda:CreateFunction
                   - lambda:AddLayerVersionPermission
                   - lambda:PublishLayerVersion
@@ -104,8 +110,10 @@ Resources:
                   - logs:DescribeLogGroups
                   - logs:PutRetentionPolicy
                   - logs:CreateLogGroup
+                  - logs:listTagsForResource
                   - appsync:GetGraphqlApi
                   - appsync:CreateResolver
+                  - appsync:GetResolver
                   - appsync:GetFunction
                   - appsync:CreateFunction
                   - appsync:CreateDataSource
@@ -119,7 +127,10 @@ Resources:
                   - dynamodb:DescribeContinuousBackups
                   - dynamodb:UpdateContinuousBackups
                   - dynamodb:CreateTable
+                  - dynamodb:ListTagsOfResource
                   - dynamodb:UpdateTimeToLive
+                  - dynamodb:UpdateContinuousBackups
+                  - dynamodb:TagResource
                   - cognito-idp:CreateGroup
                   - cognito-idp:DescribeUserPool
                   - cognito-idp:CreateUserPoolClient
@@ -128,9 +139,9 @@ Resources:
                   - cognito-identity:SetIdentityPoolRoles
                   - cognito-identity:CreateIdentityPool
                   - cloudtrail:CreateEventDataStore
+                  - cloudtrail:AddTags
                   - ssm:GetParametersByPath
-                  - sns:*
-                  - codecommit:*
+                  - organizations:ListAWSServiceAccessForOrganization
                 Resource: "*"     
 
   AmplifyApp:
