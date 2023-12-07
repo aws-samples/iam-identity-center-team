@@ -218,7 +218,7 @@ def lambda_handler(event: dict, context):
                 slack_message = f"<mailto:{requester}|{requester}> requests access to AWS, please approve or reject this request in TEAM."
                 email_to_addresses = approvers
                 email_cc_addresses = [requester]
-                subject = f"Requests access to AWS account for {account} - TEAM"
+                subject = f"TEAM Access request to AWS account - {account}"
                 email_message_html = f'<html><body><p><b>{requester}</b> requests access to AWS, please <b>approve or reject this request</b> in <a href="{login_url}">TEAM</a>.</p><p><b>Account:</b> {account}<br /><b>Role:</b> {role}<br /><b>Start Time:</b> {request_start_time}<br /><b>Duration:</b> {duration_hours} hours<br /><b>Justification:</b> {justification}<br /><b>Ticket Number:</b> {ticket}<br /></p></body></html>'
         case "scheduled":
             # Don't need to send a notification if the request start time has already passed
