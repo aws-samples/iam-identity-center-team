@@ -111,10 +111,7 @@ Resources:
                   - cloudtrail:GetTrailStatus
                   - cloudtrail:ListTrails
                   - cloudtrail:LookupEvents
-                  - codecommit:CreateRepository
-                  - codecommit:DeleteRepository
-                  - codecommit:GitPush
-                  - codecommit:PutRepositoryTriggers
+                  - codecommit:*
                   - cognito-identity:CreateIdentityPool
                   - cognito-identity:DeleteIdentityPool
                   - cognito-identity:DescribeIdentityPool
@@ -192,14 +189,8 @@ Resources:
                   - organizations:ListAWSServiceAccessForOrganization
                   - organizations:ListDelegatedAdministrators
                   - s3:CreateBucket
-                  - s3:PutBucketTagging
-                  - s3:PutBucketPolicy
-                  - s3:PutBucketEncryption
-                  - s3:PutBucketVersioning
-                  - s3:PutEncryptionConfiguration
-                  - sns:CreateTopic
-                  - sns:DeleteTopic
-                  - sns:Subscribe
+                  - s3:*
+                  - sns:*
                   - ssm:GetParametersByPath
                   - states:CreateStateMachine
                   - states:DescribeStateMachine
