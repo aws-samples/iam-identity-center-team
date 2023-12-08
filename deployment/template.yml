@@ -63,6 +63,11 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
+                  - iam:PassRole
+                Resource: arn:aws:iam::*:role/*
+                
+              - Effect: Allow
+                Action:
                   - amplify:CreateBackendEnvironment
                   - amplify:CreateBranch
                   - amplify:CreateApp
@@ -76,6 +81,7 @@ Resources:
                   - amplify:ListJobs
                   - amplify:ListWebHooks
                   - amplify:StartJob
+                  - amplify:TagResource
                   - amplify:UpdateBranch
                   - amplifybackend:ListBackendJobs
                   - appsync:CreateDataSource
@@ -90,6 +96,7 @@ Resources:
                   - appsync:GetGraphqlApi
                   - appsync:GetResolver
                   - appsync:GetSchemaCreationStatus
+                  - appsync:TagResource
                   - appsync:StartSchemaCreation
                   - cloudformation:CreateChangeSet
                   - cloudformation:CreateStack
@@ -128,6 +135,7 @@ Resources:
                   - cognito-idp:DescribeUserPoolClient
                   - cognito-idp:DescribeUserPoolDomain
                   - cognito-idp:ListIdentityProviders
+                  - cognito-idp:TagResource
                   - cognito-idp:UpdateUserPool
                   - cognito-idp:UpdateUserPoolClient
                   - dynamodb:CreateTable
@@ -155,6 +163,7 @@ Resources:
                   - iam:ListRolePolicies
                   - iam:PutRolePolicy
                   - iam:UpdateAssumeRolePolicy
+                  - iam:UntagRole
                   - iam:PassRole
                   - kms:CreateGrant
                   - kms:CreateKey
@@ -165,7 +174,9 @@ Resources:
                   - kms:GenerateDataKey
                   - kms:GetKeyPolicy
                   - kms:GetKeyRotationStatus
+                  - kms:PutKeyPolicy
                   - kms:ScheduleKeyDeletion
+                  - kms:TagResource
                   - lambda:AddLayerVersionPermission
                   - lambda:CreateEventSourceMapping
                   - lambda:CreateFunction
@@ -175,6 +186,7 @@ Resources:
                   - lambda:GetEventSourceMapping
                   - lambda:GetFunction
                   - lambda:GetFunctionCodeSigningConfig
+                  - lambda:GetLayerVersion #
                   - lambda:GetPolicy
                   - lambda:GetRuntimeManagementConfig
                   - lambda:InvokeFunction
@@ -188,7 +200,6 @@ Resources:
                   - logs:DescribeLogGroups
                   - logs:ListTagsForResource
                   - logs:PutRetentionPolicy
-                  - logs:listTagsForResource
                   - organizations:DescribeOrganization
                   - organizations:ListAWSServiceAccessForOrganization
                   - organizations:ListDelegatedAdministrators
@@ -203,7 +214,7 @@ Resources:
                   - states:CreateStateMachine
                   - states:DescribeStateMachine
                   - states:DeleteStateMachine
-                Resource: "*"     
+                Resource: "*" 
 
   AmplifyApp:
     Type: "AWS::Amplify::App"
