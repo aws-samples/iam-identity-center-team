@@ -65,6 +65,7 @@ Resources:
                 Action:
                   - amplify:CreateBackendEnvironment
                   - amplify:CreateBranch
+                  - amplify:CreateApp
                   - amplify:DeleteApp
                   - amplify:DeleteBranch
                   - amplify:GetApp
@@ -76,6 +77,7 @@ Resources:
                   - amplify:ListWebHooks
                   - amplify:StartJob
                   - amplify:UpdateBranch
+                  - amplifybackend:ListBackendJobs
                   - appsync:CreateDataSource
                   - appsync:CreateFunction
                   - appsync:CreateGraphqlApi
@@ -109,6 +111,10 @@ Resources:
                   - cloudtrail:GetTrailStatus
                   - cloudtrail:ListTrails
                   - cloudtrail:LookupEvents
+                  - codecommit:CreateRepository
+                  - codecommit:DeleteRepository
+                  - codecommit:GitPush
+                  - codecommit:PutRepositoryTriggers
                   - cognito-identity:CreateIdentityPool
                   - cognito-identity:DeleteIdentityPool
                   - cognito-identity:DescribeIdentityPool
@@ -125,6 +131,7 @@ Resources:
                   - cognito-idp:DescribeUserPoolDomain
                   - cognito-idp:ListIdentityProviders
                   - cognito-idp:UpdateUserPool
+                  - cognito-idp:UpdateUserPoolClient
                   - dynamodb:CreateTable
                   - dynamodb:DeleteTable
                   - dynamodb:DescribeContinuousBackups
@@ -140,11 +147,16 @@ Resources:
                   - iam:CreatePolicy
                   - iam:CreateRole
                   - iam:CreateServiceLinkedRole
+                  - iam:DeleteRole
+                  - iam:DeleteRolePolicy
+                  - iam:DeletePolicy
+                  - iam:DetachRolePolicy
                   - iam:GetRole
                   - iam:GetRolePolicy
                   - iam:ListAttachedRolePolicies
                   - iam:ListRolePolicies
                   - iam:PutRolePolicy
+                  - iam:UpdateAssumeRolePolicy
                   - kms:CreateGrant
                   - kms:CreateKey
                   - kms:Decrypt
@@ -154,15 +166,20 @@ Resources:
                   - kms:GenerateDataKey
                   - kms:GetKeyPolicy
                   - kms:GetKeyRotationStatus
+                  - kms:ScheduleKeyDeletion
                   - lambda:AddLayerVersionPermission
                   - lambda:CreateEventSourceMapping
                   - lambda:CreateFunction
+                  - lambda:DeleteEventSourceMapping
+                  - lambda:DeleteFunction
+                  - lambda:DeleteLayerVersion
                   - lambda:GetEventSourceMapping
                   - lambda:GetFunction
                   - lambda:GetFunctionCodeSigningConfig
                   - lambda:GetPolicy
                   - lambda:GetRuntimeManagementConfig
                   - lambda:PublishLayerVersion
+                  - lambda:RemoveLayerVersionPermission
                   - logs:CreateLogGroup
                   - logs:CreateLogStream
                   - logs:DeleteLogGroup
@@ -176,10 +193,17 @@ Resources:
                   - organizations:ListDelegatedAdministrators
                   - s3:CreateBucket
                   - s3:PutBucketTagging
+                  - s3:PutBucketPolicy
+                  - s3:PutBucketEncryption
+                  - s3:PutBucketVersioning
                   - s3:PutEncryptionConfiguration
+                  - sns:CreateTopic
+                  - sns:DeleteTopic
+                  - sns:Subscribe
                   - ssm:GetParametersByPath
                   - states:CreateStateMachine
                   - states:DescribeStateMachine
+                  - states:DeleteStateMachine
                 Resource: "*"     
 
   AmplifyApp:
