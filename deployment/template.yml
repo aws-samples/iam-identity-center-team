@@ -110,6 +110,7 @@ Resources:
                   - cloudformation:GetTemplateSummary
                   - cloudformation:ListStackResources
                   - cloudformation:ListStacks
+                  - cloudformation:TagResource
                   - cloudformation:UpdateStack
                   - cloudtrail:AddTags
                   - cloudtrail:CreateEventDataStore
@@ -125,6 +126,7 @@ Resources:
                   - cognito-identity:DescribeIdentityPool
                   - cognito-identity:ListIdentityPools
                   - cognito-identity:SetIdentityPoolRoles
+                  - cognito-identity:TagResource
                   - cognito-idp:CreateGroup
                   - cognito-idp:CreateUserPool
                   - cognito-idp:CreateUserPoolClient
@@ -153,7 +155,6 @@ Resources:
                   - iam:AttachRolePolicy
                   - iam:CreatePolicy
                   - iam:CreateRole
-                  - iam:CreateServiceLinkedRole
                   - iam:DeleteRole
                   - iam:DeleteRolePolicy
                   - iam:DeletePolicy
@@ -205,7 +206,6 @@ Resources:
                   - organizations:DescribeOrganization
                   - organizations:ListAWSServiceAccessForOrganization
                   - organizations:ListDelegatedAdministrators
-                  - s3:CreateBucket
                   - s3:*
                   - sns:Subscribe
                   - sns:CreateTopic
@@ -216,6 +216,7 @@ Resources:
                   - states:CreateStateMachine
                   - states:DescribeStateMachine
                   - states:DeleteStateMachine
+                  - states:TagResource
                 Resource: "*" 
 
   AmplifyApp:
