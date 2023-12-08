@@ -60,12 +60,13 @@ Resources:
         - PolicyName: AmplifyPermissions
           PolicyDocument:
             Version: 2012-10-17
-            Statement:
+                        Statement:
               - Effect: Allow
                 Action:
+                  - iam:CreateServiceLinkedRole
                   - iam:PassRole
                 Resource: arn:aws:iam::*:role/*
-                
+
               - Effect: Allow
                 Action:
                   - amplify:CreateBackendEnvironment
@@ -200,6 +201,7 @@ Resources:
                   - logs:DescribeLogGroups
                   - logs:ListTagsForResource
                   - logs:PutRetentionPolicy
+                  - logs:TagResource
                   - organizations:DescribeOrganization
                   - organizations:ListAWSServiceAccessForOrganization
                   - organizations:ListDelegatedAdministrators
