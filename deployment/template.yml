@@ -60,7 +60,7 @@ Resources:
         - PolicyName: AmplifyPermissions
           PolicyDocument:
             Version: 2012-10-17
-                        Statement:
+              Statement:
               - Effect: Allow
                 Action:
                   - iam:CreateServiceLinkedRole
