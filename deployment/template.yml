@@ -196,6 +196,7 @@ Resources:
                   - lambda:PublishLayerVersion
                   - lambda:TagResource
                   - lambda:RemoveLayerVersionPermission
+                  - lambda:UpdateFunctionConfiguration
                   - logs:CreateLogGroup
                   - logs:CreateLogStream
                   - logs:DeleteLogGroup
