@@ -160,6 +160,7 @@ Resources:
                   - iam:DeletePolicy
                   - iam:DetachRolePolicy
                   - iam:GetRole
+                  - iam:GetPolicy
                   - iam:GetRolePolicy
                   - iam:ListAttachedRolePolicies
                   - iam:ListRolePolicies
