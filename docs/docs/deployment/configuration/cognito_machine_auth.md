@@ -11,12 +11,13 @@ grand_parent: Solution deployment
 The TEAM Cognito machine authentication configuration is an optional configuration make the TEAM graph api accessible programmatically.
 
 ### Run Api Machine Authentication configuration script
+
 The **api-machine-auth.sh** bash script in the **deployment** folder performs the following actions within the **TEAM_ACCOUNT**:
 
 - Creates a Resource Server with an id of `api` on the Cognito User Pool with a custom scope of `admin`.
 - Creates a User Pool Client on the Cognito User Pool with client secret generation enabled along with the other needed configuration for machine auth flows and allows it access to the `api/admin` custom scope.
 
-> Ensure that the named profile for the **TEAM Deployment account** has sufficient permissions before executing the **cognito.sh** script
+> Ensure that the named profile for the **TEAM Deployment account** has sufficient permissions before executing the **api-machine-auth.sh** script
 {: .important}
 
 Execute the following command in the root directory to deploy the script
