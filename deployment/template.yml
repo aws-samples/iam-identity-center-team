@@ -56,9 +56,170 @@ Resources:
                 - amplify.amazonaws.com
             Action:
               - sts:AssumeRole 
-      Path: /
-      ManagedPolicyArns:
-        - "arn:aws:iam::aws:policy/AdministratorAccess"      
+      Policies:
+        - PolicyName: AmplifyPermissions
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - iam:CreateServiceLinkedRole
+                  - iam:PassRole
+                Resource: arn:aws:iam::*:role/*
+
+              - Effect: Allow
+                Action:
+                  - amplify:CreateBackendEnvironment
+                  - amplify:CreateBranch
+                  - amplify:CreateApp
+                  - amplify:DeleteApp
+                  - amplify:DeleteBranch
+                  - amplify:GetApp
+                  - amplify:GetBackendEnvironment
+                  - amplify:GetBranch
+                  - amplify:ListApps
+                  - amplify:ListBackendEnvironments
+                  - amplify:ListJobs
+                  - amplify:ListWebHooks
+                  - amplify:StartJob
+                  - amplify:TagResource
+                  - amplify:UpdateBranch
+                  - amplifybackend:ListBackendJobs
+                  - appsync:CreateDataSource
+                  - appsync:CreateFunction
+                  - appsync:CreateGraphqlApi
+                  - appsync:CreateResolver
+                  - appsync:DeleteDataSource
+                  - appsync:DeleteFunction
+                  - appsync:DeleteGraphqlApi
+                  - appsync:DeleteResolver
+                  - appsync:GetFunction
+                  - appsync:GetGraphqlApi
+                  - appsync:GetResolver
+                  - appsync:GetSchemaCreationStatus
+                  - appsync:TagResource
+                  - appsync:StartSchemaCreation
+                  - cloudformation:CreateChangeSet
+                  - cloudformation:CreateStack
+                  - cloudformation:DeleteStack
+                  - cloudformation:DescribeChangeSet
+                  - cloudformation:DescribeStackEvents
+                  - cloudformation:DescribeStacks
+                  - cloudformation:ExecuteChangeSet
+                  - cloudformation:GetTemplate
+                  - cloudformation:GetTemplateSummary
+                  - cloudformation:ListStackResources
+                  - cloudformation:ListStacks
+                  - cloudformation:TagResource
+                  - cloudformation:UpdateStack
+                  - cloudtrail:AddTags
+                  - cloudtrail:CreateEventDataStore
+                  - cloudtrail:DeleteEventDataStore
+                  - cloudtrail:DescribeTrails
+                  - cloudtrail:GetEventDataStore
+                  - cloudtrail:GetTrailStatus
+                  - cloudtrail:ListTrails
+                  - cloudtrail:LookupEvents
+                  - codecommit:*
+                  - cognito-identity:CreateIdentityPool
+                  - cognito-identity:DeleteIdentityPool
+                  - cognito-identity:DescribeIdentityPool
+                  - cognito-identity:ListIdentityPools
+                  - cognito-identity:SetIdentityPoolRoles
+                  - cognito-identity:TagResource
+                  - cognito-idp:CreateGroup
+                  - cognito-idp:CreateUserPool
+                  - cognito-idp:CreateUserPoolClient
+                  - cognito-idp:CreateUserPoolDomain
+                  - cognito-idp:DeleteGroup
+                  - cognito-idp:DeleteUserPool
+                  - cognito-idp:DeleteUserPoolClient
+                  - cognito-idp:DescribeUserPool
+                  - cognito-idp:DescribeUserPoolClient
+                  - cognito-idp:DescribeUserPoolDomain
+                  - cognito-idp:ListIdentityProviders
+                  - cognito-idp:TagResource
+                  - cognito-idp:UpdateUserPool
+                  - cognito-idp:UpdateUserPoolClient
+                  - dynamodb:CreateTable
+                  - dynamodb:DeleteTable
+                  - dynamodb:DescribeContinuousBackups
+                  - dynamodb:DescribeContributorInsights
+                  - dynamodb:DescribeKinesisStreamingDestination
+                  - dynamodb:DescribeTable
+                  - dynamodb:DescribeTimeToLive
+                  - dynamodb:ListTagsOfResource
+                  - dynamodb:TagResource
+                  - dynamodb:UpdateContinuousBackups
+                  - dynamodb:UpdateTimeToLive
+                  - iam:AttachRolePolicy
+                  - iam:CreatePolicy
+                  - iam:CreateRole
+                  - iam:DeleteRole
+                  - iam:DeleteRolePolicy
+                  - iam:DeletePolicy
+                  - iam:DetachRolePolicy
+                  - iam:GetRole
+                  - iam:GetPolicy
+                  - iam:GetRolePolicy
+                  - iam:ListAttachedRolePolicies
+                  - iam:ListRolePolicies
+                  - iam:PutRolePolicy
+                  - iam:UpdateAssumeRolePolicy
+                  - iam:UntagRole
+                  - iam:PassRole
+                  - kms:CreateGrant
+                  - kms:CreateKey
+                  - kms:Decrypt
+                  - kms:DescribeKey
+                  - kms:EnableKeyRotation
+                  - kms:Encrypt
+                  - kms:GenerateDataKey
+                  - kms:GetKeyPolicy
+                  - kms:GetKeyRotationStatus
+                  - kms:PutKeyPolicy
+                  - kms:ScheduleKeyDeletion
+                  - kms:TagResource
+                  - lambda:AddLayerVersionPermission
+                  - lambda:CreateEventSourceMapping
+                  - lambda:CreateFunction
+                  - lambda:DeleteEventSourceMapping
+                  - lambda:DeleteFunction
+                  - lambda:DeleteLayerVersion
+                  - lambda:GetEventSourceMapping
+                  - lambda:GetFunction
+                  - lambda:GetFunctionCodeSigningConfig
+                  - lambda:GetLayerVersion #
+                  - lambda:GetPolicy
+                  - lambda:GetRuntimeManagementConfig
+                  - lambda:InvokeFunction
+                  - lambda:PublishLayerVersion
+                  - lambda:TagResource
+                  - lambda:RemoveLayerVersionPermission
+                  - lambda:UpdateFunctionConfiguration
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:DeleteLogGroup
+                  - logs:DeleteLogStream
+                  - logs:DescribeLogGroups
+                  - logs:ListTagsForResource
+                  - logs:PutRetentionPolicy
+                  - logs:TagResource
+                  - organizations:DescribeOrganization
+                  - organizations:ListAWSServiceAccessForOrganization
+                  - organizations:ListDelegatedAdministrators
+                  - s3:*
+                  - sns:Subscribe
+                  - sns:CreateTopic
+                  - sns:DeleteTopic
+                  - sns:GetTopicAttributes
+                  - sns:TagResource
+                  - ssm:GetParametersByPath
+                  - states:CreateStateMachine
+                  - states:DescribeStateMachine
+                  - states:DeleteStateMachine
+                  - states:TagResource
+                Resource: "*" 
 
   AmplifyApp:
     Type: "AWS::Amplify::App"
