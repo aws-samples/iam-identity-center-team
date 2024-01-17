@@ -97,8 +97,11 @@ Resources:
                   - appsync:GetGraphqlApi
                   - appsync:GetResolver
                   - appsync:GetSchemaCreationStatus
+                  - appsync:ListTagsForResource
                   - appsync:TagResource
                   - appsync:StartSchemaCreation
+                  - appsync:UpdateGraphqlApi
+                  - appsync:UntagResource
                   - cloudformation:CreateChangeSet
                   - cloudformation:CreateStack
                   - cloudformation:DeleteStack
@@ -138,7 +141,9 @@ Resources:
                   - cognito-idp:DescribeUserPoolClient
                   - cognito-idp:DescribeUserPoolDomain
                   - cognito-idp:ListIdentityProviders
+                  - cognito-idp:ListTagsForResource
                   - cognito-idp:TagResource
+                  - cognito-idp:UntagResource
                   - cognito-idp:UpdateUserPool
                   - cognito-idp:UpdateUserPoolClient
                   - dynamodb:CreateTable
@@ -150,8 +155,10 @@ Resources:
                   - dynamodb:DescribeTimeToLive
                   - dynamodb:ListTagsOfResource
                   - dynamodb:TagResource
+                  - dynamodb:UntagResource
                   - dynamodb:UpdateContinuousBackups
                   - dynamodb:UpdateTimeToLive
+                  - iam:List*
                   - iam:AttachRolePolicy
                   - iam:CreatePolicy
                   - iam:CreateRole
@@ -166,6 +173,7 @@ Resources:
                   - iam:ListRolePolicies
                   - iam:PutRolePolicy
                   - iam:UpdateAssumeRolePolicy
+                  - iam:TagRole
                   - iam:UntagRole
                   - iam:PassRole
                   - kms:CreateGrant
@@ -180,6 +188,8 @@ Resources:
                   - kms:PutKeyPolicy
                   - kms:ScheduleKeyDeletion
                   - kms:TagResource
+                  - kms:ListResourceTags
+                  - kms:UntagResource
                   - lambda:AddLayerVersionPermission
                   - lambda:CreateEventSourceMapping
                   - lambda:CreateFunction
@@ -197,6 +207,9 @@ Resources:
                   - lambda:TagResource
                   - lambda:RemoveLayerVersionPermission
                   - lambda:UpdateFunctionConfiguration
+                  - lambda:UpdateEventSourceMapping
+                  - lambda:*Tags
+                  - lambda:UntagResource
                   - logs:CreateLogGroup
                   - logs:CreateLogStream
                   - logs:DeleteLogGroup
@@ -214,11 +227,17 @@ Resources:
                   - sns:DeleteTopic
                   - sns:GetTopicAttributes
                   - sns:TagResource
+                  - sns:UntagResource
+                  - sns:ListSubscriptionsByTopic
                   - ssm:GetParametersByPath
                   - states:CreateStateMachine
                   - states:DescribeStateMachine
                   - states:DeleteStateMachine
                   - states:TagResource
+                  - states:ListTagsForResource
+                  - states:UntagResource
+                  - states:UpdateStateMachine
+                  - states:UpdateStateMachineAlias
                 Resource: "*" 
 
   AmplifyApp:
