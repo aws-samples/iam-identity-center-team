@@ -30,13 +30,40 @@ The **api-machine-auth.sh** script should be deployed successfully without any e
 
 The configuration to enable machine authentication against your AWS TEAM api is now complete.
 
+### Retrieve Machine Authentication Credentials
+
+The simplest method to retrieve the machine authentication credentials is to run the **get-machine-auth-credentials.sh** script. The script will output the following information to your terminal: 
+
+- `token_endpoint` - The oath token endpoint for the configured aws cognito pool.
+- `graph_endpoint` - The graph endpoint for the TEAM deployment.
+- `client_id` - The client id of the `machine_auth` cognito user pool client.
+- `client_secret` - The client secret of the `machine_auth` cognito user pool client.
+
+> Ensure that the named profile for the **TEAM Deployment account** has sufficient permissions before executing the **get-machine-auth-credentials.sh** script
+{: .important}
+
+```sh
+cd deployment
+./get-machine-auth-credentials.sh
+# example script output
+token_endpoint="https://my.token.endpoint/oauth2/token"
+graph_endpoint="https://my.graph.endpoint/graphql"
+client_id="MyClientID"
+client_secret="MyClientSecret"
+```
+
+These credentials can then be used for accessing the TEAM graph api programmatically with the language of your choice and can also be used to configure the [terraform provider for awsteam](https://registry.terraform.io/providers/brittandeyoung/awsteam/latest). 
+
+
 ### Using Machine Authentication with the Graph API
 
 In order to use machine authentication on the Graph API, you need:
-1. Obtain the client Id and Secret from the Cognito User Pool Client named `machine_auth`. 
+1. Obtain the client Id and Secret from the Cognito User Pool Client named `machine_auth` or using the **get-machine-auth-credentials.sh** script.
 2. Use these to obtain a token from the token endpoint for the Cognito User Pool. This process is detailed in the [AWS Cognito Guide](https://docs.aws.amazon.com/cognito/latest/developerguide/token-endpoint.html).
 3. Use this token in the `Authorization` header when making calls to the TEAM Graph API. 
 
-<!-- ### Using The Terraform Provider
+### Using The Terraform Provider
 
-Documentation to come with the release of the terraform provider. -->
+There is a community maintained [terraform provider for awsteam](https://registry.terraform.io/providers/brittandeyoung/awsteam/latest). This allows managing configuration using terraform. You will need the machine authentication credentials in order to use this provider. 
+
+When reporting issues or wanting to collaborate on the provider, please work directly on the [provider's github page](https://github.com/brittandeyoung/terraform-provider-awsteam)
