@@ -66,5 +66,5 @@ In order to use machine authentication on the Graph API, you need:
 
 Explore the community-supported [Terraform provider designed for awsteam](https://registry.terraform.io/providers/brittandeyoung/awsteam/latest), enabling seamless configuration management through Terraform. Machine authentication credentials are required to use the provider.
 
-> The Terraform provider is maintained independently of the aws-samples community, and the TEAM authors do not assume responsibility for its maintenance. This Terraform provider has not undergone an internal AWS security review process. Users are advised to exercise caution.
+> The Terraform provider is maintained independently of the aws-samples community, and the TEAM authors do not assume responsibility for its maintenance.
 {: .important}
