@@ -1,16 +1,16 @@
 ---
 layout: default
-title: Cognito Machine Authentication Configuration 
+title: Cognito Machine Authentication Setup Guide 
 nav_order: 6
 parent: Configuration
 grand_parent: Solution deployment
 ---
 
-# Cognito Machine Authentication Configuration 
+# Cognito Machine Authentication Setup Guide 
 
-The TEAM Cognito machine authentication configuration is an optional configuration make the TEAM graph api accessible programmatically.
+The TEAM Cognito machine authentication configuration is an optional configuration to make the TEAM graph API accessible programmatically.
 
-### Run Api Machine Authentication configuration script
+### Run API Machine Authentication configuration script
 
 The **api-machine-auth.sh** bash script in the **deployment** folder performs the following actions within the **TEAM_ACCOUNT**:
 
@@ -20,7 +20,7 @@ The **api-machine-auth.sh** bash script in the **deployment** folder performs th
 > Ensure that the named profile for the **TEAM Deployment account** has sufficient permissions before executing the **api-machine-auth.sh** script
 {: .important}
 
-Execute the following command in the root directory to deploy the script
+Execute the following command in the root directory:
 
 ```sh
 cd deployment
@@ -28,7 +28,7 @@ cd deployment
 ```
 The **api-machine-auth.sh** script should be deployed successfully without any errors.
 
-The configuration to enable machine authentication against your AWS TEAM api is now complete.
+The configuration to enable machine authentication against your AWS TEAM API is now complete.
 
 ### Retrieve Machine Authentication Credentials
 
@@ -52,7 +52,7 @@ client_id="MyClientID"
 client_secret="MyClientSecret"
 ```
 
-These credentials can then be used for accessing the TEAM graph api programmatically with the language of your choice and can also be used to configure the [terraform provider for awsteam](https://registry.terraform.io/providers/brittandeyoung/awsteam/latest). 
+These credentials can then be used for accessing the TEAM graph API programmatically with the language of your choice and can also be used to configure the [terraform provider for awsteam](https://registry.terraform.io/providers/brittandeyoung/awsteam/latest). 
 
 
 ### Using Machine Authentication with the Graph API
@@ -62,8 +62,9 @@ In order to use machine authentication on the Graph API, you need:
 2. Use these to obtain a token from the token endpoint for the Cognito User Pool. This process is detailed in the [AWS Cognito Guide](https://docs.aws.amazon.com/cognito/latest/developerguide/token-endpoint.html).
 3. Use this token in the `Authorization` header when making calls to the TEAM Graph API. 
 
-### Using The Terraform Provider
+### Using the Terraform Provider
 
-There is a community maintained [terraform provider for awsteam](https://registry.terraform.io/providers/brittandeyoung/awsteam/latest). This allows managing configuration using terraform. You will need the machine authentication credentials in order to use this provider. 
+Explore the community-supported [Terraform provider designed for awsteam](https://registry.terraform.io/providers/brittandeyoung/awsteam/latest), enabling seamless configuration management through Terraform. Machine authentication credentials are required to use the provider.
 
-When reporting issues or wanting to collaborate on the provider, please work directly on the [provider's github page](https://github.com/brittandeyoung/terraform-provider-awsteam)
+> The Terraform provider is maintained independently of the aws-samples community, and the TEAM authors do not assume responsibility for its maintenance. This Terraform provider has not undergone an internal AWS security review process. Users are advised to exercise caution.
+{: .important}
