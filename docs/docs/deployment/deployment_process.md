@@ -62,6 +62,7 @@ Optional:
   - `read` - record only read events
   - `write` - record only write events
   - `none` - disable event logging
+- **UI_DOMAIN** - Custom domain for the Amplify Hosted UI (does not configure the Amplify app Domain Management, must be done if required).
 
 For example:
 
@@ -75,6 +76,7 @@ TEAM_ADMIN_GROUP="team_admin_group_name"
 TEAM_AUDITOR_GROUP="team_auditor_group_name"
 TAGS="tag1=value1 tag2=value2"
 CLOUDTRAIL_AUDIT_LOGS=read_write
+UI_DOMAIN=example.address.online
 ```
 
 ---

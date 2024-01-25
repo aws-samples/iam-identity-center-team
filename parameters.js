@@ -6,7 +6,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const { AWS_APP_ID, AWS_BRANCH, SSO_LOGIN, TEAM_ADMIN_GROUP, TEAM_AUDITOR_GROUP, TAGS, CLOUDTRAIL_AUDIT_LOGS, TEAM_ACCOUNT } = process.env;
+const { AWS_APP_ID, AWS_BRANCH, SSO_LOGIN, TEAM_ADMIN_GROUP, TEAM_AUDITOR_GROUP, TAGS, CLOUDTRAIL_AUDIT_LOGS, TEAM_ACCOUNT, AMPLIFY_CUSTOM_DOMAIN } = process.env;
 
 async function update_auth_parameters() {
   console.log(`updating amplify config for branch "${AWS_BRANCH}"...`);
@@ -24,12 +24,13 @@ async function update_auth_parameters() {
   );
   oAuthMetadata.CallbackURLs.pop();
   oAuthMetadata.LogoutURLs.pop();
-  oAuthMetadata.CallbackURLs.push(
-    `https://${AWS_BRANCH}.${AWS_APP_ID}.amplifyapp.com/`
-  );
-  oAuthMetadata.LogoutURLs.push(
-    `https://${AWS_BRANCH}.${AWS_APP_ID}.amplifyapp.com/`
-  );
+
+  const amplifyDomain = AMPLIFY_CUSTOM_DOMAIN ? `https://${AMPLIFY_CUSTOM_DOMAIN}/` :`${AWS_BRANCH}.${AWS_APP_ID}.amplifyapp.com/`
+
+  console.log("domain",amplifyDomain)
+  oAuthMetadata.CallbackURLs.push(amplifyDomain);
+  oAuthMetadata.LogoutURLs.push(amplifyDomain);
+
   authParametersJson.cognitoConfig.oAuthMetadata =
     JSON.stringify(oAuthMetadata);
 
