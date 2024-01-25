@@ -196,17 +196,17 @@ def list_existing_sso_instances():
 def get_user(username):
     try:
         client = boto3.client('identitystore')
-        response = client.list_users(
+        response = client.get_user_id(
             IdentityStoreId=sso_instance['IdentityStoreId'],
-            Filters=[
-                {
-                    'AttributePath': 'UserName',
+            AlternateIdentifier={
+                'UniqueAttribute': {
+                    'AttributePath': 'userName',
                     'AttributeValue': username
                 },
-            ]
+            }
         )
-        if response['Users']:
-            return response['Users'][0]['UserId']
+        if response['UserId']:
+            return response['UserId']
         else:
             return
     except ClientError as e:
