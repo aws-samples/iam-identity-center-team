@@ -1,6 +1,7 @@
 [
   {
-    "Action": ["identitystore:ListUsers"],
+    "Action": ["identitystore:ListUsers",
+                "identitystore:GetUserId"],
     "Resource": ["*"]
   },
   {
