@@ -69,6 +69,7 @@ type Approvers
       { allow: groups, groups: ["Admin"] }
       { allow: groups, groupClaim: "scope", groups: ["api/admin"] }
       { allow: private, operations: [read] }
+      { allow: private, provider: iam, operations: [read, update] }
     ]
   ) {
   id: ID
@@ -119,7 +120,7 @@ type Eligibility
       { allow: groups, groups: ["Admin"] }
       { allow: groups, groupClaim: "scope", groups: ["api/admin"] }
       { allow: private, operations: [read] }
-      { allow: private, provider: iam, operations: [read] }
+      { allow: private, provider: iam, operations: [read, update] }
     ]
   ) {
   id: ID
