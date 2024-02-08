@@ -28,6 +28,7 @@ clientID=`aws cognito-idp list-user-pool-clients --region $REGION --user-pool-id
 
 amplifyAppId=`aws amplify list-apps --output json | jq -r '.apps[] | select(.name=="TEAM-IDC-APP") | .appId'`
 amplifyDomain=`aws amplify list-apps --output json | jq -r '.apps[] | select(.name=="TEAM-IDC-APP") | .defaultDomain'`
+amplifyDomain="main.$amplifyDomain"
 
 amplifyCustomDomains=`aws amplify list-domain-associations --app-id $amplifyAppId --output json`
 amplifyCustomDomain=`echo $amplifyCustomDomains | jq -r 'select(.domainAssociations | length > 0) | .domainAssociations[0].domainName'`

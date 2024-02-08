@@ -25,7 +25,7 @@ async function update_auth_parameters() {
   oAuthMetadata.CallbackURLs.pop();
   oAuthMetadata.LogoutURLs.pop();
 
-  const amplifyDomain = AMPLIFY_CUSTOM_DOMAIN ? `https://${AMPLIFY_CUSTOM_DOMAIN}/` :`${AWS_BRANCH}.${AWS_APP_ID}.amplifyapp.com/`
+  const amplifyDomain = AMPLIFY_CUSTOM_DOMAIN ? `https://${AMPLIFY_CUSTOM_DOMAIN}/` :`https://${AWS_BRANCH}.${AWS_APP_ID}.amplifyapp.com/`
 
   console.log("domain",amplifyDomain)
   oAuthMetadata.CallbackURLs.push(amplifyDomain);

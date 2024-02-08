@@ -30,6 +30,24 @@ cd deployment
 
 Once the upgrade script has completed execution, go to the AWS Amplify console to monitor the status of the TEAM application build and deployment.
 
+## If upgrading to v1.1.1 (Custom Domain)
+Team v1.1.1 introduces the use of Amplify Custom Domain.
+To use with custom domain, ensure to update **parameters.sh** with UI_DOMAIN 
+
+## Domain Registration (If Using Custom Domain)
+Go to Amplify console: AWS AMPLIFY → All Apps → TEAM-IDC-APP → Domain Management → Add domain.
+Follow https://docs.aws.amazon.com/amplify/latest/userguide/custom-domains.html
+
+Execute the **integration.sh** script and update the applicationstartURL in AWS IAM Identity Center
+
+Execute the **cognito.sh** script 
+
+NB: Ensure custom domain is reflected in  Allowed Callback URLs and Allowed sign-out URLs 
+Amazon Cognito → User pools → $(User Pool Name) → App Integration → $(ClientWeb) → HostedUI
+
+
+
+
 ## If upgrading from v1.0.0 - v1.0.5, re-set notifications settings
 TEAM v1.0.6 introduces additional notifications settings, and **will break the email notification configuration on previous versions**. After upgrading, navigate to the settings page and update the notification settings. To continue using email notifications, select Amazon SES and the notification service and set the source email address.
 

@@ -62,7 +62,7 @@ Optional:
   - `read` - record only read events
   - `write` - record only write events
   - `none` - disable event logging
-- **UI_DOMAIN** - Custom domain for the Amplify Hosted UI (does not configure the Amplify app Domain Management, must be done if required).
+- **UI_DOMAIN** - Custom domain for the Amplify Hosted UI (does not configure the Amplify app Domain Management, must be done if required )
 
 For example:
 
@@ -127,6 +127,11 @@ Once the deployment script has completed execution and the cloudformation stack 
 
 > It takes about 20 mins to complete the build and deployment of the Amplify application stack
 {: .note}
+
+## Domain Registration (If Using Custom Domain)
+Go to Amplify console: AWS AMPLIFY → All Apps → TEAM-IDC-APP → Domain Management → Add domain.
+Follow https://docs.aws.amazon.com/amplify/latest/userguide/custom-domains.html
+
 
 ## Verify app deployment
 Go to Amplify console: **AWS Amplify -> All apps -> TEAM-IDC-APP -> Hosting environments**. On the **Hosting environments** tab, click on the application URL to confirm that it was deployed successfully and you can access the TEAM application landing page as shown in the video below:

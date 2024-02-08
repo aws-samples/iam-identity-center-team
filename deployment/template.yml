@@ -33,7 +33,6 @@ Parameters:
 
 Conditions:
   IsEmptyCloudTrailAuditLogs: !Equals [!Ref CloudTrailAuditLogs, ""]
-  UseCustomAmplifyDomain: !Not [ !Equals [!Ref customAmplifyDomain, ""] ]
 
 Resources:
   TriggerAmplifyBuild:
@@ -142,10 +141,7 @@ Resources:
         - Name: TAGS
           Value: !Ref tags
         - Name: AMPLIFY_CUSTOM_DOMAIN
-          Value: !If
-            - UseCustomAmplifyDomain
-            - !Ref customAmplifyDomain
-            - !Ref AWS::NoValue
+          Value: !Ref customAmplifyDomain
       Tags:
         - Key: Branch
           Value: main
