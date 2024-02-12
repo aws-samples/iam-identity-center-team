@@ -30,8 +30,28 @@ cd deployment
 
 Once the upgrade script has completed execution, go to the AWS Amplify console to monitor the status of the TEAM application build and deployment.
 
-## If upgrading from v1.0.0 - v1.0.5, re-set notifications settings
-TEAM v1.0.6 introduces additional notifications settings, and **will break the email notification configuration on previous versions**. After upgrading, navigate to the settings page and update the notification settings. To continue using email notifications, select Amazon SES and the notification service and set the source email address.
+## If upgrading to v1.1.1 (Custom Domain)
+> This step is optional and required only if you intend to use a custom domain for your TEAM deployment instead of the default amplify generated domain name.
+
+TEAM v1.1.1 introduces the use of custom domain instead of the default amplify generated domain name.
+To use a custom domain, ensure to update the **parameters.sh** in the **deployment** folder with **UI_DOMAIN** key and your custom domain name before running the **./update.sh** script.
+
+Follow the steps below to integrate your custom domain with amplify once the update deployment is complete.
+
+### Custom domain integration (If Using Custom Domain)
+
+Go to Amplify console: AWS AMPLIFY → All Apps → TEAM-IDC-APP → Domain Management → Add domain.
+![custom](../assets/images/custom.png)
+
+Follow instructions in Amplify documentation for more details on [setting up custom domains](https://docs.aws.amazon.com/amplify/latest/userguide/custom-domains.html)
+
+Execute the **integration.sh** script and update the applicationstartURL in AWS IAM Identity Center for your TEAM application
+
+Execute the **cognito.sh** script 
+
+> Ensure your custom domain is reflected in  Allowed Callback URLs and Allowed sign-out URLs 
+Amazon Cognito → User pools → $(User Pool Name) → App Integration → $(ClientWeb) → HostedUI
+
 
 ## Verify app deployment
 Go to Amplify console: **AWS Amplify -> All apps -> TEAM-IDC-APP -> Hosting environments**. On the **Hosting environments** tab, click on the application URL to confirm that it was deployed successfully and you can access the TEAM application landing page as shown in the video below:
