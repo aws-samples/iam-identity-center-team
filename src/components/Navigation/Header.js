@@ -32,7 +32,7 @@ function Header(props) {
         visible={visible}
         onDismiss={() => setVisible(false)}
       >
-        🚀 TEAM now supports multiple notification sources including email notification via Amazon SES, Slack notifications via a custom Slack app, and custom notifications via Amazon SNS. Notifications can be configured from the Settings page.
+        🚀 TEAM v1.1.1 introduces support for custom domain name instead of the default amplify generated domain name.
       </Alert>
     );
   }
@@ -66,8 +66,8 @@ function Header(props) {
           },
           {
             type: "button",
-            text: "v1.1.0",
-            href: "https://github.com/aws-samples/iam-identity-center-team/releases/tag/v1.1.0",
+            text: "v1.1.1",
+            href: "https://github.com/aws-samples/iam-identity-center-team/releases/tag/v1.1.1",
             external: true,
             externalIconAriaLabel: " (opens in a new tab)",
           },
