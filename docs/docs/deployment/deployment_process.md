@@ -133,7 +133,7 @@ Once the deployment script has completed execution and the cloudformation stack 
 
 Go to Amplify console: AWS AMPLIFY → All Apps → TEAM-IDC-APP → Domain Management → Add domain.
 
-![custom](custom.png)
+![custom](../assets/images/custom.png)
 
 Follow instructions in Amplify documentation for more details on [setting up custom domains](https://docs.aws.amazon.com/amplify/latest/userguide/custom-domains.html)
 
