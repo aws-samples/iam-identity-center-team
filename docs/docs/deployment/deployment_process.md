@@ -62,7 +62,9 @@ Optional:
   - `read` - record only read events
   - `write` - record only write events
   - `none` - disable event logging
+  - `arn:aws:cloudtrail:*` - use an existing CloudTrail Event Data Store
 - **UI_DOMAIN** - Custom domain for Amplify hosted frontend application 
+
 
 For example:
 

@@ -6,12 +6,7 @@
     },
     "CloudTrailAuditLogs":{
       "Type":"String",
-      "AllowedValues":[
-        "read_write",
-        "read",
-        "write",
-        "none"
-      ]
+      "AllowedPattern": "(read_write|read|write|none|arn.*)"
     }
   },
   "Conditions":{
@@ -50,10 +45,47 @@
         },
         "none"
       ]
+    },
+    "CreateEventDataStore": {
+      "Fn::Or": [
+        {
+          "Fn::Equals": [
+            "none",
+            {
+              "Ref": "CloudTrailAuditLogs"
+            }
+          ]
+        },
+        {
+          "Fn::Equals": [
+            "read",
+            {
+              "Ref": "CloudTrailAuditLogs"
+            }
+          ]
+        },
+        {
+          "Fn::Equals": [
+            "read_write",
+            {
+              "Ref": "CloudTrailAuditLogs"
+            }
+          ]
+        },
+        {
+          "Fn::Equals": [
+            "write",
+            {
+              "Ref": "CloudTrailAuditLogs"
+            }
+          ]
+        }
+      ]
     }
   },
   "Resources":{
     "myEventDataStore":{
+      "Condition": "CreateEventDataStore",
       "Type":"AWS::CloudTrail::EventDataStore",
       "Properties":{
         "Name":{
@@ -123,8 +155,16 @@
   "Outputs":{
     "EventDataStoreOutput":{
       "Description":"The event data store ID",
-      "Value":{
-        "Ref":"myEventDataStore"
+      "Value": {
+        "Fn::If": [
+          "CreateEventDataStore",
+          {
+            "Ref": "myEventDataStore"
+          },
+          {
+            "Ref": "CloudTrailAuditLogs"
+          }
+        ]
       }
     }
   }
