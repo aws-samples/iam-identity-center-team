@@ -19,6 +19,10 @@
     "SSOLoginUrl": {
       "Type": "String"
     },
+    "customsnsNotificationTopicArn": {
+      "Type": "String",
+      "Default": "customsnsNotificationTopicArn"
+    },
     "customstepfunctionsGrantSMOutput": {
       "Type": "String",
       "Default": "customstepfunctionsGrantSMOutput"
@@ -124,7 +128,7 @@
               }
             },
             "NOTIFICATION_TOPIC_ARN": {
-              "Fn::ImportValue": "NotificationTopicArn"
+              "Ref":"customsnsNotificationTopicArn"
             },
             "API_TEAM_GRAPHQLAPIENDPOINTOUTPUT": {
               "Ref": "apiteamGraphQLAPIEndpointOutput"
