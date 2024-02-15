@@ -122,7 +122,7 @@ def list_idc_group_membership(userId):
 
 def handler(event, context):
     team_admin_group, team_auditor_group = get_team_groups()
-    print(event)
+    
     user = event["identity"]["username"]
     # Strip idc prefix
     username = user.removeprefix("idc_")

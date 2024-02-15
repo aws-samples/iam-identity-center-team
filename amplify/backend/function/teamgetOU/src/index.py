@@ -11,7 +11,7 @@ client = boto3.client('organizations')
 
 def handler(event, context):
     id = event["arguments"]["id"]
-    print(event)
+    
     print(id)
     try:
         response = client.list_parents(

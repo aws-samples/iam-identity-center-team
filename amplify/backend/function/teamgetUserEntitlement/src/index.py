@@ -57,7 +57,7 @@ def get_entitlements(id):
 
 
 def handler(event, context):
-    print(event)
+    
     userId = event["arguments"]["userId"]
     groupIds = event["arguments"]["groupIds"]
     eligibility = []
