@@ -45,6 +45,6 @@ aws cognito-idp update-user-pool-client --region $REGION --user-pool-id $cognito
 --supported-identity-providers IDC \
 --allowed-o-auth-flows code \
 --allowed-o-auth-scopes "phone" "email" "openid" "profile" "aws.cognito.signin.user.admin" \
---logout-urls "https://$amplifyDomain/"  \
---callback-urls "https://$amplifyDomain/" \
+--callback-urls "[\"https://$amplifyDomain/\"]" \
+--logout-urls "[\"https://$amplifyDomain/\"]" \
 --allowed-o-auth-flows-user-pool-client
