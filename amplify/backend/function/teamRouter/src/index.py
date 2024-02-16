@@ -267,10 +267,10 @@ def get_eligibility(request, userId):
     groupIds = [group['GroupId'] for group in list_idc_group_membership(userId)]
     entitlement = getEntitlements(userId=userId, groupIds=groupIds)
     print(entitlement)
+    max_duration_error = True
     for eligibility in entitlement:
-        if int(request["time"]) > int(eligibility["duration"]):
-            print("Error - Invalid Duration", request["time"], eligibility["duration"])
-            return eligibility_error(request)
+        if int(request["time"]) <= int(eligibility["duration"]):
+            max_duration_error = False
         for account in eligibility["accounts"]:
             if request["accountId"] ==  account["id"]:
                 for permission in eligibility["permissions"]:
@@ -278,6 +278,9 @@ def get_eligibility(request, userId):
                         if eligibility["approvalRequired"]:
                             return {"approval":True}
                         eligible = True
+    if max_duration_error:
+        print("Error - Invalid Duration")
+        return eligibility_error(request) 
     if eligible:
         return {"approval":False}   
     else:
