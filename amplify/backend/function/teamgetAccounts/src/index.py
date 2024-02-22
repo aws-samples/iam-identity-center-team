@@ -6,6 +6,7 @@ import json
 import boto3
 import os
 from botocore.exceptions import ClientError
+from operator import itemgetter
 client = boto3.client('organizations')
 
 ACCOUNT_ID = os.environ['ACCOUNT_ID']
@@ -38,6 +39,6 @@ def handler(event, context):
                             [{"name": acct['Name'], 'id':acct['Id']}])
                 else:
                     account.extend([{"name": acct['Name'], 'id':acct['Id']}])
-        return account
+        return sorted(account, key=itemgetter('name'))
     except ClientError as e:
         print(e.response['Error']['Message'])
