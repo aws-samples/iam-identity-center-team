@@ -6,6 +6,7 @@ import json
 import boto3
 import os
 from botocore.exceptions import ClientError
+from operator import itemgetter
 
 client = boto3.client('sso-admin')
 
@@ -77,6 +78,6 @@ def handler(event, context):
                         permissions.append(getPS(permission))
                 else:
                     permissions.append(getPS(permission))
-        return permissions
+        return sorted(permissions, key=itemgetter('Name'))
     except ClientError as e:
         print(e.response['Error']['Message'])
