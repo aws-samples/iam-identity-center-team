@@ -35,7 +35,7 @@ amplifyCustomDomain=`echo $amplifyCustomDomains | jq -r 'select(.domainAssociati
 
 if [ -n "$amplifyCustomDomain" ]; then
   amplifyCustomDomainPrefix=$(echo $amplifyCustomDomains | jq -r 'select(.domainAssociations | length > 0) | .domainAssociations[0].subDomains[] | select(.subDomainSetting.branchName=="main") | .subDomainSetting.prefix')
-  amplifyDomain=$([ -z "$amplifyCustomDomainPrefix" ] && echo $amplifyCustomDomain || echo $amplifyCustomDomainPrefix.$amplifyCustomDomain)
+  amplifyDomain=$(([ -z "$amplifyCustomDomainPrefix" ] || [ "null" = "$amplifyCustomDomainPrefix" ] ) && echo $amplifyCustomDomain || echo $amplifyCustomDomainPrefix.$amplifyCustomDomain)
 fi
 
 aws cognito-idp create-identity-provider --region $REGION --user-pool-id $cognitoUserpoolId --provider-name=IDC --provider-type SAML --provider-details file://details.json --attribute-mapping email=Email --idp-identifiers team
