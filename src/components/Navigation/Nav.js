@@ -164,7 +164,7 @@ function Nav(props) {
                     />
                   </Route>
                 ) : null}
-                {group && group.includes("Auditors") ? (
+                { group && ( group.includes("Auditors") || group.includes("Admin") )  ? (
                   <Route path="/audit/approvals">
                     <AuditApprovals
                       addNotification={setNotifications}
@@ -174,7 +174,7 @@ function Nav(props) {
                     />
                   </Route>
                 ) : null}
-                {group && group.includes("Auditors") ? (
+                { group && ( group.includes("Auditors") || group.includes("Admin") )  ? (
                   <Route path="/audit/sessions">
                     <AuditSessions
                       addNotification={setNotifications}

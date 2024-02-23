@@ -41,8 +41,9 @@ function Navigation(props) {
             { type: "link", text: "Ended access", href: "/sessions/audit" },
           ],
         },
-        props.group && props.group.includes("Auditors") && props.cognitoGroups.includes("Auditors")
-          ? {
+        props.group && ( ( props.group.includes("Auditors") && props.cognitoGroups.includes("Auditors") || (props.group.includes("Admin") && props.cognitoGroups.includes("Admin") ) ))
+        ? { 
+          
               type: "section",
               text: "Audit",
               items: [
