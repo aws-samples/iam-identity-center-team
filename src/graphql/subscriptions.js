@@ -15,6 +15,7 @@ export const onCreateApprovers = /* GraphQL */ `
       modifiedBy
       createdAt
       updatedAt
+      __typename
     }
   }
 `;
@@ -32,6 +33,7 @@ export const onUpdateApprovers = /* GraphQL */ `
       modifiedBy
       createdAt
       updatedAt
+      __typename
     }
   }
 `;
@@ -49,6 +51,7 @@ export const onDeleteApprovers = /* GraphQL */ `
       modifiedBy
       createdAt
       updatedAt
+      __typename
     }
   }
 `;
@@ -72,6 +75,7 @@ export const onCreateSettings = /* GraphQL */ `
       teamAuditorGroup
       createdAt
       updatedAt
+      __typename
     }
   }
 `;
@@ -95,6 +99,7 @@ export const onUpdateSettings = /* GraphQL */ `
       teamAuditorGroup
       createdAt
       updatedAt
+      __typename
     }
   }
 `;
@@ -118,6 +123,7 @@ export const onDeleteSettings = /* GraphQL */ `
       teamAuditorGroup
       createdAt
       updatedAt
+      __typename
     }
   }
 `;
@@ -132,14 +138,17 @@ export const onCreateEligibility = /* GraphQL */ `
       accounts {
         name
         id
+        __typename
       }
       ous {
         name
         id
+        __typename
       }
       permissions {
         name
         id
+        __typename
       }
       ticketNo
       approvalRequired
@@ -147,6 +156,7 @@ export const onCreateEligibility = /* GraphQL */ `
       modifiedBy
       createdAt
       updatedAt
+      __typename
     }
   }
 `;
@@ -161,14 +171,17 @@ export const onUpdateEligibility = /* GraphQL */ `
       accounts {
         name
         id
+        __typename
       }
       ous {
         name
         id
+        __typename
       }
       permissions {
         name
         id
+        __typename
       }
       ticketNo
       approvalRequired
@@ -176,6 +189,7 @@ export const onUpdateEligibility = /* GraphQL */ `
       modifiedBy
       createdAt
       updatedAt
+      __typename
     }
   }
 `;
@@ -190,14 +204,17 @@ export const onDeleteEligibility = /* GraphQL */ `
       accounts {
         name
         id
+        __typename
       }
       ous {
         name
         id
+        __typename
       }
       permissions {
         name
         id
+        __typename
       }
       ticketNo
       approvalRequired
@@ -205,6 +222,7 @@ export const onDeleteEligibility = /* GraphQL */ `
       modifiedBy
       createdAt
       updatedAt
+      __typename
     }
   }
 `;
@@ -236,6 +254,7 @@ export const onUpdateRequests = /* GraphQL */ `
       createdAt
       updatedAt
       owner
+      __typename
     }
   }
 `;
@@ -267,6 +286,7 @@ export const onCreateRequests = /* GraphQL */ `
       createdAt
       updatedAt
       owner
+      __typename
     }
   }
 `;
@@ -285,6 +305,30 @@ export const onUpdateSessions = /* GraphQL */ `
       createdAt
       updatedAt
       owner
+      __typename
+    }
+  }
+`;
+export const onPublishPolicy = /* GraphQL */ `
+  subscription OnPublishPolicy {
+    onPublishPolicy {
+      id
+      policy {
+        accounts {
+          name
+          id
+          __typename
+        }
+        permissions {
+          name
+          id
+          __typename
+        }
+        approvalRequired
+        duration
+        __typename
+      }
+      __typename
     }
   }
 `;

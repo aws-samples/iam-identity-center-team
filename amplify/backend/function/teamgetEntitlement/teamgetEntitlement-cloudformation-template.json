@@ -1,7 +1,12 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
-  "Description": "{\"createdOn\":\"Linux\",\"createdBy\":\"Amplify\",\"createdWith\":\"9.2.1\",\"stackType\":\"function-Lambda\",\"metadata\":{}}",
+  "Description": "Lambda Function resource stack creation using Amplify CLI",
   "Parameters": {
+    "CloudWatchRule": {
+      "Type": "String",
+      "Default": "NONE",
+      "Description": " Schedule Expression"
+    },
     "deploymentBucketName": {
       "Type": "String"
     },
@@ -14,6 +19,10 @@
     "apiteamGraphQLAPIIdOutput": {
       "Type": "String",
       "Default": "apiteamGraphQLAPIIdOutput"
+    },
+    "apiteamGraphQLAPIEndpointOutput": {
+      "Type": "String",
+      "Default": "apiteamGraphQLAPIEndpointOutput"
     }
   },
   "Conditions": {
@@ -42,16 +51,16 @@
             "Ref": "s3Key"
           }
         },
-        "Handler": "index.lambda_handler",
+        "Handler": "index.handler",
         "FunctionName": {
           "Fn::If": [
             "ShouldNotCreateEnvResources",
-            "teamNotifications",
+            "teamgetEntitlement",
             {
               "Fn::Join": [
                 "",
                 [
-                  "teamNotifications",
+                  "teamgetEntitlement",
                   "-",
                   {
                     "Ref": "env"
@@ -69,9 +78,18 @@
             "REGION": {
               "Ref": "AWS::Region"
             },
-            "SETTINGS_TABLE_NAME": {
+            "API_TEAM_GRAPHQLAPIIDOUTPUT": {
+              "Ref": "apiteamGraphQLAPIIdOutput"
+            },
+            "API_TEAM_GRAPHQLAPIENDPOINTOUTPUT": {
+              "Ref": "apiteamGraphQLAPIEndpointOutput"
+            },
+            "ACCOUNT_ID": {
+              "Ref": "AWS::AccountId"
+            },
+            "POLICY_TABLE_NAME": {
               "Fn::ImportValue": {
-                "Fn::Sub": "${apiteamGraphQLAPIIdOutput}:GetAtt:SettingsTable:Name"
+                "Fn::Sub": "${apiteamGraphQLAPIIdOutput}:GetAtt:EligibilityTable:Name"
               }
             }
           }
@@ -93,12 +111,12 @@
         "RoleName": {
           "Fn::If": [
             "ShouldNotCreateEnvResources",
-            "teamLambdaRoledab1354c",
+            "teamidcappLambdaRole3c74512d",
             {
               "Fn::Join": [
                 "",
                 [
-                  "teamLambdaRoledab1354c",
+                  "teamidcappLambdaRole3c74512d",
                   "-",
                   {
                     "Ref": "env"
@@ -150,7 +168,7 @@
               ],
               "Resource": {
                 "Fn::Sub": [
-                  "arn:${AWS::Partition}:logs:${region}:${account}:log-group:/aws/lambda/${lambda}:log-stream:*",
+                  "arn:aws:logs:${region}:${account}:log-group:/aws/lambda/${lambda}:log-stream:*",
                   {
                     "region": {
                       "Ref": "AWS::Region"
@@ -172,25 +190,96 @@
               ],
               "Resource": [
                 {
-                  "Fn::Sub": "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/Settings-*"
+                  "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/Eligibility-*"
                 }
               ]
-            },
+            }
+          ]
+        }
+      }
+    },
+    "AmplifyResourcesPolicy": {
+      "DependsOn": [
+        "LambdaExecutionRole"
+      ],
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "amplify-lambda-execution-policy",
+        "Roles": [
+          {
+            "Ref": "LambdaExecutionRole"
+          }
+        ],
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
             {
               "Effect": "Allow",
               "Action": [
-                "ses:SendEmail"
+                "appsync:GraphQL"
               ],
-              "Resource": "*"
-            },
-            {
-              "Effect": "Allow",
-              "Action": [
-                "sns:Publish"
-              ],
-              "Resource": {
-                "Fn::ImportValue": "NotificationTopicArn"
-              }
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:appsync:",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      ":",
+                      {
+                        "Ref": "AWS::AccountId"
+                      },
+                      ":apis/",
+                      {
+                        "Ref": "apiteamGraphQLAPIIdOutput"
+                      },
+                      "/types/Query/*"
+                    ]
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:appsync:",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      ":",
+                      {
+                        "Ref": "AWS::AccountId"
+                      },
+                      ":apis/",
+                      {
+                        "Ref": "apiteamGraphQLAPIIdOutput"
+                      },
+                      "/types/Mutation/*"
+                    ]
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:appsync:",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      ":",
+                      {
+                        "Ref": "AWS::AccountId"
+                      },
+                      ":apis/",
+                      {
+                        "Ref": "apiteamGraphQLAPIIdOutput"
+                      },
+                      "/types/Subscription/*"
+                    ]
+                  ]
+                }
+              ]
             }
           ]
         }
@@ -219,14 +308,6 @@
     "LambdaExecutionRole": {
       "Value": {
         "Ref": "LambdaExecutionRole"
-      }
-    },
-    "LambdaExecutionRoleArn": {
-      "Value": {
-        "Fn::GetAtt": [
-          "LambdaExecutionRole",
-          "Arn"
-        ]
       }
     }
   }

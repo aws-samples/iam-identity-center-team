@@ -502,7 +502,8 @@
           "Statement": [
             {
               "Action": [
-                "identitystore:ListUsers"
+                "identitystore:ListUsers",
+                "identitystore:GetUserId"
               ],
               "Resource": [
                 "*"

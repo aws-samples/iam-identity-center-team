@@ -105,7 +105,7 @@ type Settings
   teamAdminGroup: String
   teamAuditorGroup: String
 }
-type data {
+type data @aws_iam @aws_cognito_user_pools {
   name: String
   id: String
 }
@@ -138,12 +138,20 @@ type Accounts {
   name: String!
   id: String!
 }
-type Entitlement {
+type Entitlement @aws_iam @aws_cognito_user_pools {
   accounts: [data]
   permissions: [data]
   approvalRequired: Boolean
   duration: String
 }
+
+input EntitlementInput {
+  accounts: [DataInput]
+  permissions: [DataInput]
+  approvalRequired: Boolean
+  duration: String
+}
+
 type IdCGroups {
   GroupId: String!
   DisplayName: String!
@@ -184,6 +192,21 @@ type MgmtPs {
   permissions: [String]
 }
 
+type Policy @aws_iam @aws_cognito_user_pools {
+  id: String!
+  policy: [Entitlement]
+}
+
+input PolicyInput {
+  id: String!
+  policy: [EntitlementInput]
+}
+
+type Mutation {
+  publishPolicy(result: PolicyInput): Policy
+  @auth(rules: [{ allow: private, provider: iam} { allow: private }])
+}
+
 type Subscription {
   onUpdateRequests: requests
     @aws_subscribe(mutations: ["updateRequests"])
@@ -193,6 +216,9 @@ type Subscription {
     @auth(rules: [{ allow: private }])
   onUpdateSessions(id: String): sessions
     @aws_subscribe(mutations: ["updateSessions"])
+    @auth(rules: [{ allow: private }])
+  onPublishPolicy: Policy
+    @aws_subscribe(mutations: ["publishPolicy"])
     @auth(rules: [{ allow: private }])
 }
 type Query {
@@ -225,11 +251,11 @@ type Query {
   ): [Logs]
     @function(name: "teamqueryLogs-${env}")
     @auth(rules: [{ allow: private }])
-  getEntitlement(
+  getUserPolicy(
     userId: String
     groupIds: [String]
-  ): [Entitlement]
-    @function(name: "teamgetUserEntitlement-${env}")
+  ): Policy
+    @function(name: "teamgetUserPolicy-${env}")
     @auth(
     rules: [
       { allow: private, provider: iam}
@@ -247,3 +273,4 @@ type Query {
     @function(name: "teamvalidateRequest-${env}")
     @auth(rules: [{ allow: private }])
 }
+  

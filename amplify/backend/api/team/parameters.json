@@ -3,7 +3,7 @@
   "DynamoDBBillingMode": "PAY_PER_REQUEST",
   "DynamoDBEnableServerSideEncryption": true,
   "DynamoDBEnablePointInTimeRecovery": true,
-  "AuthModeLastUpdated": "2023-03-07T01:02:06.053Z",
+  "AuthModeLastUpdated": "2024-02-26T17:14:14.594Z",
   "AuthCognitoUserPoolId": {
     "Fn::GetAtt": [
       "authteam06dbb7fc",

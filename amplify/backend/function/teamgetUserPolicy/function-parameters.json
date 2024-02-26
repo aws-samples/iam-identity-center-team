@@ -1,0 +1,10 @@
+{
+  "lambdaLayers": [],
+  "permissions": {
+    "function": {
+      "teamgetEntitlement": [
+        "read"
+      ]
+    }
+  }
+}
