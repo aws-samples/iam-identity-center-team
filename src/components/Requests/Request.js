@@ -53,10 +53,10 @@ function Request(props) {
   const [ticketError, setTicketError] = useState("");
 
   const [accounts, setAccounts] = useState([]);
-  const [accountStatus, setAccountStatus] = useState("finished");
+  const [accountStatus, setAccountStatus] = useState("loading");
 
   const [permissions, setPermissions] = useState([]);
-  const [permissionStatus, setPermissionStatus] = useState("finished");
+  const [permissionStatus, setPermissionStatus] = useState("loading");
 
   const [submitLoading, setSubmitLoading] = useState(false);
 
