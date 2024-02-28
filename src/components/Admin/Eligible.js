@@ -334,6 +334,7 @@ function Eligible(props) {
 
   function views() {
     getAllEligibility().then((items) => {
+      console.log(items)
       setAllItems(items);
       setTableLoading(false);
       setConfirmLoading(false);

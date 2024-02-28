@@ -16,13 +16,9 @@
     "s3Key": {
       "Type": "String"
     },
-    "apiteamGraphQLAPIIdOutput": {
+    "functionteamgetEntitlementName": {
       "Type": "String",
-      "Default": "apiteamGraphQLAPIIdOutput"
-    },
-    "apiteamGraphQLAPIEndpointOutput": {
-      "Type": "String",
-      "Default": "apiteamGraphQLAPIEndpointOutput"
+      "Default": "functionteamgetEntitlementName"
     }
   },
   "Conditions": {
@@ -55,12 +51,12 @@
         "FunctionName": {
           "Fn::If": [
             "ShouldNotCreateEnvResources",
-            "teamgetUserEntitlement",
+            "teamgetUserPolicy",
             {
               "Fn::Join": [
                 "",
                 [
-                  "teamgetUserEntitlement",
+                  "teamgetUserPolicy",
                   "-",
                   {
                     "Ref": "env"
@@ -78,19 +74,8 @@
             "REGION": {
               "Ref": "AWS::Region"
             },
-            "POLICY_TABLE_NAME": {
-              "Fn::ImportValue": {
-                "Fn::Sub": "${apiteamGraphQLAPIIdOutput}:GetAtt:EligibilityTable:Name"
-              }
-            },
-            "API_AWSPIM_GRAPHQLAPIIDOUTPUT": {
-              "Ref": "apiteamGraphQLAPIIdOutput"
-            },
-            "API_TEAM_GRAPHQLAPIENDPOINTOUTPUT": {
-              "Ref": "apiteamGraphQLAPIEndpointOutput"
-            },
-            "ACCOUNT_ID": {
-              "Ref": "AWS::AccountId"
+            "FUNCTION_TEAMGETENTITLEMENT_NAME": {
+              "Ref": "functionteamgetEntitlementName"
             }
           }
         },
@@ -102,7 +87,7 @@
         },
         "Runtime": "python3.9",
         "Layers": [],
-        "Timeout": 120
+        "Timeout": 25
       }
     },
     "LambdaExecutionRole": {
@@ -111,12 +96,12 @@
         "RoleName": {
           "Fn::If": [
             "ShouldNotCreateEnvResources",
-            "teamapplicationLambdaRole9bc77f30",
+            "teamidcappLambdaRoleffcbcbfc",
             {
               "Fn::Join": [
                 "",
                 [
-                  "teamapplicationLambdaRole9bc77f30",
+                  "teamidcappLambdaRoleffcbcbfc",
                   "-",
                   {
                     "Ref": "env"
@@ -182,17 +167,6 @@
                   }
                 ]
               }
-            },
-            {
-              "Effect": "Allow",
-              "Action": [
-                "dynamodb:GetItem"
-              ],
-              "Resource": [
-                {
-                  "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/Eligibility-*"
-                }
-              ]
             }
           ]
         }
@@ -216,14 +190,16 @@
             {
               "Effect": "Allow",
               "Action": [
-                "appsync:GraphQL"
+                "lambda:Get*",
+                "lambda:List*",
+                "lambda:Invoke*"
               ],
               "Resource": [
                 {
                   "Fn::Join": [
                     "",
                     [
-                      "arn:aws:appsync:",
+                      "arn:aws:lambda:",
                       {
                         "Ref": "AWS::Region"
                       },
@@ -231,11 +207,10 @@
                       {
                         "Ref": "AWS::AccountId"
                       },
-                      ":apis/",
+                      ":function:",
                       {
-                        "Ref": "apiteamGraphQLAPIIdOutput"
-                      },
-                      "/types/Query/*"
+                        "Ref": "functionteamgetEntitlementName"
+                      }
                     ]
                   ]
                 }
@@ -244,33 +219,6 @@
           ]
         }
       }
-    },
-    "CustomLambdaExecutionPolicy": {
-      "Type": "AWS::IAM::Policy",
-      "Properties": {
-        "PolicyName": "custom-lambda-execution-policy",
-        "PolicyDocument": {
-          "Version": "2012-10-17",
-          "Statement": [
-            {
-              "Action": [
-                "organizations:Describe*",
-                "organizations:List*"
-              ],
-              "Resource": [
-                "*"
-              ],
-              "Effect": "Allow"
-            }
-          ]
-        },
-        "Roles": [
-          {
-            "Ref": "LambdaExecutionRole"
-          }
-        ]
-      },
-      "DependsOn": "LambdaExecutionRole"
     }
   },
   "Outputs": {
@@ -295,14 +243,6 @@
     "LambdaExecutionRole": {
       "Value": {
         "Ref": "LambdaExecutionRole"
-      }
-    },
-    "LambdaExecutionRoleArn": {
-      "Value": {
-        "Fn::GetAtt": [
-          "LambdaExecutionRole",
-          "Arn"
-        ]
       }
     }
   }

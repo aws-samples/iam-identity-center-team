@@ -219,6 +219,21 @@
       "providerPlugin": "awscloudformation",
       "service": "Lambda"
     },
+    "teamgetEntitlement": {
+      "build": true,
+      "dependsOn": [
+        {
+          "attributes": [
+            "GraphQLAPIIdOutput",
+            "GraphQLAPIEndpointOutput"
+          ],
+          "category": "api",
+          "resourceName": "team"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
     "teamgetGroups": {
       "build": true,
       "dependsOn": [
@@ -295,16 +310,15 @@
       "providerPlugin": "awscloudformation",
       "service": "Lambda"
     },
-    "teamgetUserEntitlement": {
+    "teamgetUserPolicy": {
       "build": true,
       "dependsOn": [
         {
           "attributes": [
-            "GraphQLAPIIdOutput",
-            "GraphQLAPIEndpointOutput"
+            "Name"
           ],
-          "category": "api",
-          "resourceName": "team"
+          "category": "function",
+          "resourceName": "teamgetEntitlement"
         }
       ],
       "providerPlugin": "awscloudformation",
@@ -553,22 +567,6 @@
         {
           "category": "function",
           "resourceName": "teamgetPermissions"
-        }
-      ]
-    },
-    "AMPLIFY_function_teamgetUserEntitlement_deploymentBucketName": {
-      "usedBy": [
-        {
-          "category": "function",
-          "resourceName": "teamgetUserEntitlement"
-        }
-      ]
-    },
-    "AMPLIFY_function_teamgetUserEntitlement_s3Key": {
-      "usedBy": [
-        {
-          "category": "function",
-          "resourceName": "teamgetUserEntitlement"
         }
       ]
     },

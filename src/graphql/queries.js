@@ -29,6 +29,7 @@ export const getRequests = /* GraphQL */ `
       createdAt
       updatedAt
       owner
+      __typename
     }
   }
 `;
@@ -65,8 +66,10 @@ export const listRequests = /* GraphQL */ `
         createdAt
         updatedAt
         owner
+        __typename
       }
       nextToken
+      __typename
     }
   }
 `;
@@ -113,8 +116,10 @@ export const requestByEmailAndStatus = /* GraphQL */ `
         createdAt
         updatedAt
         owner
+        __typename
       }
       nextToken
+      __typename
     }
   }
 `;
@@ -161,8 +166,10 @@ export const requestByApproverAndStatus = /* GraphQL */ `
         createdAt
         updatedAt
         owner
+        __typename
       }
       nextToken
+      __typename
     }
   }
 `;
@@ -181,6 +188,7 @@ export const getSessions = /* GraphQL */ `
       createdAt
       updatedAt
       owner
+      __typename
     }
   }
 `;
@@ -204,8 +212,10 @@ export const listSessions = /* GraphQL */ `
         createdAt
         updatedAt
         owner
+        __typename
       }
       nextToken
+      __typename
     }
   }
 `;
@@ -221,6 +231,7 @@ export const getApprovers = /* GraphQL */ `
       modifiedBy
       createdAt
       updatedAt
+      __typename
     }
   }
 `;
@@ -241,8 +252,10 @@ export const listApprovers = /* GraphQL */ `
         modifiedBy
         createdAt
         updatedAt
+        __typename
       }
       nextToken
+      __typename
     }
   }
 `;
@@ -266,6 +279,7 @@ export const getSettings = /* GraphQL */ `
       teamAuditorGroup
       createdAt
       updatedAt
+      __typename
     }
   }
 `;
@@ -294,8 +308,10 @@ export const listSettings = /* GraphQL */ `
         teamAuditorGroup
         createdAt
         updatedAt
+        __typename
       }
       nextToken
+      __typename
     }
   }
 `;
@@ -308,14 +324,17 @@ export const getEligibility = /* GraphQL */ `
       accounts {
         name
         id
+        __typename
       }
       ous {
         name
         id
+        __typename
       }
       permissions {
         name
         id
+        __typename
       }
       ticketNo
       approvalRequired
@@ -323,6 +342,7 @@ export const getEligibility = /* GraphQL */ `
       modifiedBy
       createdAt
       updatedAt
+      __typename
     }
   }
 `;
@@ -340,14 +360,17 @@ export const listEligibilities = /* GraphQL */ `
         accounts {
           name
           id
+          __typename
         }
         ous {
           name
           id
+          __typename
         }
         permissions {
           name
           id
+          __typename
         }
         ticketNo
         approvalRequired
@@ -355,8 +378,10 @@ export const listEligibilities = /* GraphQL */ `
         modifiedBy
         createdAt
         updatedAt
+        __typename
       }
       nextToken
+      __typename
     }
   }
 `;
@@ -365,6 +390,7 @@ export const getAccounts = /* GraphQL */ `
     getAccounts {
       name
       id
+      __typename
     }
   }
 `;
@@ -402,13 +428,33 @@ export const getOUs = /* GraphQL */ `
                     Id
                     Arn
                     Name
+                    Children {
+                      Id
+                      Arn
+                      Name
+                      Children {
+                        Id
+                        Arn
+                        Name
+                        __typename
+                      }
+                      __typename
+                    }
+                    __typename
                   }
+                  __typename
                 }
+                __typename
               }
+              __typename
             }
+            __typename
           }
+          __typename
         }
+        __typename
       }
+      __typename
     }
   }
 `;
@@ -416,6 +462,7 @@ export const getOU = /* GraphQL */ `
   query GetOU($id: String) {
     getOU(id: $id) {
       Id
+      __typename
     }
   }
 `;
@@ -425,6 +472,7 @@ export const getPermissions = /* GraphQL */ `
       Name
       Arn
       Duration
+      __typename
     }
   }
 `;
@@ -432,6 +480,7 @@ export const getMgmtPermissions = /* GraphQL */ `
   query GetMgmtPermissions {
     getMgmtPermissions {
       permissions
+      __typename
     }
   }
 `;
@@ -441,6 +490,7 @@ export const getGroups = /* GraphQL */ `
       groups
       userId
       groupIds
+      __typename
     }
   }
 `;
@@ -449,6 +499,7 @@ export const getIdCGroups = /* GraphQL */ `
     getIdCGroups {
       GroupId
       DisplayName
+      __typename
     }
   }
 `;
@@ -457,6 +508,7 @@ export const getUsers = /* GraphQL */ `
     getUsers {
       UserName
       UserId
+      __typename
     }
   }
 `;
@@ -467,22 +519,30 @@ export const getLogs = /* GraphQL */ `
       eventSource
       eventID
       eventTime
+      __typename
     }
   }
 `;
-export const getEntitlement = /* GraphQL */ `
-  query GetEntitlement($userId: String, $groupIds: [String]) {
-    getEntitlement(userId: $userId, groupIds: $groupIds) {
-      accounts {
-        name
-        id
+export const getUserPolicy = /* GraphQL */ `
+  query GetUserPolicy($userId: String, $groupIds: [String]) {
+    getUserPolicy(userId: $userId, groupIds: $groupIds) {
+      id
+      policy {
+        accounts {
+          name
+          id
+          __typename
+        }
+        permissions {
+          name
+          id
+          __typename
+        }
+        approvalRequired
+        duration
+        __typename
       }
-      permissions {
-        name
-        id
-      }
-      approvalRequired
-      duration
+      __typename
     }
   }
 `;
@@ -490,6 +550,7 @@ export const listGroups = /* GraphQL */ `
   query ListGroups($groupIds: [String]) {
     listGroups(groupIds: $groupIds) {
       members
+      __typename
     }
   }
 `;
@@ -521,6 +582,7 @@ export const updateRequestData = /* GraphQL */ `
       createdAt
       updatedAt
       owner
+      __typename
     }
   }
 `;
@@ -552,6 +614,7 @@ export const validateRequest = /* GraphQL */ `
       createdAt
       updatedAt
       owner
+      __typename
     }
   }
 `;

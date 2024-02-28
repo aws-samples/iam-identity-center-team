@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@aws-amplify/api": "^6.0.17",
     "@aws-amplify/graphql-transformer-core": "^2.4.5",
     "@aws-amplify/ui-react": "^5.0.0",
     "@awsui/collection-hooks": "^1.0.21",

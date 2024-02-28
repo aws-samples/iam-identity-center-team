@@ -11,7 +11,7 @@ import Header from "@awsui/components-react/header";
 import SpaceBetween from "@awsui/components-react/space-between";
 import Button from "@awsui/components-react/button";
 import Textarea from "@awsui/components-react/textarea";
-import moment from 'moment';
+import moment from "moment";
 import { DatePicker } from "antd";
 import "../../index.css";
 import React, { useState, useEffect } from "react";
@@ -20,17 +20,19 @@ import {
   requestTeam,
   fetchApprovers,
   fetchOU,
-  fetchEntitlement,
   getSetting,
-  getMgmtAccountPs
+  getMgmtAccountPs,
+  fetchPolicy,
 } from "../Shared/RequestService";
 import { useHistory } from "react-router-dom";
+import { API, graphqlOperation } from "aws-amplify";
+import { onPublishPolicy } from "../../graphql/subscriptions";
 import params from "../../parameters.json";
 
 function Request(props) {
   const [email, setEmail] = useState("");
 
-  const [item, setItem] = useState([])
+  const [item, setItem] = useState([]);
 
   const [duration, setDuration] = useState("");
   const [durationError, setDurationError] = useState("");
@@ -51,10 +53,10 @@ function Request(props) {
   const [ticketError, setTicketError] = useState("");
 
   const [accounts, setAccounts] = useState([]);
-  const [accountStatus, setAccountStatus] = useState("finished");
+  const [accountStatus, setAccountStatus] = useState("loading");
 
   const [permissions, setPermissions] = useState([]);
-  const [permissionStatus, setPermissionStatus] = useState("finished");
+  const [permissionStatus, setPermissionStatus] = useState("loading");
 
   const [submitLoading, setSubmitLoading] = useState(false);
 
@@ -67,88 +69,99 @@ function Request(props) {
   const history = useHistory();
 
   function concatenateAccounts(data) {
-    let allAccounts = data.map(item => item.accounts);
+    let allAccounts = data.map((item) => item.accounts);
     allAccounts = [].concat.apply([], allAccounts);
 
     let uniqueAccounts = new Set();
-    allAccounts.forEach(account => {
+    allAccounts.forEach((account) => {
       uniqueAccounts.add(JSON.stringify(account));
     });
 
-    return Array.from(uniqueAccounts).map(account => JSON.parse(account));
+    return Array.from(uniqueAccounts).map((account) => JSON.parse(account));
   }
 
   function concatenatePermissions(data) {
-    let uniquePermissions= new Set();
-    data.forEach(permission => {
+    let uniquePermissions = new Set();
+    data.forEach((permission) => {
       uniquePermissions.add(JSON.stringify(permission));
     });
 
-    return Array.from(uniquePermissions).map(permission => JSON.parse(permission));
+    return Array.from(uniquePermissions).map((permission) =>
+      JSON.parse(permission)
+    );
   }
-  
-  async function getDuration(accountId){
-    setDuration("")
+
+  async function getDuration(accountId) {
+    setDuration("");
     const duration = item.map((data) => {
-      data.accounts.map((account,index)=>{
-        if (account.id == accountId){
-          setMaxDuration(data.duration)
+      data.accounts.map((account, index) => {
+        if (account.id == accountId) {
+          setMaxDuration(data.duration);
         }
-      })
-    })
+      });
+    });
   }
 
-  async function getPermissions(accountId){
-    let permissionData = []
-    setRole([])
+  async function getPermissions(accountId) {
+    let permissionData = [];
+    setRole([]);
     const permissions = item.map((data) => {
-      data.accounts.map((account)=>{
-        if (account.id == accountId){
-          permissionData = permissionData.concat(data.permissions)
+      data.accounts.map((account) => {
+        if (account.id == accountId) {
+          permissionData = permissionData.concat(data.permissions);
         }
-      })
-    })
-    setPermissions(concatenatePermissions(permissionData))
-    return permissionData
+      });
+    });
+    setPermissions(concatenatePermissions(permissionData));
+    return permissionData;
   }
 
-  const getEligibility = () => {
+  const getPolicy = () => {
     let args = {
       userId: props.userId,
       groupIds: props.groupIds,
     };
-    setAccountStatus("loading");
-    setPermissionStatus("loading");
-    fetchEntitlement(args).then((data) => {
-      if (data !== null) {
-        setItem(data)
-        setAccounts(concatenateAccounts(data))
-      }
-      setAccountStatus("finished");
-      setPermissionStatus("finished");
+    fetchPolicy(args).then((data) => {
+      const subscription = API.graphql(
+        graphqlOperation(onPublishPolicy)
+      ).subscribe({
+        next: (result) => {
+          if (result.value.data.onPublishPolicy.id === data.id) {
+            const policy = result.value.data.onPublishPolicy.policy;
+            if (policy.length > 0) {
+              setItem(policy);
+              setAccounts(concatenateAccounts(policy));
+            }
+            setAccountStatus("finished");
+            setPermissionStatus("finished");
+            subscription.unsubscribe();
+          }
+        },
+      });
     });
   };
 
-  function getSettings(){
+  function getSettings() {
     getSetting("settings").then((data) => {
       if (data !== null) {
         setMaxDuration(parseInt(data.duration));
         setTicketRequired(data.ticketNo);
-        setApprovalRequired(data.approval)
-        }
+        setApprovalRequired(data.approval);
+      }
     });
   }
 
-  function getMgmtPs(){
+  function getMgmtPs() {
     getMgmtAccountPs().then((data) => {
-      setMgmtPs(data)
+      setMgmtPs(data);
     });
   }
 
   useEffect(() => {
     setEmail(props.user);
     getSettings();
-    getEligibility();
+    // getEligibility();
+    getPolicy();
     props.addNotification([]);
     getMgmtPs();
     setTime(moment().format());
@@ -184,7 +197,7 @@ function Request(props) {
   function handleCancel() {
     history.push("/");
     props.setActiveHref("/");
-    props.addNotification([])
+    props.addNotification([]);
   }
 
   function sendError() {
@@ -201,7 +214,12 @@ function Request(props) {
 
   async function validate() {
     let error = false;
-    if (!duration || isNaN(duration) || Number(duration) > Number(maxDuration) || Number(duration) < 1) {
+    if (
+      !duration ||
+      isNaN(duration) ||
+      Number(duration) > Number(maxDuration) ||
+      Number(duration) < 1
+    ) {
       setDurationError(`Enter number between 1-${maxDuration}`);
       error = true;
     }
@@ -209,8 +227,14 @@ function Request(props) {
       setRoleError("Select a role");
       error = true;
     }
-    if (params.DeploymentType == "delegated" && role && mgmtPs.permissions.includes(role.value)) {
-      setRoleError("Permission set is assigned to management account and cannot be requested")
+    if (
+      params.DeploymentType == "delegated" &&
+      role &&
+      mgmtPs.permissions.includes(role.value)
+    ) {
+      setRoleError(
+        "Permission set is assigned to management account and cannot be requested"
+      );
       error = true;
     }
     if (!account.label) {
@@ -221,11 +245,11 @@ function Request(props) {
       setTimeError("Select start date");
       error = true;
     }
-    if (!justification || !(/^[a-zA-Z0-9]+$/.test(justification[0]))) {
+    if (!justification || !/^[a-zA-Z0-9]+$/.test(justification[0])) {
       setJustificationError("Enter valid business justification");
       error = true;
     }
-    if ((!ticketNo && ticketRequired) || !(/^[a-zA-Z0-9]+$/.test(ticketNo[0]))) {
+    if ((!ticketNo && ticketRequired) || !/^[a-zA-Z0-9]+$/.test(ticketNo[0])) {
       setTicketError("Enter valid change management ticket number");
       error = true;
     }
@@ -237,49 +261,53 @@ function Request(props) {
     setSubmitLoading(true);
     const isValid = await validate();
     if (!isValid) {
-        const shouldSendRequest = !approvalRequired || (await checkApprovalAndApproverGroups(account.value,role.value));
-        (shouldSendRequest) ? sendRequest() : sendError();
+      const shouldSendRequest =
+        !approvalRequired ||
+        (await checkApprovalAndApproverGroups(account.value, role.value));
+      shouldSendRequest ? sendRequest() : sendError();
     } else {
-        setSubmitLoading(false);
+      setSubmitLoading(false);
     }
   }
 
-  async function checkApprovalNotRequired(account,role){
+  async function checkApprovalNotRequired(account, role) {
     for (const eligibility of item) {
       for (const acct of eligibility.accounts) {
         if (acct.id === account) {
-          for (const perm of eligibility.permissions){
-            if(perm.id === role){
-              if(eligibility.approvalRequired){
-                  return false
+          for (const perm of eligibility.permissions) {
+            if (perm.id === role) {
+              if (eligibility.approvalRequired) {
+                return false;
               }
             }
           }
         }
       }
     }
-    return true
-    }
-  
-  function checkGroupMembership(groupIds,groupsIds) {
+    return true;
+  }
+
+  function checkGroupMembership(groupIds, groupsIds) {
     for (const groupId of groupIds) {
       if (groupsIds.includes(groupId)) {
-        return true
+        return true;
       }
     }
-    return false
+    return false;
   }
-  async function checkApprovalAndApproverGroups(account,role) {
-    if (await checkApprovalNotRequired(account,role)){
-      return true
+  async function checkApprovalAndApproverGroups(account, role) {
+    if (await checkApprovalNotRequired(account, role)) {
+      return true;
     }
     const account_approvers = await fetchApprovers(account, "Account");
     if (account_approvers) {
       const data = await getGroupMemberships(account_approvers.groupIds);
-      if (checkGroupMembership(props.groupIds,account_approvers.groupIds) && data.members.length < 2){
+      if (
+        checkGroupMembership(props.groupIds, account_approvers.groupIds) &&
+        data.members.length < 2
+      ) {
         return false;
-      }
-      else if (data.members.length > 0){
+      } else if (data.members.length > 0) {
         return account_approvers;
       }
     }
@@ -287,10 +315,12 @@ function Request(props) {
     const ou_approvers = await fetchApprovers(ou.Id, "OU");
     if (ou_approvers) {
       const data = await getGroupMemberships(ou_approvers.groupIds);
-      if (checkGroupMembership(props.groupIds,ou_approvers.groupIds) && data.members.length < 2){
+      if (
+        checkGroupMembership(props.groupIds, ou_approvers.groupIds) &&
+        data.members.length < 2
+      ) {
         return false;
-      }
-      else if (data.members.length > 0){
+      } else if (data.members.length > 0) {
         return ou_approvers;
       }
     }
@@ -356,8 +386,8 @@ function Request(props) {
                 onChange={(event) => {
                   setAccountError();
                   setAccount(event.detail.selectedOption);
-                  getPermissions(event.detail.selectedOption.value)
-                  getDuration(event.detail.selectedOption.value)
+                  getPermissions(event.detail.selectedOption.value);
+                  getDuration(event.detail.selectedOption.value);
                 }}
                 selectedAriaLabel="selected"
               />
@@ -401,7 +431,7 @@ function Request(props) {
                   setTimeError();
                   if (event) {
                     setTime(event._d);
-                    console.log(event._d)
+                    console.log(event._d);
                   }
                 }}
               />
