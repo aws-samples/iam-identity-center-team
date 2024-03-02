@@ -3,7 +3,7 @@ $util.qr($ctx.stash.put("defaultValues", $util.defaultIfNull($ctx.stash.defaultV
 #set( $updatedAt = $util.time.nowISO8601() )
 $util.qr($ctx.stash.defaultValues.put("updatedAt", $updatedAt))
 
-#if ($ctx.args.input.comment && !$util.matches("[A-Za-z0-9]", $ctx.args.input.comment.substring(0,1)))
+#if ($ctx.args.input.comment && !$util.matches("[\p{IsAlphabetic}\p{Digit}]", $ctx.args.input.comment.substring(0,1)))
     	$util.error('Invalid input')
 #end
 

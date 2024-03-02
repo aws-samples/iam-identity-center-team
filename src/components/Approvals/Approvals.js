@@ -332,7 +332,7 @@ function Approvals(props) {
   }
 
   function handleAction() {
-    (!comment && commentRequired) || (comment && !(/^[a-zA-Z0-9]+$/.test(comment[0]))) ? setCommentError("Enter valid reason for approving or rejecting request") : submit();
+    (!comment && commentRequired) || (comment && !(/[\p{L}\p{N}]/u.test(comment[0]))) ? setCommentError("Enter valid reason for approving or rejecting request") : submit();
   }
 
   return (
