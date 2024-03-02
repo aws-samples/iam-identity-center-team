@@ -4,6 +4,10 @@
     "env": {
       "Type": "String"
     },
+    "customsnsNotificationTopicArn": {
+      "Type": "String",
+      "Default": "customsnsNotificationTopicArn"
+    },
     "functionteamStatusArn": {
       "Type": "String",
       "Description": "Input parameter describing Arn attribute for function/teamStatus resource"
@@ -864,7 +868,7 @@
                   "Effect": "Allow",
                   "Action": "sns:Publish",
                   "Resource": {
-                    "Fn::ImportValue": "NotificationTopicArn"
+                    "Ref":"customsnsNotificationTopicArn"
                   }
                 },
                 {
@@ -952,7 +956,7 @@
                   "Effect": "Allow",
                   "Action": "sns:Publish",
                   "Resource": {
-                    "Fn::ImportValue": "NotificationTopicArn"
+                    "Ref":"customsnsNotificationTopicArn"
                   }
                 },
                 {
@@ -1135,7 +1139,7 @@
                   "Effect": "Allow",
                   "Action": "sns:Publish",
                   "Resource": {
-                    "Fn::ImportValue": "NotificationTopicArn"
+                    "Ref":"customsnsNotificationTopicArn"
                   }
                 },
                 {
@@ -1226,7 +1230,7 @@
                   "Effect": "Allow",
                   "Action": "sns:Publish",
                   "Resource": {
-                    "Fn::ImportValue": "NotificationTopicArn"
+                    "Ref":"customsnsNotificationTopicArn"
                   }
                 },
                 {

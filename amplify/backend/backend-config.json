@@ -112,6 +112,13 @@
           ],
           "category": "function",
           "resourceName": "teamNotifications"
+        },
+        {
+          "attributes": [
+            "NotificationTopicArn"
+          ],
+          "category": "custom",
+          "resourceName": "sns"
         }
       ],
       "providerPlugin": "awscloudformation",
@@ -142,6 +149,13 @@
           ],
           "category": "api",
           "resourceName": "team"
+        },
+        {
+          "attributes": [
+            "NotificationTopicArn"
+          ],
+          "category": "custom",
+          "resourceName": "sns"
         }
       ],
       "providerPlugin": "awscloudformation",
@@ -189,6 +203,13 @@
           ],
           "category": "function",
           "resourceName": "teamNotifications"
+        },
+        {
+          "attributes": [
+            "NotificationTopicArn"
+          ],
+          "category": "custom",
+          "resourceName": "sns"
         }
       ],
       "providerPlugin": "awscloudformation",

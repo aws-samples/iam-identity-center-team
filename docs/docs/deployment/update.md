@@ -30,6 +30,38 @@ cd deployment
 
 Once the upgrade script has completed execution, go to the AWS Amplify console to monitor the status of the TEAM application build and deployment.
 
+## If upgrading to v1.1.2 (Cloudformation import fixes)
+
+This version changes how the SNS Notification Arn is passed in order to unblock Issue #152. Deploying this version requires a few manual steps:
+
+Three cloudformation stacks will need to be manually updated before running the update.sh script to trigger an amplify deployment.
+
+You can list these stacks using the AWS CLI like shown below:
+
+aws cloudformation list-imports --export-name NotificationTopicArn
+{
+    "Imports": [
+        "amplify-teamidcapp-main-180021-customstepfunctions-SDFGSFGYHSFTUY",
+        "amplify-teamidcapp-main-180021-functionteamRouter-SFGHSFGSDFG",
+        "amplify-teamidcapp-main-180021-functionteamNotifications-SDFGSDFGSDFH"
+    ]
+}
+
+You can find the corresponding cloudformation template json in the ./amplify/backend/custom and ./amplify/backend/function directories.
+
+When updating the stacks, you'll have to specify a new Parameter customsnsNotificationTopicArnOutput. You can obtain the value using the AWS CLI:
+
+aws cloudformation list-exports --query 'Exports[?Name==`NotificationTopicArn`]' 
+[
+    {
+        "ExportingStackId": "arn:aws:cloudformation:us-east-2:123412341234:stack/amplify-teamidcapp-main-180021-customsns-T20ZX7BMXSWW/8b79b450-bed3-11ee-b95d-0a1a1cd14f73",
+        "Name": "NotificationTopicArn",
+        "Value": "arn:aws:sns:us-east-2:123412341234:TeamNotifications-main"
+    }
+]
+
+You should now be able to run deploy/update.sh to deploy the application normally
+
 ## If upgrading to v1.1.1 (Custom Domain)
 > This step is optional and required only if you intend to use a custom domain for your TEAM deployment instead of the default amplify generated domain name.
 
