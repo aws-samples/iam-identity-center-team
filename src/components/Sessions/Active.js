@@ -377,7 +377,7 @@ function Active(props) {
     });
   }
   function handleRevoke() {
-    (!comment && commentRequired) || (comment && !(/^[a-zA-Z0-9]+$/.test(comment[0]))) ? setCommentError("Enter valid reason for revoking elevated access") : revoke();
+    (!comment && commentRequired) || (comment && !(/[\p{L}\p{N}]/u.test(comment[0]))) ? setCommentError("Enter valid reason for revoking elevated access") : revoke();
   }
 
   return (
