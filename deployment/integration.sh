@@ -39,7 +39,7 @@ amplifyCustomDomain=`echo $amplifyCustomDomains | jq -r 'select(.domainAssociati
 
 if [ -n "$amplifyCustomDomain" ]; then
   amplifyCustomDomainPrefix=$(echo $amplifyCustomDomains | jq -r 'select(.domainAssociations | length > 0) | .domainAssociations[0].subDomains[] | select(.subDomainSetting.branchName=="main") | .subDomainSetting.prefix')
-  amplifyDomain=$([ -z "$amplifyCustomDomainPrefix" ] && echo $amplifyCustomDomain || echo $amplifyCustomDomainPrefix.$amplifyCustomDomain)
+  amplifyDomain=$( ([ -z "$amplifyCustomDomainPrefix" ] || [ "null" = "$amplifyCustomDomainPrefix" ]) && echo $amplifyCustomDomain || echo $amplifyCustomDomainPrefix.$amplifyCustomDomain)
 fi
 
 echo $amplifyDomain
