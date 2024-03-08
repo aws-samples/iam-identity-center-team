@@ -476,6 +476,13 @@ export const schema = {
                     "isRequired": true,
                     "attributes": []
                 },
+                "entityId": {
+                    "name": "entityId",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
                 "name": {
                     "name": "name",
                     "isArray": false,

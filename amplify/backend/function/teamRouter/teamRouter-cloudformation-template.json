@@ -263,7 +263,8 @@
             {
               "Effect": "Allow",
               "Action": [
-                "dynamodb:GetItem"
+                "dynamodb:GetItem",
+                "dynamodb:Query"
               ],
               "Resource": [
                 {
