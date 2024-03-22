@@ -40,16 +40,7 @@ else
   amplifyDomain=$amplifyDomain
 fi
 
-
-idpList=`aws cognito-idp list-identity-providers --region $REGION --user-pool-id $cognitoUserpoolId --output json | jq -r '.Providers[] | select(.ProviderName=="IDC") | .ProviderName'`
-
-if [ -n "$idpList" ]; then
-    echo "A provider with name $idpList already exists, skipping creation"
-else 
-    echo "IDC Provider creation in progress..."
-    aws cognito-idp create-identity-provider --region $REGION --user-pool-id $cognitoUserpoolId --provider-name=IDC --provider-type SAML --provider-details file://details.json --attribute-mapping email=Email --idp-identifiers team --output json | jq -r '.'
-fi
-
+aws cognito-idp create-identity-provider --region $REGION --user-pool-id $cognitoUserpoolId --provider-name=IDC --provider-type SAML --provider-details file://details.json --attribute-mapping email=Email --idp-identifiers team --output json | jq -r '.' 
 
 aws cognito-idp update-user-pool-client --region $REGION --user-pool-id $cognitoUserpoolId \
 --client-id $clientID \
