@@ -135,6 +135,9 @@
     "LambdaFunction": {
       "Type": "AWS::Lambda::Function",
       "Properties": {
+        "Architectures": [
+          "arm64"
+        ],
         "Runtime": "python3.9",
         "FunctionName": {
           "Fn::Join": [
