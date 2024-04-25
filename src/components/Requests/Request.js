@@ -245,7 +245,7 @@ function Request(props) {
       setTimeError("Select start date");
       error = true;
     }
-    if (!justification || !/^[a-zA-Z0-9]+$/.test(justification[0])) {
+    if (!justification || !/[\p{L}\p{N}]/u.test(justification[0])) {
       setJustificationError("Enter valid business justification");
       error = true;
     }
