@@ -78,7 +78,7 @@
             "Arn"
           ]
         },
-        "Runtime": "3.9",
+        "Runtime": "3.12",
         "Layers": [],
         "Timeout": 25
       }
