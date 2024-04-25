@@ -83,6 +83,18 @@ Resources:
           phases:
             preBuild:
               commands:
+                - yum -y remove openssl-devel
+                - yum -y install openssl11-devel gcc bzip2-devel libffi-devel
+                - cd /opt 
+                - wget https://www.python.org/ftp/python/3.12.3/Python-3.12.3.tgz
+                - tar xzf Python-3.12.3.tgz
+                - cd /opt/Python-3.12.3
+                - ./configure --with-openssl=/bin/openssl11 && \
+                - ./configure --enable-optimizations && \
+                -  make altinstall
+                - ln -fs /usr/local/bin/python3.12 /usr/bin/python3
+                - ln -fs /usr/local/bin/pip3.12 /usr/bin/pip3
+                - cd $CODEBUILD_SRC_DIR/team-idc-app
                 - '# 12.0.1 Updates auth lambdas to node18'
                 - npm i -g @aws-amplify/cli@12.10.1
                 - '# Update deployment parameters with helper script'
@@ -91,8 +103,7 @@ Resources:
               commands:
                 - npm i -S graphql-ttl-transformer
                 - '# Execute Amplify CLI with the helper script'
-                - update-alternatives --install /usr/bin/python3 python3 /usr/local/bin/python3.9 11
-                - /usr/local/bin/pip3.9 install --user pipenv==2023.6.12
+                - pip3 install --user pipenv==2023.12.1
                 - amplifyPush --simple --allow-destructive-graphql-schema-update
         frontend:
           phases:
@@ -148,7 +159,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       Handler: index.handler
-      Runtime: python3.9
+      Runtime: python3.12
       Role: !GetAtt AmplifyLambdaRole.Arn
       Timeout: 120
       Code:
