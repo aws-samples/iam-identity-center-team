@@ -23,6 +23,10 @@ else
   export AWS_PROFILE=$TEAM_ACCOUNT_PROFILE
 fi
 
+if [ -z "$BRANCH_NAME" ]; then
+  BRANCH_NAME=main
+fi
+
 green='\033[0;32m'
 clear='\033[0m'
 cognitoUserpoolId=`aws cognito-idp list-user-pools --region $REGION --max-results 10 --output json | jq -r '.UserPools[] | select(.Name | contains("team06dbb7fc")) | .Id'`
@@ -32,7 +36,7 @@ cognitoHostedUIdomain=$cognitouserpoolhostedUIdomain.auth.$REGION.amazoncognito.
 
 amplifyAppId=`aws amplify list-apps --output json | jq -r '.apps[] | select(.name=="TEAM-IDC-APP") | .appId'`
 amplifyDomain=`aws amplify list-apps --output json | jq -r '.apps[] | select(.name=="TEAM-IDC-APP") | .defaultDomain'`
-amplifyDomain="main.$amplifyDomain"
+amplifyDomain="$BRANCH_NAME.$amplifyDomain"
 
 amplifyCustomDomains=`aws amplify list-domain-associations --app-id $amplifyAppId --output json`
 amplifyCustomDomain=`echo $amplifyCustomDomains | jq -r 'select(.domainAssociations | length > 0) | .domainAssociations[0].domainName'`
