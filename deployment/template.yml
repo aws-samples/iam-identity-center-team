@@ -151,6 +151,8 @@ Resources:
       Runtime: python3.9
       Role: !GetAtt AmplifyLambdaRole.Arn
       Timeout: 120
+      Architectures:
+        - arm64
       Code:
         ZipFile: |
           import json

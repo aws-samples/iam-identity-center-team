@@ -46,6 +46,9 @@
         "aws:asset:property": "Code"
       },
       "Properties": {
+        "Architectures": [
+          "arm64"
+        ],
         "Code": {
           "S3Bucket": {
             "Ref": "deploymentBucketName"
