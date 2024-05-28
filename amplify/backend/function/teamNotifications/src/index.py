@@ -11,14 +11,34 @@ from dateutil import parser, tz
 
 session = boto3.Session()
 
+def parse_arn(arn):
+    # http://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html
+    elements = arn.split(':')
+    result = {'arn': elements[0],
+            'partition': elements[1],
+            'service': elements[2],
+            'region': elements[3],
+            'account': elements[4]
+           }
+    if len(elements) == 7:
+        result['resourcetype'], result['resource'] = elements[5:]
+    elif '/' not in elements[5]:
+        result['resource'] = elements[5]
+        result['resourcetype'] = None
+    else:
+        result['resourcetype'], result['resource'] = elements[5].split('/')
+    return result
+
 
 def send_ses_notification(
     source_email, source_arn, subject, message_html, to_addresses, cc_addresses
 ):
-    ses_client = session.client("ses")
     try:
         # Providing a source arn enables using an SES identity in another account
         if source_arn:
+            ses_region = parse_arn(source_arn)["region"]
+            ses_client = session.client("ses", region_name=ses_region)
+            
             ses_client.send_email(
                 Source=source_email,
                 SourceArn=source_arn,
@@ -29,6 +49,8 @@ def send_ses_notification(
                 },
             )
         else:
+             ses_client = session.client("ses"
+                                        )
             ses_client.send_email(
                 Source=source_email,
                 Destination={"ToAddresses": to_addresses, "CcAddresses": cc_addresses},
