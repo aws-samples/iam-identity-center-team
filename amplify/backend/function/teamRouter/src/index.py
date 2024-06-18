@@ -394,20 +394,17 @@ def list_approvers(id):
         if "Item" in response.keys():
             return (response['Item']['groupIds'])
         else:
-            return None
+            return []
     except ClientError as e:
         print(e.response['Error']['Message'])
         
 def get_approver_group_ids(accountId):
-    try:
-        approvers = list_approvers(accountId)
-        if approvers:
-            return approvers
-        else:
-            ou = get_ou(accountId)
-            return(list_approvers(ou["Id"]))
-    except ClientError as e:
-        print("no approvers for account " + accountId)
+    approvers = []
+    approvers.extend(list_approvers(accountId))
+    ou = get_ou(accountId)
+    if ou:
+        approvers.extend(list_approvers(ou["Id"]))
+    return approvers
 
 def get_approvers(userId):
     client = boto3.client('identitystore')
