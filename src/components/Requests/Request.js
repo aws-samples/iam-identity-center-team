@@ -271,20 +271,21 @@ function Request(props) {
   }
 
   async function checkApprovalNotRequired(account, role) {
+    let approvalNotRequired = false;
     for (const eligibility of item) {
       for (const acct of eligibility.accounts) {
         if (acct.id === account) {
           for (const perm of eligibility.permissions) {
             if (perm.id === role) {
-              if (eligibility.approvalRequired) {
-                return false;
+              if (!eligibility.approvalRequired) {
+                approvalNotRequired = true;
               }
             }
           }
         }
       }
     }
-    return true;
+    return approvalNotRequired;
   }
 
   function checkGroupMembership(groupIds, groupsIds) {
