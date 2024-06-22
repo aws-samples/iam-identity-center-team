@@ -18,16 +18,9 @@ def publishOUs(result):
     region = session.region_name
 
     query = """
-        mutation PublishOUs() {
-            publishOUs {
-            Id
-            Arn
-            Name
-             Children {
-                Id
-                Arn
-                Name
-            }
+        mutation PublishOUs($result: OUsInput) {
+            publishOUs(result: $result) {
+            ous
             }
         }
             """
@@ -81,6 +74,11 @@ def handler(event, context):
     OUs = client.list_roots().get('Roots')
     root_ou_id = OUs[0].get('Id')
     ou_tree = get_ou_tree(root_ou_id)
+    del OUs[0]["PolicyTypes"]
     OUs[0]["Children"] = ou_tree
+    
+    OUs = {"ous": json.dumps(OUs)}
+    
+    print(OUs)
     
     return publishOUs(OUs)

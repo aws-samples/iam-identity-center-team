@@ -396,66 +396,7 @@ export const getAccounts = /* GraphQL */ `
 `;
 export const getOUs = /* GraphQL */ `
   query GetOUs {
-    getOUs {
-      Id
-      Arn
-      Name
-      Children {
-        Id
-        Arn
-        Name
-        Children {
-          Id
-          Arn
-          Name
-          Children {
-            Id
-            Arn
-            Name
-            Children {
-              Id
-              Arn
-              Name
-              Children {
-                Id
-                Arn
-                Name
-                Children {
-                  Id
-                  Arn
-                  Name
-                  Children {
-                    Id
-                    Arn
-                    Name
-                    Children {
-                      Id
-                      Arn
-                      Name
-                      Children {
-                        Id
-                        Arn
-                        Name
-                        __typename
-                      }
-                      __typename
-                    }
-                    __typename
-                  }
-                  __typename
-                }
-                __typename
-              }
-              __typename
-            }
-            __typename
-          }
-          __typename
-        }
-        __typename
-      }
-      __typename
-    }
+    getOUs
   }
 `;
 export const getOU = /* GraphQL */ `

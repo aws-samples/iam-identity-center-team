@@ -435,3 +435,11 @@ export const publishPolicy = /* GraphQL */ `
     }
   }
 `;
+export const publishOUs = /* GraphQL */ `
+  mutation PublishOUs($result: OUsInput) {
+    publishOUs(result: $result) {
+      ous
+      __typename
+    }
+  }
+`;

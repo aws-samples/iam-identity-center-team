@@ -97,6 +97,7 @@ export async function fetchOUs() {
     return data;
   } catch (err) {
     console.log("error fetching OUs");
+    return {"error":err}
   }
 }
 

@@ -177,12 +177,6 @@ type Groups {
 type Members {
   members: [String]
 }
-type OUs @aws_iam @aws_cognito_user_pools {
-  Id: String!
-  Arn: String!
-  Name: String!
-  Children:[OUs]
-}
 type Permissions {
   Name: String!
   Arn: String!
@@ -197,15 +191,23 @@ type Policy @aws_iam @aws_cognito_user_pools {
   policy: [Entitlement]
 }
 
+type OUs @aws_iam @aws_cognito_user_pools {
+  ous: AWSJSON
+}
+
 input PolicyInput {
   id: String!
   policy: [EntitlementInput]
 }
 
+input OUsInput {
+  ous: AWSJSON
+}
+
 type Mutation {
   publishPolicy(result: PolicyInput): Policy
   @auth(rules: [{ allow: private, provider: iam} { allow: private }])
-  publishOUs: [OUs]
+  publishOUs(result: OUsInput): OUs
   @auth(rules: [{ allow: private, provider: iam} { allow: private }])
 }
 
@@ -222,7 +224,7 @@ type Subscription {
   onPublishPolicy: Policy
     @aws_subscribe(mutations: ["publishPolicy"])
     @auth(rules: [{ allow: private }])
-  onPublishOUs: [OUs]
+  onPublishOUs: OUs
     @aws_subscribe(mutations: ["publishOUs"])
     @auth(rules: [{ allow: private }])
 }
@@ -278,4 +280,3 @@ type Query {
     @function(name: "teamvalidateRequest-${env}")
     @auth(rules: [{ allow: private }])
 }
-  
