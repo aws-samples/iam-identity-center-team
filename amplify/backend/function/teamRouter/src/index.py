@@ -264,6 +264,8 @@ def eligibility_error(request):
     
 def get_eligibility(request, userId):
     eligible = False
+    # Initially assume approval is required
+    approvalRequired = True
     groupIds = [group['GroupId'] for group in list_idc_group_membership(userId)]
     entitlement = getEntitlements(userId=userId, groupIds=groupIds)
     print(entitlement)
@@ -275,14 +277,17 @@ def get_eligibility(request, userId):
             if request["accountId"] ==  account["id"]:
                 for permission in eligibility["permissions"]:
                     if request["roleId"] == permission["id"]:
-                        if eligibility["approvalRequired"]:
-                            return {"approval":True}
                         eligible = True
+                        # Only need a single eligibility to not require approval to
+                        # bypass approval for this request.
+                        if not eligibility["approvalRequired"]:
+                            approvalRequired = False
+
     if max_duration_error:
         print("Error - Invalid Duration")
         return eligibility_error(request) 
     if eligible:
-        return {"approval":False}   
+        return {"approval": approvalRequired}
     else:
         return eligibility_error(request)          
 
