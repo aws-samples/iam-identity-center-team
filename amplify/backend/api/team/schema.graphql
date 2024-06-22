@@ -177,7 +177,7 @@ type Groups {
 type Members {
   members: [String]
 }
-type OUs {
+type OUs @aws_iam @aws_cognito_user_pools {
   Id: String!
   Arn: String!
   Name: String!
@@ -205,6 +205,8 @@ input PolicyInput {
 type Mutation {
   publishPolicy(result: PolicyInput): Policy
   @auth(rules: [{ allow: private, provider: iam} { allow: private }])
+  publishOUs: [OUs]
+  @auth(rules: [{ allow: private, provider: iam} { allow: private }])
 }
 
 type Subscription {
@@ -220,12 +222,15 @@ type Subscription {
   onPublishPolicy: Policy
     @aws_subscribe(mutations: ["publishPolicy"])
     @auth(rules: [{ allow: private }])
+  onPublishOUs: [OUs]
+    @aws_subscribe(mutations: ["publishOUs"])
+    @auth(rules: [{ allow: private }])
 }
 type Query {
   getAccounts: [Accounts]
     @function(name: "teamgetAccounts-${env}")
     @auth(rules: [{ allow: private }])
-  getOUs: [OUs]
+  getOUs: String
     @function(name: "teamgetOUs-${env}")
     @auth(rules: [{ allow: private }])
   getOU(id: String): OU
