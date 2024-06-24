@@ -112,8 +112,7 @@ def handler(event, context):
     userId = event["userId"]
     groupIds = event["groupIds"]
     eligibility = []
-    maxDuration = 0
-    
+
     print("Id: ", event["id"])
 
     for id in [userId] + groupIds:
@@ -125,9 +124,6 @@ def handler(event, context):
             continue
         
         for entitlement in entitlements["Items"]:
-            duration = entitlement["duration"]
-            if int(duration) > maxDuration:
-                maxDuration = int(duration)
             policy = {}
             policy["accounts"] = entitlement["accounts"]
 
@@ -137,7 +133,7 @@ def handler(event, context):
 
             policy["permissions"] = entitlement["permissions"]
             policy["approvalRequired"] = entitlement["approvalRequired"]
-            policy["duration"] = str(maxDuration)
+            policy["duration"] = entitlement["duration"]
             eligibility.append(policy)
     result = {"id": event["id"], "policy": eligibility}
     print(result)
