@@ -44,7 +44,7 @@ Update the parameters in the **parameters.sh** file as follows:
 
 **Parameters**
 
-Required:
+**Required:**
 - **IDC_LOGIN_URL** - AWS IAM Identity Center Login URL
 - **REGION** - AWS region where the application will be deployed.
     > This must be the same region AWS IAM Identity Center is deployed in
@@ -54,16 +54,12 @@ Required:
 - **TEAM_ACCOUNT_PROFILE** - Named profile for TEAM Application deployment Account
 - **TEAM_ADMIN_GROUP** - Name of IAM Identity Center group for TEAM administrators
 - **TEAM_AUDITOR_GROUP** - Name of IAM Identity Center group for TEAM auditors
+- **CLOUDTRAIL_AUDIT_LOGS** - ARN of organization CloudTrail Lake event datastore
+ > Due to an [ongoing issue](https://github.com/aws-samples/iam-identity-center-team/issues/236) the ***CLOUDTRAIL_AUDIT_LOGS*** parameter is no longer optional but now a mandatory parameter that accepts the ARN of an existing Cloudtrail Lake event datastore
 
-Optional:
+**Optional:**
 - **TAGS** - Tags that should be propagated to nested stacks and underlying resources
-- **CLOUDTRAIL_AUDIT_LOGS** - CloudTrail Event Data Store logging configuration. Options:
-  - `read_write` - record read and write events
-  - `read` - record only read events
-  - `write` - record only write events
-  - `none` - disable event logging
-  - `arn:aws:cloudtrail:*` - use an existing CloudTrail Event Data Store
-- **UI_DOMAIN** - Custom domain for Amplify hosted frontend application 
+- **UI_DOMAIN** - Custom domain for Amplify hosted frontend application (should only be included if you have setup a custom domain for the frontend application)
 
 
 For example:
@@ -77,7 +73,7 @@ TEAM_ACCOUNT_PROFILE=TeamAccountProfileName
 TEAM_ADMIN_GROUP="team_admin_group_name"
 TEAM_AUDITOR_GROUP="team_auditor_group_name"
 TAGS="tag1=value1 tag2=value2"
-CLOUDTRAIL_AUDIT_LOGS=read_write
+CLOUDTRAIL_AUDIT_LOGS=arn:aws:cloudtrail:us-east-1:123456789101:eventdatastore/e646f20d-7959-4682-be84-6c5b8a37cf15
 UI_DOMAIN=portal.teamtest.online
 ```
 
