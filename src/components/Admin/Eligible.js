@@ -547,6 +547,7 @@ function Eligible(props) {
     validate(action).then((valid) => {
       if (valid) {
         event.preventDefault();
+        const uuidv4 = require("uuid/v4");
         resource.forEach((item) => {
           const data = {
             type: Type.value,
@@ -554,7 +555,8 @@ function Eligible(props) {
             accounts: account.map(({ value, label }) => ({name: label, id: value})),
             permissions: permission.map(({ value,label }) => ({name: label, id: value})),
             ous: ou.map(({ value,label }) => ({name: label, id: value})),
-            id: item.value,
+            id: uuidv4(),
+            entityId: item.value,
             ticketNo: ticketNo,
             approvalRequired: approvalRequired,
             duration: duration

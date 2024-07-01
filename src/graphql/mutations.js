@@ -317,6 +317,7 @@ export const createEligibility = /* GraphQL */ `
   ) {
     createEligibility(input: $input, condition: $condition) {
       id
+      entityId
       name
       type
       accounts {
