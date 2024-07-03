@@ -340,3 +340,17 @@ export const onPublishOUs = /* GraphQL */ `
     }
   }
 `;
+export const onPublishPermissions = /* GraphQL */ `
+  subscription OnPublishPermissions {
+    onPublishPermissions {
+      id
+      permissions {
+        Name
+        Arn
+        Duration
+        __typename
+      }
+      __typename
+    }
+  }
+`;

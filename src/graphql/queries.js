@@ -410,9 +410,13 @@ export const getOU = /* GraphQL */ `
 export const getPermissions = /* GraphQL */ `
   query GetPermissions {
     getPermissions {
-      Name
-      Arn
-      Duration
+      id
+      permissions {
+        Name
+        Arn
+        Duration
+        __typename
+      }
       __typename
     }
   }

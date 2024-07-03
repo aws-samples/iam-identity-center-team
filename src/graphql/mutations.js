@@ -443,3 +443,17 @@ export const publishOUs = /* GraphQL */ `
     }
   }
 `;
+export const publishPermissions = /* GraphQL */ `
+  mutation PublishPermissions($result: PermissionInput) {
+    publishPermissions(result: $result) {
+      id
+      permissions {
+        Name
+        Arn
+        Duration
+        __typename
+      }
+      __typename
+    }
+  }
+`;

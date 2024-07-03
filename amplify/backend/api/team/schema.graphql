@@ -177,7 +177,7 @@ type Groups {
 type Members {
   members: [String]
 }
-type Permissions {
+type Permissions @aws_iam @aws_cognito_user_pools {
   Name: String!
   Arn: String!
   Duration: String
@@ -204,10 +204,28 @@ input OUsInput {
   ous: AWSJSON
 }
 
+type Permission @aws_iam @aws_cognito_user_pools {
+  id: String!
+  permissions: [Permissions]
+}
+
+input PermissionInput {
+  id: String!
+  permissions: [PermissionsInput]
+}
+
+input PermissionsInput {
+  Name: String!
+  Arn: String!
+  Duration: String
+}
+
 type Mutation {
   publishPolicy(result: PolicyInput): Policy
   @auth(rules: [{ allow: private, provider: iam} { allow: private }])
   publishOUs(result: OUsInput): OUs
+  @auth(rules: [{ allow: private, provider: iam} { allow: private }])
+  publishPermissions(result: PermissionInput): Permission
   @auth(rules: [{ allow: private, provider: iam} { allow: private }])
 }
 
@@ -227,6 +245,9 @@ type Subscription {
   onPublishOUs: OUs
     @aws_subscribe(mutations: ["publishOUs"])
     @auth(rules: [{ allow: private }])
+  onPublishPermissions: Permission
+    @aws_subscribe(mutations: ["publishPermissions"])
+    @auth(rules: [{ allow: private }])
 }
 type Query {
   getAccounts: [Accounts]
@@ -238,7 +259,7 @@ type Query {
   getOU(id: String): OU
     @function(name: "teamgetOU-${env}")
     @auth(rules: [{ allow: private }])
-  getPermissions: [Permissions]
+  getPermissions: Permission
     @function(name: "teamgetPermissions-${env}")
     @auth(rules: [{ allow: private }])
   getMgmtPermissions: MgmtPs

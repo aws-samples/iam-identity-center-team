@@ -1,6 +1,6 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
-  "Description": "{\"createdOn\":\"Linux\",\"createdBy\":\"Amplify\",\"createdWith\":\"9.2.1\",\"stackType\":\"function-Lambda\",\"metadata\":{}}",
+  "Description": "Lambda Function resource stack creation using Amplify CLI",
   "Parameters": {
     "CloudWatchRule": {
       "Type": "String",
@@ -16,9 +16,13 @@
     "s3Key": {
       "Type": "String"
     },
-    "functionteamGetPermissionSetsName": {
+    "apiteamGraphQLAPIIdOutput": {
       "Type": "String",
-      "Default": "functionteamGetPermissionSetsName"
+      "Default": "apiteamGraphQLAPIIdOutput"
+    },
+    "apiteamGraphQLAPIEndpointOutput": {
+      "Type": "String",
+      "Default": "apiteamGraphQLAPIEndpointOutput"
     }
   },
   "Conditions": {
@@ -39,9 +43,6 @@
         "aws:asset:property": "Code"
       },
       "Properties": {
-        "Architectures": [
-          "arm64"
-        ],
         "Code": {
           "S3Bucket": {
             "Ref": "deploymentBucketName"
@@ -54,12 +55,12 @@
         "FunctionName": {
           "Fn::If": [
             "ShouldNotCreateEnvResources",
-            "teamgetPermissions",
+            "teamGetPermissionSets",
             {
               "Fn::Join": [
                 "",
                 [
-                  "teamgetPermissions",
+                  "teamGetPermissionSets",
                   "-",
                   {
                     "Ref": "env"
@@ -80,8 +81,11 @@
             "ACCOUNT_ID": {
               "Ref": "AWS::AccountId"
             },
-            "FUNCTION_TEAMGETPERMISSIONSETS_NAME": {
-              "Ref": "functionteamGetPermissionSetsName"
+            "API_TEAM_GRAPHQLAPIIDOUTPUT": {
+              "Ref": "apiteamGraphQLAPIIdOutput"
+            },
+            "API_TEAM_GRAPHQLAPIENDPOINTOUTPUT": {
+              "Ref": "apiteamGraphQLAPIEndpointOutput"
             }
           }
         },
@@ -91,9 +95,12 @@
             "Arn"
           ]
         },
+        "Architectures": [
+          "arm64"
+        ],
         "Runtime": "python3.9",
         "Layers": [],
-        "Timeout": 120
+        "Timeout": 300
       }
     },
     "LambdaExecutionRole": {
@@ -102,12 +109,12 @@
         "RoleName": {
           "Fn::If": [
             "ShouldNotCreateEnvResources",
-            "teamambdaRole24f53f7b",
+            "teamidcappLambdaRoled3c95af8",
             {
               "Fn::Join": [
                 "",
                 [
-                  "teamLambdaRole24f53f7b",
+                  "teamidcappLambdaRoled3c95af8",
                   "-",
                   {
                     "Ref": "env"
@@ -178,45 +185,6 @@
         }
       }
     },
-    "CustomLambdaExecutionPolicy": {
-      "Type": "AWS::IAM::Policy",
-      "Properties": {
-        "PolicyName": "custom-lambda-execution-policy",
-        "PolicyDocument": {
-          "Version": "2012-10-17",
-          "Statement": [
-            {
-              "Action": [
-                "sso:DescribePermissionSet",
-                "sso:ListPermissionSets",
-                "sso:ListInstances",
-                "sso:ListTagsForResource",
-                "sso:ListPermissionSetsProvisionedToAccount"
-              ],
-              "Resource": [
-                "*"
-              ],
-              "Effect": "Allow"
-            },
-            {
-              "Action": [
-                "organizations:DescribeOrganization"
-              ],
-              "Resource": [
-                "*"
-              ],
-              "Effect": "Allow"
-            }
-          ]
-        },
-        "Roles": [
-          {
-            "Ref": "LambdaExecutionRole"
-          }
-        ]
-      },
-      "DependsOn": "LambdaExecutionRole"
-    },
     "AmplifyResourcesPolicy": {
       "DependsOn": [
         "LambdaExecutionRole"
@@ -235,16 +203,14 @@
             {
               "Effect": "Allow",
               "Action": [
-                "lambda:Get*",
-                "lambda:List*",
-                "lambda:Invoke*"
+                "appsync:GraphQL"
               ],
               "Resource": [
                 {
                   "Fn::Join": [
                     "",
                     [
-                      "arn:aws:lambda:",
+                      "arn:aws:appsync:",
                       {
                         "Ref": "AWS::Region"
                       },
@@ -252,10 +218,31 @@
                       {
                         "Ref": "AWS::AccountId"
                       },
-                      ":function:",
+                      ":apis/",
                       {
-                        "Ref": "functionteamGetPermissionSetsName"
-                      }
+                        "Ref": "apiteamGraphQLAPIIdOutput"
+                      },
+                      "/types/Query/*"
+                    ]
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:appsync:",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      ":",
+                      {
+                        "Ref": "AWS::AccountId"
+                      },
+                      ":apis/",
+                      {
+                        "Ref": "apiteamGraphQLAPIIdOutput"
+                      },
+                      "/types/Mutation/*"
                     ]
                   ]
                 }
@@ -288,14 +275,6 @@
     "LambdaExecutionRole": {
       "Value": {
         "Ref": "LambdaExecutionRole"
-      }
-    },
-    "LambdaExecutionRoleArn": {
-      "Value": {
-        "Fn::GetAtt": [
-          "LambdaExecutionRole",
-          "Arn"
-        ]
       }
     }
   }
