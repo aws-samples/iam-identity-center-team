@@ -33,7 +33,8 @@ Once the upgrade script has completed execution, go to the AWS Amplify console t
 ## If upgrading to v1.1.2 
 Due to an [ongoing issue](https://github.com/aws-samples/iam-identity-center-team/issues/236) the ***CLOUDTRAIL_AUDIT_LOGS*** parameter is no longer optional but now a mandatory parameter that accepts the ARN of an existing Cloudtrail Lake event datastore.
 
-If upgrading from v1.1.1 to v1.1.2, add the ARN of the TEAM Cloudtrail Lake organization event datastore to your paramaters.js file as shown below:
+If upgrading from v1.1.1 to v1.1.2, [create a new Cloudtrail lake event datastore](https://docs.aws.amazon.com/awscloudtrail/latest/userguide/query-event-data-store-cloudtrail.html) in the delegated admin account outside of TEAM and pass the ARN to the parameter.sh file as shown below:
+
 
 ```
 CLOUDTRAIL_AUDIT_LOGS=arn:aws:cloudtrail:us-east-1:123456789101:eventdatastore/e646f20d-7959-4682-be84-6c5b8a37cf15
