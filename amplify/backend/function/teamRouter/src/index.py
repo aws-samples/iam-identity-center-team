@@ -57,10 +57,9 @@ def list_account_for_ou(ouId):
 
 
 def get_entitlements(id):
-    response = policy_table.get_item(
-        Key={
-            'id': id
-        }
+    response = policy_table.query(
+        IndexName="byEntityId",
+        KeyConditionExpression=boto3.dynamodb.conditions.Key('entityId').eq(id)
     )
     return response
 
@@ -79,24 +78,26 @@ def getEntitlements(userId, groupIds):
     for id in [userId] + groupIds:
         if not id:
             continue
-        entitlement = get_entitlements(id)
-        if "Item" not in entitlement.keys():
+        entitlements = get_entitlements(id)
+        if "Items" not in entitlements.keys():
             continue
-        duration = entitlement['Item']['duration']
-        if int(duration) > maxDuration:
-            maxDuration = int(duration)
-        policy = {}
-        policy['accounts'] = entitlement['Item']['accounts']
-        
-        for ou in entitlement["Item"]["ous"]:
-            data = list_account_for_ou(ou["id"])
-            policy['accounts'].extend(data)
+
+        for entitlement in entitlements["Items"]:    
+            duration = entitlement['duration']
+            if int(duration) > maxDuration:
+                maxDuration = int(duration)
+            policy = {}
+            policy['accounts'] = entitlement['accounts']
             
-        policy['permissions'] = entitlement['Item']['permissions']
-        policy['approvalRequired'] = entitlement['Item']['approvalRequired']
-        policy['duration'] = str(maxDuration)
-        
-        eligibility.append(policy)
+            for ou in entitlement["ous"]:
+                data = list_account_for_ou(ou["id"])
+                policy['accounts'].extend(data)
+                
+            policy['permissions'] = entitlement['permissions']
+            policy['approvalRequired'] = entitlement['approvalRequired']
+            policy['duration'] = str(maxDuration)
+            
+            eligibility.append(policy)
 
     return eligibility
 

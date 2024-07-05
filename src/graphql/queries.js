@@ -319,6 +319,7 @@ export const getEligibility = /* GraphQL */ `
   query GetEligibility($id: ID!) {
     getEligibility(id: $id) {
       id
+      entityId
       name
       type
       accounts {
