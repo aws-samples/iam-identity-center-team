@@ -23,12 +23,16 @@ else
   export AWS_PROFILE=$TEAM_ACCOUNT_PROFILE
 fi
 
+if [ -z "$BRANCH_NAME" ]; then
+  BRANCH_NAME=main
+fi
+
 cd ..
 
 aws codecommit create-repository --region $REGION --repository-name team-idc-app --repository-description "Temporary Elevated Access Management (TEAM) Application"
 git remote remove origin
 git remote add origin codecommit::$REGION://team-idc-app
-git push origin main
+git push origin $BRANCH_NAME
 
 cd ./deployment
 if [[ ! -z "$TAGS" ]]; then
@@ -43,6 +47,7 @@ if [[ ! -z "$TAGS" ]]; then
         tags="$TAGS" \
         teamAccount="$TEAM_ACCOUNT" \
         customAmplifyDomain="$UI_DOMAIN" \
+        branchName="$BRANCH_NAME" \
       --tags $TAGS \
       --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
   else
@@ -55,6 +60,7 @@ if [[ ! -z "$TAGS" ]]; then
         teamAuditGroup="$TEAM_AUDITOR_GROUP" \
         tags="$TAGS" \
         teamAccount="$TEAM_ACCOUNT" \
+        branchName="$BRANCH_NAME" \
       --tags $TAGS \
       --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
   fi
@@ -70,6 +76,7 @@ else
         teamAccount="$TEAM_ACCOUNT" \
         tags="$TAGS" \
         customAmplifyDomain="$UI_DOMAIN" \
+        branchName="$BRANCH_NAME" \
       --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
   else
     aws cloudformation deploy --region $REGION --template-file template.yml \
@@ -80,6 +87,7 @@ else
         teamAdminGroup="$TEAM_ADMIN_GROUP" \
         teamAuditGroup="$TEAM_AUDITOR_GROUP" \
         teamAccount="$TEAM_ACCOUNT" \
+        branchName="$BRANCH_NAME" \
       --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
   fi
 fi

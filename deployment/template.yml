@@ -25,6 +25,11 @@ Parameters:
     Type: String
     Description: Custom domain for the TEAM application
     Default: ""
+  branchName:
+    Type: String
+    Description: Branch name for the TEAM application
+    Default: main
+
 
 Conditions:
   IsEmptyCloudTrailAuditLogs: !Equals [!Ref CloudTrailAuditLogs, ""]
@@ -35,7 +40,7 @@ Resources:
     Properties:
       ServiceToken: !GetAtt 'TriggerBuildLambda.Arn'
       appId: !GetAtt AmplifyApp.AppId
-      branchName: main
+      branchName: !Ref branchName
       branch: !GetAtt AmplifyBranch.Arn
 
   AmplifyRole:
@@ -117,7 +122,7 @@ Resources:
   AmplifyBranch:
     Type: AWS::Amplify::Branch
     Properties:
-      BranchName: main
+      BranchName: !Ref branchName
       AppId: !GetAtt AmplifyApp.AppId
       EnableAutoBuild: true
       EnvironmentVariables: 
@@ -142,7 +147,7 @@ Resources:
           Value: amplify:al2
       Tags:
         - Key: Branch
-          Value: main
+          Value: !Ref branchName
   
   TriggerBuildLambda:
     Type: AWS::Lambda::Function
