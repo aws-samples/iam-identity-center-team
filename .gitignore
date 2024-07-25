@@ -49,7 +49,6 @@ amplify/backend/.temp
 build/
 dist/
 node_modules/
-src.egg-info/
 aws-exports.js
 awsconfiguration.json
 amplifyconfiguration.json

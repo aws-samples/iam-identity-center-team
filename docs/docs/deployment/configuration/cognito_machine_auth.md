@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Cognito Machine Authentication Setup Guide 
-nav_order: 6
+nav_order: 7
 parent: Configuration
 grand_parent: Solution deployment
 ---

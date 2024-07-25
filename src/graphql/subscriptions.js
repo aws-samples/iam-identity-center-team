@@ -332,3 +332,25 @@ export const onPublishPolicy = /* GraphQL */ `
     }
   }
 `;
+export const onPublishOUs = /* GraphQL */ `
+  subscription OnPublishOUs {
+    onPublishOUs {
+      ous
+      __typename
+    }
+  }
+`;
+export const onPublishPermissions = /* GraphQL */ `
+  subscription OnPublishPermissions {
+    onPublishPermissions {
+      id
+      permissions {
+        Name
+        Arn
+        Duration
+        __typename
+      }
+      __typename
+    }
+  }
+`;

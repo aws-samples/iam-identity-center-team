@@ -1,0 +1,7 @@
+[
+  {
+    "Action": ["organizations:Describe*",
+                "organizations:List*"],
+    "Resource": ["*"]
+  }
+]

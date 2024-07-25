@@ -24,6 +24,9 @@ import {
   Spinner
 } from "@awsui/components-react";
 import { useCollection } from "@awsui/collection-hooks";
+import Ous from "../Shared/Ous";
+import { API, graphqlOperation } from "aws-amplify";
+import { onPublishOUs } from "../../graphql/subscriptions";
 import {
   getAllApprovers,
   fetchAccounts,
@@ -34,7 +37,6 @@ import {
   fetchIdCGroups,
   getSetting
 } from "../Shared/RequestService";
-import Ous from "../Shared/Ous";
 import "../../index.css";
 
 const COLUMN_DEFINITIONS = [
@@ -376,9 +378,17 @@ function Approvers(props) {
 
   function getOUs() {
     setOUStatus("loading");
-    fetchOUs().then((data) => {
-      setOUs(data);
-      setOUStatus("finished");
+    fetchOUs().then(() =>{
+      const subscription = API.graphql(
+        graphqlOperation(onPublishOUs)
+      ).subscribe({
+        next: (result) => {
+          const data = result.value.data.onPublishOUs.ous
+          setOUs(JSON.parse(data));
+          setOUStatus("finished");
+          subscription.unsubscribe();
+        },
+      });
     });
   }
 

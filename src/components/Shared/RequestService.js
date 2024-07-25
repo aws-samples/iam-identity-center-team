@@ -56,7 +56,7 @@ export async function fetchPermissions() {
     const data = await permissions.data.getPermissions;
     return data;
   } catch (err) {
-    console.log("error fetching permissions");
+    console.log("error fetching permissions", err);
   }
 }
 
@@ -97,6 +97,7 @@ export async function fetchOUs() {
     return data;
   } catch (err) {
     console.log("error fetching OUs");
+    return {"error":err}
   }
 }
 

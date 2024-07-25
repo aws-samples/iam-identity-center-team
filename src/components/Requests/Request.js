@@ -271,20 +271,21 @@ function Request(props) {
   }
 
   async function checkApprovalNotRequired(account, role) {
+    let approvalNotRequired = false;
     for (const eligibility of item) {
       for (const acct of eligibility.accounts) {
         if (acct.id === account) {
           for (const perm of eligibility.permissions) {
             if (perm.id === role) {
-              if (eligibility.approvalRequired) {
-                return false;
+              if (!eligibility.approvalRequired) {
+                approvalNotRequired = true;
               }
             }
           }
         }
       }
     }
-    return true;
+    return approvalNotRequired;
   }
 
   function checkGroupMembership(groupIds, groupsIds) {
@@ -302,26 +303,26 @@ function Request(props) {
     const account_approvers = await fetchApprovers(account, "Account");
     if (account_approvers) {
       const data = await getGroupMemberships(account_approvers.groupIds);
-      if (
-        checkGroupMembership(props.groupIds, account_approvers.groupIds) &&
-        data.members.length < 2
-      ) {
-        return false;
-      } else if (data.members.length > 0) {
-        return account_approvers;
+      const requesterIsApprover = checkGroupMembership(props.groupIds, account_approvers.groupIds);
+      // If the requester is also an approver, then we need at least 2 approvers to exist (i.e. at
+      // least one person who didn't make the request). Otherwise we only need a single approver to exist.
+      const approverGroupMembersRequired = requesterIsApprover ? 2 : 1;
+
+      if (data.members.length >= approverGroupMembersRequired) {
+        return true;
       }
     }
     const ou = await fetchOU(account);
     const ou_approvers = await fetchApprovers(ou.Id, "OU");
     if (ou_approvers) {
       const data = await getGroupMemberships(ou_approvers.groupIds);
-      if (
-        checkGroupMembership(props.groupIds, ou_approvers.groupIds) &&
-        data.members.length < 2
-      ) {
-        return false;
-      } else if (data.members.length > 0) {
-        return ou_approvers;
+      const requesterIsApprover = checkGroupMembership(props.groupIds, ou_approvers.groupIds);
+      // If the requester is also an approver, then we need at least 2 approvers to exist (i.e. at
+      // least one person who didn't make the request). Otherwise we only need a single approver to exist.
+      const approverGroupMembersRequired = requesterIsApprover ? 2 : 1;
+
+      if (data.members.length >= approverGroupMembersRequired) {
+        return true;
       }
     }
     return false;

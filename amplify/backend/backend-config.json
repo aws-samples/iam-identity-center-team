@@ -119,6 +119,21 @@
     }
   },
   "function": {
+    "teamGetPermissionSets": {
+      "build": true,
+      "dependsOn": [
+        {
+          "attributes": [
+            "GraphQLAPIIdOutput",
+            "GraphQLAPIEndpointOutput"
+          ],
+          "category": "api",
+          "resourceName": "team"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
     "teamListGroups": {
       "build": true,
       "dependsOn": [
@@ -139,6 +154,21 @@
         {
           "attributes": [
             "GraphQLAPIIdOutput"
+          ],
+          "category": "api",
+          "resourceName": "team"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
+    "teamPublishOUs": {
+      "build": true,
+      "dependsOn": [
+        {
+          "attributes": [
+            "GraphQLAPIIdOutput",
+            "GraphQLAPIEndpointOutput"
           ],
           "category": "api",
           "resourceName": "team"
@@ -302,11 +332,29 @@
     },
     "teamgetOUs": {
       "build": true,
+      "dependsOn": [
+        {
+          "attributes": [
+            "Name"
+          ],
+          "category": "function",
+          "resourceName": "teamPublishOUs"
+        }
+      ],
       "providerPlugin": "awscloudformation",
       "service": "Lambda"
     },
     "teamgetPermissions": {
       "build": true,
+      "dependsOn": [
+        {
+          "attributes": [
+            "Name"
+          ],
+          "category": "function",
+          "resourceName": "teamGetPermissionSets"
+        }
+      ],
       "providerPlugin": "awscloudformation",
       "service": "Lambda"
     },
@@ -458,6 +506,22 @@
         }
       ]
     },
+    "AMPLIFY_function_teamgetEntitlement_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teamgetEntitlement"
+        }
+      ]
+    },
+    "AMPLIFY_function_teamgetEntitlement_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teamgetEntitlement"
+        }
+      ]
+    },
     "AMPLIFY_function_teamgetGroups_deploymentBucketName": {
       "usedBy": [
         {
@@ -567,6 +631,22 @@
         {
           "category": "function",
           "resourceName": "teamgetPermissions"
+        }
+      ]
+    },
+    "AMPLIFY_function_teamgetUserPolicy_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teamgetUserPolicy"
+        }
+      ]
+    },
+    "AMPLIFY_function_teamgetUserPolicy_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teamgetUserPolicy"
         }
       ]
     },

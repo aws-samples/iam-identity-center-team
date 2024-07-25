@@ -435,3 +435,25 @@ export const publishPolicy = /* GraphQL */ `
     }
   }
 `;
+export const publishOUs = /* GraphQL */ `
+  mutation PublishOUs($result: OUsInput) {
+    publishOUs(result: $result) {
+      ous
+      __typename
+    }
+  }
+`;
+export const publishPermissions = /* GraphQL */ `
+  mutation PublishPermissions($result: PermissionInput) {
+    publishPermissions(result: $result) {
+      id
+      permissions {
+        Name
+        Arn
+        Duration
+        __typename
+      }
+      __typename
+    }
+  }
+`;

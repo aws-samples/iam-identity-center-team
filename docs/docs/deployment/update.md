@@ -30,27 +30,15 @@ cd deployment
 
 Once the upgrade script has completed execution, go to the AWS Amplify console to monitor the status of the TEAM application build and deployment.
 
-## If upgrading to v1.1.1 (Custom Domain)
-> This step is optional and required only if you intend to use a custom domain for your TEAM deployment instead of the default amplify generated domain name.
+## If upgrading to v1.1.2 
+Due to an [ongoing issue](https://github.com/aws-samples/iam-identity-center-team/issues/236) the ***CLOUDTRAIL_AUDIT_LOGS*** parameter is no longer optional but now a mandatory parameter that accepts the ARN of an existing Cloudtrail Lake event datastore.
 
-TEAM v1.1.1 introduces the use of custom domain instead of the default amplify generated domain name.
-To use a custom domain, ensure to update the **parameters.sh** in the **deployment** folder with **UI_DOMAIN** key and your custom domain name before running the **./update.sh** script.
+If upgrading from v1.1.1 to v1.1.2, [create a new Cloudtrail lake event datastore](https://docs.aws.amazon.com/awscloudtrail/latest/userguide/query-event-data-store-cloudtrail.html) in the delegated admin account outside of TEAM and pass the ARN to the parameter.sh file as shown below:
 
-Follow the steps below to integrate your custom domain with amplify once the update deployment is complete.
 
-### Custom domain integration (If Using Custom Domain)
-
-Go to Amplify console: AWS AMPLIFY → All Apps → TEAM-IDC-APP → Domain Management → Add domain.
-![custom](../assets/images/custom.png)
-
-Follow instructions in Amplify documentation for more details on [setting up custom domains](https://docs.aws.amazon.com/amplify/latest/userguide/custom-domains.html)
-
-Execute the **integration.sh** script and update the applicationstartURL in AWS IAM Identity Center for your TEAM application
-
-Execute the **cognito.sh** script 
-
-> Ensure your custom domain is reflected in  Allowed Callback URLs and Allowed sign-out URLs 
-Amazon Cognito → User pools → $(User Pool Name) → App Integration → $(ClientWeb) → HostedUI
+```
+CLOUDTRAIL_AUDIT_LOGS=arn:aws:cloudtrail:us-east-1:123456789101:eventdatastore/e646f20d-7959-4682-be84-6c5b8a37cf15
+```
 
 
 ## Verify app deployment
