@@ -281,9 +281,9 @@ def lambda_handler(event: dict, context):
             email_message_html = f'<html><body><p>Your AWS access session has started. Open <a href="{login_url}">TEAM</a> to manage AWS access requests.</p><p><b>Account:</b> {account}<br /><b>Role:</b> {role}<br /><b>Start Time:</b> {request_start_time}<br /><b>Duration:</b> {duration_hours} hours<br /><b>Justification:</b> {justification}<br /><b>Ticket Number:</b> {ticket}<br /></p></body></html>'
         case "approved":
             # Notify requester request approved
-            slack_recipients = [requester]
+            slack_recipients = approvers + [requester]
             slack_message = (
-                f"Your AWS access request was approved by {event['approver']}."
+                f"AWS access request was approved by {event['approver']}."
             )
             email_to_addresses = [requester]
             email_cc_addresses = approvers
@@ -291,8 +291,8 @@ def lambda_handler(event: dict, context):
             email_message_html = f'<html><body><p>Your AWS access request has been approved by {event["approver"]}. You will receive a notification when the session has started. Open <a href="{login_url}">TEAM</a> to manage AWS access requests.</p><p><b>Account:</b> {account}<br /><b>Role:</b> {role}<br /><b>Start Time:</b> {request_start_time}<br /><b>Duration:</b> {duration_hours} hours<br /><b>Justification:</b> {justification}<br /><b>Ticket Number:</b> {ticket}<br /></p></body></html>'
         case "rejected":
             # Notify requester request rejected
-            slack_recipients = [requester]
-            slack_message = "Your AWS access request was rejected."
+            slack_recipients = approvers + [requester]
+            slack_message = "AWS access request was rejected."
             email_to_addresses = [requester]
             email_cc_addresses = approvers
             subject = f"AWS access request rejected for {account} - TEAM"
