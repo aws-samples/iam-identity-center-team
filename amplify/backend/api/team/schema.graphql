@@ -124,6 +124,11 @@ type Eligibility
     ]
   ) {
   id: ID
+  entityId: String
+    @index(
+      name: "byEntityId"
+      queryField: "requestByEntityId"
+    )
   name: String
   type: String
   accounts: [data]
