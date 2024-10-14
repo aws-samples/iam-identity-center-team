@@ -25,10 +25,11 @@ fi
 
 cd ..
 
-aws codecommit create-repository --region $REGION --repository-name team-idc-app --repository-description "Temporary Elevated Access Management (TEAM) Application"
-git remote remove origin
-git remote add origin codecommit::$REGION://team-idc-app
-git push origin main
+# Uncomment the lines below if you are not affected by the deprecatin of AWS CodeCommit in your TEAM account.
+#aws codecommit create-repository --region $REGION --repository-name team-idc-app --repository-description "Temporary Elevated Access Management (TEAM) Application"
+#git remote remove origin
+#git remote add origin codecommit::$REGION://team-idc-app
+#git push origin main
 
 cd ./deployment
 if [[ ! -z "$TAGS" ]]; then
