@@ -24,3 +24,6 @@ CLOUDTRAIL_AUDIT_LOGS=arn:aws:cloudtrail:us-east-1:123456789101:eventdatastore/e
 
 # Uncomment the next line only if you have a custom domain
 # UI_DOMAIN=portal.teamtest.online
+
+# Uncomment the next line only if you are using an external repo with an Access Token in lieu of AWS CodeCommit
+# SECRET_NAME=TEAM-IDC-APP

@@ -28,4 +28,6 @@ aws cloudformation delete-stack --region $REGION --stack-name $stackName
 
 aws cloudformation delete-stack --region $REGION --stack-name TEAM-IDC-APP
 
-aws codecommit delete-repository --region $REGION \--repository-name team-idc-app
+if [ -z "$SECRET_NAME" ]; then
+  aws codecommit delete-repository --region $REGION \--repository-name team-idc-app
+fi

@@ -60,6 +60,7 @@ Update the parameters in the **parameters.sh** file as follows:
 **Optional:**
 - **TAGS** - Tags that should be propagated to nested stacks and underlying resources
 - **UI_DOMAIN** - Custom domain for Amplify hosted frontend application (should only be included if you have setup a custom domain for the frontend application)
+- **SECRET_NAME** - With the deprecation of [AWS CodeCommit](https://aws.amazon.com/blogs/devops/how-to-migrate-your-aws-codecommit-repository-to-another-git-provider/) you can copy the code to a different external repository.  If you store the repository **url** and **AccessToken** in a single secret, provide the name here so CloudFormation can reference that information without making sensitive data visible.
 
 
 For example:
@@ -75,6 +76,7 @@ TEAM_AUDITOR_GROUP="team_auditor_group_name"
 TAGS="tag1=value1 tag2=value2"
 CLOUDTRAIL_AUDIT_LOGS=arn:aws:cloudtrail:us-east-1:123456789101:eventdatastore/e646f20d-7959-4682-be84-6c5b8a37cf15
 UI_DOMAIN=portal.teamtest.online
+SECRET_NAME=TEAM-IDC-APP
 ```
 
 ---

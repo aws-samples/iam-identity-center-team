@@ -52,4 +52,7 @@ Create a Cloudtrail Lake organization event datastore in the dedicated TEAM acco
 
 - Setup a named profile for AWS CLI with sufficient permissions for the **AWS account where the TEAM Application will be deployed in**
 
+  You can use AWS CloudShell instead of the first two steps of setting up awscli, git-remote-codecommit, and jq on a local workstation.
+  {: .note}
+
 ### 🚀 You can now [Deploy the Application]({% link docs/deployment/deployment_process.md %}).
