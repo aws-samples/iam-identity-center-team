@@ -55,19 +55,20 @@ Update the parameters in the **parameters.sh** file as follows:
 - **TEAM_ADMIN_GROUP** - Name of IAM Identity Center group for TEAM administrators
 - **TEAM_AUDITOR_GROUP** - Name of IAM Identity Center group for TEAM auditors
 - **CLOUDTRAIL_AUDIT_LOGS** - ARN of organization CloudTrail Lake event datastore
- > Due to an [ongoing issue](https://github.com/aws-samples/iam-identity-center-team/issues/236) the ***CLOUDTRAIL_AUDIT_LOGS*** parameter is no longer optional but now a mandatory parameter that accepts the ARN of an existing Cloudtrail Lake event datastore
+- **SECRET_NAME** - Name of the Secret stored in AWS Secret Manager
+> When using Github as the external repository ensure you use Tokens (classic) (https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#personal-access-tokens-classic) instead of Fine-grained tokens
+
 
 **Optional:**
 - **TAGS** - Tags that should be propagated to nested stacks and underlying resources
 - **UI_DOMAIN** - Custom domain for Amplify hosted frontend application (should only be included if you have setup a custom domain for the frontend application)
-
 
 For example:
 
 ```sh
 IDC_LOGIN_URL=https://d-12345678.awsapps.com/start
 REGION=us-east-1
-TEAM_ACCOUNT=123456789101
+TEAM_ACCOUNT=123456789101  
 ORG_MASTER_PROFILE=OrgMAsterProfileName
 TEAM_ACCOUNT_PROFILE=TeamAccountProfileName
 TEAM_ADMIN_GROUP="team_admin_group_name"
@@ -75,6 +76,7 @@ TEAM_AUDITOR_GROUP="team_auditor_group_name"
 TAGS="tag1=value1 tag2=value2"
 CLOUDTRAIL_AUDIT_LOGS=arn:aws:cloudtrail:us-east-1:123456789101:eventdatastore/e646f20d-7959-4682-be84-6c5b8a37cf15
 UI_DOMAIN=portal.teamtest.online
+SECRET_NAME=TEAM-IDC-APP
 ```
 
 ---

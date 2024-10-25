@@ -13,7 +13,7 @@ The **destroy.sh** bash script performs the following actions within the **TEAM_
 
 - Deletes the Amplify backend Cloudformation stack
 - Deletes the Amplify App Cloudformation stack
-- Deletes the CodeCommit repository for the TEAM application
+- Deletes the CodeCommit repository for the TEAM application (unless the **parameters.sh** file has a SECRET_NAME parameter.)
 
   > Ensure that the named profile for the **TEAM Deployment account** has sufficient permissions before executing the **destroy.sh** script
 

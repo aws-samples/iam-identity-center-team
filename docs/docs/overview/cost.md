@@ -18,6 +18,7 @@ The TEAM solution consists of numerous AWS serverless services. As cost is accru
 - [Amazon Cognito](https://aws.amazon.com/cognito/pricing)
 - [AWS CloudTrail Lake](https://aws.amazon.com/cloudtrail/pricing/)
 - [AWS IAM Identity Center](https://aws.amazon.com/iam/identity-center/) (free)
+- [AWS Secret Manager](https://aws.amazon.com/secrets-manager/)
 
 ## Managing CloudTrail Lake cost 
 

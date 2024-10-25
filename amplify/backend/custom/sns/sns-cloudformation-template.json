@@ -9,6 +9,7 @@
     "snsNotificationTopic": {
       "Type": "AWS::SNS::Topic",
       "Properties": {
+        "KmsMasterKeyId": "alias/aws/sns",
         "TopicName": {
           "Fn::Join": [
             "",

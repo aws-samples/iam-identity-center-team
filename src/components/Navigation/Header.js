@@ -32,7 +32,7 @@ function Header(props) {
         visible={visible}
         onDismiss={() => setVisible(false)}
       >
-        🚀 TEAM v1.1.1 introduces support for custom domain name instead of the default amplify generated domain name.
+        🚀 TEAM v1.2.0 introduces support for the use of external repositories due to CodeCommit deprecation 
       </Alert>
     );
   }
