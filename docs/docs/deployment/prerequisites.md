@@ -37,6 +37,12 @@ parent: Solution deployment
 TEAM uses AWS CloudTrail Lake for querying, auditing and logging API activities and actions performed by a user during the period of elevated access.
 Create a Cloudtrail Lake organization event datastore in the dedicated TEAM account that stores all log events for all AWS account in your organization
 
+## AWS Secrets Manager
+TEAM allows you to use external repositories for deploying the solution. 
+Create a secret in AWS Secret Manager containting your repository url and Access token in Secrets manager as shown below 
+
+![custom](../assets/images/secret-manager.png)
+
 ### TEAM groups
 - Create groups within AWS IAM Identity center for **TEAM admins** and **TEAM auditors**. These groups can be created locally (In Identity center) or synchronised from an external identity provider following your organisation's group membership review and attestation process.
 
@@ -51,5 +57,8 @@ Create a Cloudtrail Lake organization event datastore in the dedicated TEAM acco
 - Setup a [named profile](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html) for AWS CLI with sufficient permissions for the **Organization management account**
 
 - Setup a named profile for AWS CLI with sufficient permissions for the **AWS account where the TEAM Application will be deployed in**
+
+  You can use AWS CloudShell instead of the first two steps of setting up awscli, git-remote-codecommit, and jq on a local workstation.
+  {: .note}
 
 ### 🚀 You can now [Deploy the Application]({% link docs/deployment/deployment_process.md %}).

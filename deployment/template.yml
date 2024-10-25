@@ -25,9 +25,21 @@ Parameters:
     Type: String
     Description: Custom domain for the TEAM application
     Default: ""
+  customRepository:
+    Type: String
+    Description: Use a custom repository for the TEAM application?
+    AllowedValues:
+      - 'Yes'
+      - 'No'
+    Default: 'No'
+  customRepositorySecretName:
+    Type: String
+    Description: Name of the secret in AWS Secrets Manager
+    Default: ''
 
 Conditions:
   IsEmptyCloudTrailAuditLogs: !Equals [!Ref CloudTrailAuditLogs, ""]
+  UseExternalRepo: !Equals [!Ref customRepository, 'Yes']
 
 Resources:
   TriggerAmplifyBuild:
@@ -63,7 +75,16 @@ Resources:
     Type: "AWS::Amplify::App"
     Properties:
       Name: TEAM-IDC-APP
-      Repository: !Sub https://git-codecommit.${AWS::Region}.amazonaws.com/v1/repos/team-idc-app
+      Repository: !If
+        - UseExternalRepo
+        - !Sub >-
+          {{resolve:secretsmanager:${customRepositorySecretName}:SecretString:url}}
+        - !Sub https://git-codecommit.${AWS::Region}.amazonaws.com/v1/repos/team-idc-app
+      AccessToken: !If
+        - UseExternalRepo
+        - !Sub >-
+          {{resolve:secretsmanager:${customRepositorySecretName}:SecretString:AccessToken}}
+        - !Ref 'AWS::NoValue'
       Description: Temporary Elevated Access Management Application
       CustomRules:
         - Source: /<*>
