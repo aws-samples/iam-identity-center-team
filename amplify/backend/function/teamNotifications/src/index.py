@@ -38,7 +38,7 @@ def send_ses_notification(
         if source_arn:
             ses_region = parse_arn(source_arn)["region"]
             ses_client = session.client("ses", region_name=ses_region)
-
+            
             ses_client.send_email(
                 Source=source_email,
                 SourceArn=source_arn,
