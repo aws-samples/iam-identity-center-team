@@ -1,12 +1,12 @@
-# © 2023 Amazon Web Services, Inc. or its affiliates. All Rights Reserved.
+# © 2024 Amazon Web Services, Inc. or its affiliates. All Rights Reserved.
 # This AWS Content is provided subject to the terms of the AWS Customer Agreement available at
 # http: // aws.amazon.com/agreement or other written agreement between Customer and either
 # Amazon Web Services, Inc. or Amazon Web Services EMEA SARL or both.
 import os
 from botocore.exceptions import ClientError
 import boto3
+import json
 
-user_pool_id = os.getenv("AUTH_AWSPIM06DBB7FC_USERPOOLID")
 team_admin_group = os.getenv("TEAM_ADMIN_GROUP")
 team_auditor_group = os.getenv("TEAM_AUDITOR_GROUP")
 settings_table_name = os.getenv("SETTINGS_TABLE_NAME")
@@ -30,31 +30,6 @@ def get_team_groups():
     except Exception as e:
         print(f"Error retrieving TEAM settings from database: {e}")
     return team_admin_group, team_auditor_group
-
-def add_user_to_group(username, groupname):
-    client = boto3.client('cognito-idp')
-    try:
-        response = client.admin_add_user_to_group(
-            UserPoolId=user_pool_id,
-            Username=username,
-            GroupName=groupname
-        )
-        print(f"user {username} added to {groupname} group")
-    except ClientError as e:
-        print(e.response['Error']['Message'])
-
-
-def remove_user_from_group(username, groupname):
-    client = boto3.client('cognito-idp')
-    try:
-        response = client.admin_remove_user_from_group(
-            UserPoolId=user_pool_id,
-            Username=username,
-            GroupName=groupname
-        )
-        print(f"user {username} removed from {groupname} group")
-    except ClientError as e:
-        print(e.response['Error']['Message'])
 
 
 def get_identity_store_id():
@@ -123,29 +98,35 @@ def list_idc_group_membership(userId):
 def handler(event, context):
     team_admin_group, team_auditor_group = get_team_groups()
     
-    user = event["identity"]["username"]
-    # Strip idc prefix
-    username = user.removeprefix("idc_")
-    userId = get_user(username)
+    user = event["userName"].split("_", 1)[1]
+    userId = get_user(user)
     admin = get_group(team_admin_group)
     auditor = get_group(team_auditor_group)
     groups = []
-    groupIds = []
+    groupIds = str()
 
     groupData = list_idc_group_membership(userId)
-
+    
     for group in groupData:
-        groupIds.append(group["GroupId"])
-        if group['GroupId'] == admin:
-            add_user_to_group(user, "Admin")
+        groupIds += group["GroupId"] + ","
+        if group["GroupId"] == admin:
+            # add_user_to_group(user, "Admin")
             groups.append("Admin")
-        elif group['GroupId'] == auditor:
-            add_user_to_group(user, "Auditors")
+        elif group["GroupId"] == auditor:
+            # add_user_to_group(user, "Auditors")
             groups.append("Auditors")
 
-    if "Admin" not in groups:
-        remove_user_from_group(user, "Admin")
-    elif "Auditors" not in groups:
-        remove_user_from_group(user, "Auditors")
+    event["response"] = {
+        "claimsOverrideDetails": {
+            "claimsToAddOrOverride": {
+                "userId": userId,
+                "groupIds": groupIds,
+                "groups": ",".join(groups)
+            },
+            "groupOverrideDetails": {
+                "groupsToOverride": groups,
+            },
+        }
+    }
 
-    return {"groups": groups, "userId": userId, "groupIds": groupIds}
+    return event

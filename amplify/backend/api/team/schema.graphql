@@ -265,9 +265,6 @@ type Query {
   getMgmtPermissions: MgmtPs
     @function(name: "teamgetMgmtAccountDetails-${env}")
     @auth(rules: [{ allow: private }])
-  getGroups: Groups
-    @function(name: "teamgetGroups-${env}")
-    @auth(rules: [{ allow: private }])
   getIdCGroups: [IdCGroups]
     @function(name: "teamgetIdCGroups-${env}")
     @auth(rules: [{ allow: private }])

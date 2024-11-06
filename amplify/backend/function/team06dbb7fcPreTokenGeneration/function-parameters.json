@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "api": {
+      "team": [
+        "Query"
+      ]
+    }
+  },
+  "lambdaLayers": []
+}

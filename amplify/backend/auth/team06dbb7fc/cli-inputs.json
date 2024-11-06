@@ -41,7 +41,11 @@
         "usernameAttributes": [
             "email"
         ],
-        "triggers": {},
+        "triggers": {
+        "PreTokenGeneration": [
+          "alter-claims"
+        ]
+      },
         "userPoolGroupList": [
             "Auditors",
             "Admin"
@@ -62,18 +66,29 @@
             ]
         },
         "breakCircularDependency": true,
-        "dependsOn": [],
+        "dependsOn": [
+        {
+          "category": "function",
+          "resourceName": "team06dbb7fcPreTokenGeneration",
+          "triggerProvider": "Cognito",
+          "attributes": [
+            "Arn",
+            "Name"
+          ]
+        }
+      ],
         "hostedUI": true,
         "parentStack": {
             "Ref": "AWS::StackId"
         },
         "permissions": [],
-        "hostedUIDomainName": "d11r99we6v7d2t",
+        "hostedUIDomainName": "d1s5ncogc730zk",
         "authProvidersUserPool": [],
         "hostedUIProviderMeta": "[]",
         "authProviders": [],
         "hostedUIProviderCreds": "[]",
         "adminQueryGroup": "Admin",
-        "oAuthMetadata": "{\"AllowedOAuthFlows\":[\"code\"],\"AllowedOAuthScopes\":[\"phone\",\"email\",\"openid\",\"profile\",\"aws.cognito.signin.user.admin\"],\"CallbackURLs\":[\"https://main.d11r99we6v7d2t.amplifyapp.com/\"],\"LogoutURLs\":[\"https://main.d11r99we6v7d2t.amplifyapp.com/\"]}"
+        "authTriggerConnections": "[\n  {\n    \"triggerType\": \"PreTokenGeneration\",\n    \"lambdaFunctionName\": \"team06dbb7fcPreTokenGeneration\"\n  }\n]",
+        "oAuthMetadata": "{\"AllowedOAuthFlows\":[\"code\"],\"AllowedOAuthScopes\":[\"phone\",\"email\",\"openid\",\"profile\",\"aws.cognito.signin.user.admin\"],\"CallbackURLs\":[\"https://main.d1s5ncogc730zk.amplifyapp.com/\"],\"LogoutURLs\":[\"https://main.d1s5ncogc730zk.amplifyapp.com/\"]}"
     }
 }

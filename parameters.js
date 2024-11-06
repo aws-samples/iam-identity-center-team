@@ -66,10 +66,10 @@ async function update_react_parameters() {
 }
 
 async function update_groups_parameters() {
-  console.log(`updating teamgetgroups lambda parameters"...`);
+  console.log(`updating team06dbb7fcPreTokenGeneration lambda parameters"...`);
 
   const groupsParametersJsonPath = path.resolve(
-    `./amplify/backend/function/teamgetGroups/parameters.json`
+    `./amplify/backend/function/team06dbb7fcPreTokenGeneration/parameters.json`
   );
   const groupsParametersJson = require(groupsParametersJsonPath);
 

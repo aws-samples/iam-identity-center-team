@@ -38,6 +38,13 @@ export type AmplifyDependentResourcesAttributes = {
     }
   },
   "function": {
+    "teamGetPermissionSets": {
+      "Arn": "string",
+      "LambdaExecutionRole": "string",
+      "LambdaExecutionRoleArn": "string",
+      "Name": "string",
+      "Region": "string"
+    },
     "teamListGroups": {
       "Arn": "string",
       "LambdaExecutionRole": "string",
@@ -46,6 +53,13 @@ export type AmplifyDependentResourcesAttributes = {
       "Region": "string"
     },
     "teamNotifications": {
+      "Arn": "string",
+      "LambdaExecutionRole": "string",
+      "LambdaExecutionRoleArn": "string",
+      "Name": "string",
+      "Region": "string"
+    },
+    "teamPublishOUs": {
       "Arn": "string",
       "LambdaExecutionRole": "string",
       "LambdaExecutionRoleArn": "string",
