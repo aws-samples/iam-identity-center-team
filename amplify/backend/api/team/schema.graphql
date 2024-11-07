@@ -3,8 +3,8 @@ type requests
   @auth(
     rules: [
       { allow: groups, groups: ["Auditors"], operations: [read] }
-      { allow: owner }
-      { allow: owner, ownerField: "approver_ids", operations: [update, read] }
+      { allow: owner, operations: [create, read] }
+      { allow: owner, ownerField: "approver_ids", operations: [read] }
       { allow: private, provider: iam, operations: [read, update] }
     ]
   ) {
@@ -15,6 +15,14 @@ type requests
       sortKeyFields: ["status"]
       queryField: "requestByEmailAndStatus"
     )
+  @auth(
+    rules: [
+      { allow: groups, groups: ["Auditors"], operations: [read] }
+      { allow: owner, operations: [read]}
+      { allow: owner, ownerField: "approver_ids", operations: [read] }
+      { allow: private, provider: iam, operations: [read, update] }
+    ]
+  )
   accountId: String!
   accountName: String!
   role: String!
@@ -23,22 +31,86 @@ type requests
   duration: String!
   justification: String
   status: String
+  @auth(
+    rules: [
+      { allow: groups, groups: ["Auditors"], operations: [read] }
+      { allow: owner, operations: [create, read, update] }
+      { allow: owner, ownerField: "approver_ids", operations: [update, read] }
+      { allow: private, provider: iam, operations: [read, update] }
+    ]
+  )
   comment: String
+  @auth(
+    rules: [
+      { allow: groups, groups: ["Auditors"], operations: [read] }
+      { allow: owner, operations: [read] }
+      { allow: owner, ownerField: "approver_ids", operations: [update, read] }
+      { allow: private, provider: iam, operations: [read, update] }
+    ]
+  )
   username: String
   approver: String
+  @auth(
+    rules: [
+      { allow: groups, groups: ["Auditors"], operations: [read] }
+      { allow: owner, operations: [read]}
+      { allow: owner, ownerField: "approver_ids", operations: [read] }
+      { allow: private, provider: iam, operations: [read, update] }
+    ]
+  )
   approverId: String
     @index(
       name: "byApproverAndStatus"
       sortKeyFields: ["status"]
       queryField: "requestByApproverAndStatus"
     )
+  @auth(
+    rules: [
+      { allow: groups, groups: ["Auditors"], operations: [read] }
+      { allow: owner, operations: [read]}
+      { allow: owner, ownerField: "approver_ids", operations: [update,read] }
+      { allow: private, provider: iam, operations: [read, update] }
+    ]
+  )
   approvers: [String]
+  @auth(
+    rules: [
+      { allow: groups, groups: ["Auditors"], operations: [read] }
+      { allow: owner, operations: [read]}
+      { allow: owner, ownerField: "approver_ids", operations: [read] }
+      { allow: private, provider: iam, operations: [read, update] }
+    ]
+  )
   approver_ids: [String]
+  @auth(
+    rules: [
+      { allow: groups, groups: ["Auditors"], operations: [read] }
+      { allow: owner, operations: [read]}
+      { allow: owner, ownerField: "approver_ids", operations: [read] }
+      { allow: private, provider: iam, operations: [read, update] }
+    ]
+  )
   revoker: String
   revokerId: String
+  @auth(
+    rules: [
+      { allow: groups, groups: ["Auditors"], operations: [read] }
+      { allow: owner, operations: [read]}
+      { allow: owner, ownerField: "approver_ids", operations: [update,read] }
+      { allow: private, provider: iam, operations: [read, update] }
+    ]
+  )
   endTime: AWSDateTime
   ticketNo: String
   revokeComment: String
+  @auth(
+    rules: [
+      { allow: groups, groups: ["Auditors"], operations: [read] }
+      { allow: owner, operations: [update,read]}
+      { allow: owner, ownerField: "approver_ids", operations: [update,read] }
+      { allow: private, provider: iam, operations: [read,update] }
+    ]
+  )
   session_duration: String
 }
 type sessions

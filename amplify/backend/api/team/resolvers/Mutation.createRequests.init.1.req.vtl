@@ -23,10 +23,6 @@ $util.qr($ctx.stash.defaultValues.put("status", "pending"))
     	$util.error('Invalid input')
 #end
 
-#if ($ctx.args.input.email || $ctx.args.input.status || $ctx.args.input.username || $ctx.args.input.approvers || $ctx.args.input.approver_ids)
-    $util.error('Invalid input')
-#end
-
 $util.qr($ctx.args.input.put("username", $ctx.identity.username))
 $util.toJson({
   "version": "2018-05-29",
