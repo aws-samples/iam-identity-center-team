@@ -84,6 +84,14 @@
               },
               "Resource": "arn:aws:states:::aws-sdk:ssoadmin:createAccountAssignment",
               "ResultPath": "$.grant",
+              "Retry": [
+                {
+                  "ErrorEquals": ["ThrottlingException", "ServiceUnavailable", "InternalServerError"],
+                  "IntervalSeconds": 3,
+                  "BackoffRate": 2,
+                  "MaxAttempts": 5
+                }
+              ],
               "Type": "Task"
             },
             "Notify Error": {
