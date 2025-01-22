@@ -272,6 +272,7 @@ export const getSettings = /* GraphQL */ `
       sesNotificationsEnabled
       snsNotificationsEnabled
       slackNotificationsEnabled
+      slackAuditNotificationsChannel
       sesSourceEmail
       sesSourceArn
       slackToken
@@ -301,6 +302,7 @@ export const listSettings = /* GraphQL */ `
         sesNotificationsEnabled
         snsNotificationsEnabled
         slackNotificationsEnabled
+        slackAuditNotificationsChannel
         sesSourceEmail
         sesSourceArn
         slackToken
