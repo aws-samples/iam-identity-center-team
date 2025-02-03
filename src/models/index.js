@@ -4,22 +4,26 @@ import { schema } from './schema';
 
 
 
-const { requests, sessions, Approvers, Eligibility, Accounts, OUs, OU, Permissions, Groups, IdCGroups, Users, Logs, Entitlement, data, Members } = initSchema(schema);
+const { requests, sessions, Approvers, Settings, Eligibility, data, Accounts, Entitlement, IdCGroups, Users, Logs, OU, Groups, Members, Permissions, MgmtPs, Policy, OUs, Permission } = initSchema(schema);
 
 export {
   requests,
   sessions,
   Approvers,
+  Settings,
   Eligibility,
+  data,
   Accounts,
-  OUs,
-  OU,
-  Permissions,
-  Groups,
+  Entitlement,
   IdCGroups,
   Users,
   Logs,
-  Entitlement,
-  data,
-  Members
+  OU,
+  Groups,
+  Members,
+  Permissions,
+  MgmtPs,
+  Policy,
+  OUs,
+  Permission
 };

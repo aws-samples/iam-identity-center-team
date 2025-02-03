@@ -171,6 +171,7 @@ type Settings
   sesNotificationsEnabled: Boolean
   snsNotificationsEnabled: Boolean
   slackNotificationsEnabled: Boolean
+  slackAuditNotificationsChannel: String
   sesSourceEmail: String
   sesSourceArn: String
   slackToken: String
