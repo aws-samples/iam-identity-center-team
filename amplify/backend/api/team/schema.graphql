@@ -95,7 +95,7 @@ type requests
   @auth(
     rules: [
       { allow: groups, groups: ["Auditors"], operations: [read] }
-      { allow: owner, operations: [read]}
+      { allow: owner, operations: [read, update]}
       { allow: owner, ownerField: "approver_ids", operations: [update,read] }
       { allow: private, provider: iam, operations: [read, update] }
     ]
