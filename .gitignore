@@ -11,10 +11,10 @@
 # production
 /build
 
-# deployment
-/deployment/parameters.sh
-/deployment/details.json
-/ignore
+# # deployment
+# /deployment/parameters.sh
+# /deployment/details.json
+# /ignore
 
 # misc
 .DS_Store
