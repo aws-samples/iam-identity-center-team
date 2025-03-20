@@ -20,13 +20,26 @@ parent: Solution deployment
 ---
 
 ## Clone TEAM repo
-To clone the TEAM amplify fullstack project, execute the following command inside an empty directory
+
+Create your own private, empty, repository for iam-identity-center-team.
+
+Clone the TEAM amplify fullstack project, execute the following command inside an empty directory
 
 ```sh
 git clone https://github.com/aws-samples/iam-identity-center-team.git
 ```
 
 This creates a directory named **iam-identity-center-team** in your current directory.
+
+Run follwing commands
+```sh
+cd iam-identity-center-team
+git remote remove origin
+git remote add origin git@github.com:{{your empty repo}}.git
+git push -u origin main
+```
+
+Use the newly created repo in next step. 
 
 ---
 
