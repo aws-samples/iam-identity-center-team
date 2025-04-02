@@ -169,7 +169,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       Handler: index.handler
-      Runtime: python3.9
+      Runtime: python3.10
       Role: !GetAtt AmplifyLambdaRole.Arn
       Timeout: 120
       Architectures:

@@ -11,4 +11,4 @@ requests = "*"
 requests-aws-sign = "*"
 
 [requires]
-python_version = "3.9"
+python_version = "3.10"
