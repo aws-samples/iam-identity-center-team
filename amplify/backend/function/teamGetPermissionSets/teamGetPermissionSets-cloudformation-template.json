@@ -98,7 +98,7 @@
         "Architectures": [
           "arm64"
         ],
-        "Runtime": "python3.9",
+        "Runtime": "python3.10",
         "Layers": [],
         "Timeout": 300
       }
