@@ -13,7 +13,7 @@
   },
   "author": "",
   "dependencies": {
-    "@aws-sdk/client-cloudtrail": "^3.53.0",
+    "@aws-sdk/client-cloudtrail": "^3.777.0",
     "@aws-crypto/sha256-js": "^2.0.1",
     "@aws-sdk/credential-provider-node": "^3.76.0",
     "@aws-sdk/protocol-http": "^3.58.0",
