@@ -44,6 +44,7 @@ function Settings(props) {
     useState(null);
   const [slackToken, setSlackToken] = useState("");
   const [slackTokenError, setSlackTokenError] = useState("");
+  const [slackAuditNotificationsChannel, setSlackAuditNotificationsChannel] = useState(null);
   const [sesSourceEmail, setSesSourceEmail] = useState(null);
   const [sesSourceEmailError, setSesSourceEmailError] = useState("");
   const [sesSourceArn, setSesSourceArn] = useState(null);
@@ -175,7 +176,7 @@ function Settings(props) {
       setSnsNotificationsEnabled(item.snsNotificationsEnabled ?? false);
       setSlackNotificationsEnabled(item.slackNotificationsEnabled ?? false);
       setSesSourceEmail(item.sesSourceEmail ?? "");
-      setSesSourceArn(item.sesSourceArn ?? "" );
+      setSesSourceArn(item.sesSourceArn ?? "");
       setSlackToken(item.slackToken ?? "");
       setTeamAdminGroup(item.teamAdminGroup ?? params.teamAdminGroup);
       setTeamAuditorGroup(item.teamAuditorGroup ?? params.teamAuditorGroup);
@@ -195,6 +196,7 @@ function Settings(props) {
         sesNotificationsEnabled,
         snsNotificationsEnabled,
         slackNotificationsEnabled,
+        slackAuditNotificationsChannel,
         sesSourceEmail,
         sesSourceArn,
         slackToken,
@@ -227,8 +229,9 @@ function Settings(props) {
       setSesNotificationsEnabled(data?.sesNotificationsEnabled ?? false);
       setSnsNotificationsEnabled(data?.snsNotificationsEnabled ?? false);
       setSlackNotificationsEnabled(data?.slackNotificationsEnabled ?? false);
+      setSlackAuditNotificationsChannel(data?.slackAuditNotificationsChannel ?? "");
       setSesSourceEmail(data?.sesSourceEmail ?? "");
-      setSesSourceArn(data?.sesSourceArn ?? "" );
+      setSesSourceArn(data?.sesSourceArn ?? "");
       setSlackToken(data?.slackToken ?? "");
       setTeamAdminGroup(data?.teamAdminGroup ?? params.teamAdminGroup);
       setTeamAuditorGroup(data?.teamAuditorGroup ?? params.teamAuditorGroup);
@@ -461,6 +464,17 @@ function Settings(props) {
                   )}
                 </>
               </div>
+              {slackNotificationsEnabled === true && <div>
+                <Box variant="awsui-key-label">Slack Audit Channel</Box>
+                <>
+                  {" "}
+                  {slackAuditNotificationsChannel !== null ? (
+                    <div>{slackAuditNotificationsChannel || "<not set>"}</div>
+                  ) : (
+                    <Spinner />
+                  )}
+                </>
+              </div>}
             </SpaceBetween>
           </ColumnLayout>
         </Container>
@@ -731,6 +745,20 @@ function Settings(props) {
                       type="password"
                     >
                       Slack token
+                    </Input>
+                  </FormField>
+                  <FormField
+                    label="Slack Audit Channel"
+                    stretch
+                    description="(Optional) Channel to post notifications about all requests and approvals"
+                  >
+                    <Input value={slackAuditNotificationsChannel}
+                      onChange={(event) => {
+                        setSlackAuditNotificationsChannel(event.detail.value);
+                      }}
+                      type="text"
+                    >
+                      #channel-name
                     </Input>
                   </FormField>
                 </div>
