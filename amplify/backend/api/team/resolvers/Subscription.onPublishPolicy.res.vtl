@@ -1,0 +1,16 @@
+$extensions.setSubscriptionFilter({
+        "filterGroup": [
+            {
+            "filters" : [
+                    {
+                        "fieldName" : "username",
+                        "operator" : "eq",
+                        "value" : $context.identity.username
+                    }
+            ]
+            
+            }
+        ]
+    })
+
+$util.toJson($context.source["onPublishPolicy"])

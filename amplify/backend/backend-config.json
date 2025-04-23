@@ -406,6 +406,22 @@
     }
   },
   "parameters": {
+    "AMPLIFY_function_team06dbb7fcPreTokenGeneration_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "team06dbb7fcPreTokenGeneration"
+        }
+      ]
+    },
+    "AMPLIFY_function_team06dbb7fcPreTokenGeneration_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "team06dbb7fcPreTokenGeneration"
+        }
+      ]
+    },
     "AMPLIFY_function_teamGetPermissionSets_deploymentBucketName": {
       "usedBy": [
         {

@@ -359,21 +359,6 @@ export const listEligibilities = /* GraphQL */ `
         id
         name
         type
-        accounts {
-          name
-          id
-          __typename
-        }
-        ous {
-          name
-          id
-          __typename
-        }
-        permissions {
-          name
-          id
-          __typename
-        }
         ticketNo
         approvalRequired
         duration
@@ -431,16 +416,6 @@ export const getMgmtPermissions = /* GraphQL */ `
     }
   }
 `;
-export const getGroups = /* GraphQL */ `
-  query GetGroups {
-    getGroups {
-      groups
-      userId
-      groupIds
-      __typename
-    }
-  }
-`;
 export const getIdCGroups = /* GraphQL */ `
   query GetIdCGroups {
     getIdCGroups {
@@ -475,20 +450,11 @@ export const getUserPolicy = /* GraphQL */ `
     getUserPolicy(userId: $userId, groupIds: $groupIds) {
       id
       policy {
-        accounts {
-          name
-          id
-          __typename
-        }
-        permissions {
-          name
-          id
-          __typename
-        }
         approvalRequired
         duration
         __typename
       }
+      username
       __typename
     }
   }

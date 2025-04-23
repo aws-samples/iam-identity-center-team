@@ -417,20 +417,11 @@ export const publishPolicy = /* GraphQL */ `
     publishPolicy(result: $result) {
       id
       policy {
-        accounts {
-          name
-          id
-          __typename
-        }
-        permissions {
-          name
-          id
-          __typename
-        }
         approvalRequired
         duration
         __typename
       }
+      username
       __typename
     }
   }

@@ -262,6 +262,7 @@ type MgmtPs {
 type Policy @aws_iam @aws_cognito_user_pools {
   id: String!
   policy: [Entitlement]
+  username: String!
 }
 
 type OUs @aws_iam @aws_cognito_user_pools {
@@ -271,6 +272,7 @@ type OUs @aws_iam @aws_cognito_user_pools {
 input PolicyInput {
   id: String!
   policy: [EntitlementInput]
+  username: String!
 }
 
 input OUsInput {

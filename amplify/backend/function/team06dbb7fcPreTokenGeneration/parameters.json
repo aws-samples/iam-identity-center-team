@@ -1,4 +1,4 @@
 {
-    "teamAdminGroup": "TEAM-admins",
-    "teamAuditorGroup": "TEAM-auditors"
+    "teamAdminGroup": "team-admin",
+    "teamAuditorGroup": "team auditor"
 }

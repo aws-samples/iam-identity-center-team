@@ -317,17 +317,15 @@ export const onPublishPolicy = /* GraphQL */ `
         accounts {
           name
           id
-          __typename
         }
         permissions {
           name
           id
-          __typename
         }
         approvalRequired
         duration
-        __typename
       }
+      username
       __typename
     }
   }
