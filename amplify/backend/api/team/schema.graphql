@@ -373,3 +373,4 @@ type Query {
     @function(name: "teamvalidateRequest-${env}")
     @auth(rules: [{ allow: private }])
 }
+
