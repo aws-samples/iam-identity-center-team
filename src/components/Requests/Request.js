@@ -130,7 +130,6 @@ function Request(props) {
         const policy = result.value.data.onPublishPolicy.policy;
         if (policy?.length > 0) {
           setItem(policy);
-          console.log(policy)
           setAccounts(concatenateAccounts(policy));
         }
         setAccountStatus("finished");
