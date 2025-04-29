@@ -19,7 +19,7 @@ set -xe
 
 if [ -n "$SECRET_NAME" ]; then
   echo "Retrieving GitHub PAT from SecretsManager..."
-  GITHUB_TOKEN=$(aws secretsmanager get-secret-value --secret-id "$SECRET_NAME" --query SecretString --output text)
+  GITHUB_TOKEN=$(aws secretsmanager get-secret-value --secret-id "$SECRET_NAME" --query 'SecretString' --output text | jq -r .token)
   if [ -z "$GITHUB_TOKEN" ]; then
     echo "Error: Failed to retrieve GitHub token from SecretsManager"
     exit 1
@@ -43,7 +43,7 @@ if [ -z "$SECRET_NAME" ]; then
   cd ./deployment
   if [[ ! -z "$TAGS" ]]; then
     if [[ ! -z "$UI_DOMAIN" ]]; then
-      aws cloudformation deploy --region $REGION --template-file template_lbh.yml \
+      aws cloudformation deploy --region $REGION --template-file template.yml \
         --stack-name TEAM-IDC-APP \
         --parameter-overrides \
           Login=$IDC_LOGIN_URL \
@@ -57,7 +57,7 @@ if [ -z "$SECRET_NAME" ]; then
         --tags $TAGS \
         --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
     else
-      aws cloudformation deploy --region $REGION --template-file template_lbh.yml \
+      aws cloudformation deploy --region $REGION --template-file template.yml \
         --stack-name TEAM-IDC-APP \
         --parameter-overrides \
           Login=$IDC_LOGIN_URL \
@@ -72,7 +72,7 @@ if [ -z "$SECRET_NAME" ]; then
     fi
   else
     if [[ ! -z "$UI_DOMAIN" ]]; then
-      aws cloudformation deploy --region $REGION --template-file template_lbh.yml \
+      aws cloudformation deploy --region $REGION --template-file template.yml \
         --stack-name TEAM-IDC-APP \
         --parameter-overrides \
           Login=$IDC_LOGIN_URL \
@@ -85,7 +85,7 @@ if [ -z "$SECRET_NAME" ]; then
           githubToken="$GITHUB_TOKEN" \
         --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
     else
-      aws cloudformation deploy --region $REGION --template-file template_lbh.yml \
+      aws cloudformation deploy --region $REGION --template-file template.yml \
         --stack-name TEAM-IDC-APP \
         --parameter-overrides \
           Login=$IDC_LOGIN_URL \
@@ -101,7 +101,7 @@ else
   cd ./deployment
   if [[ ! -z "$TAGS" ]]; then
     if [[ ! -z "$UI_DOMAIN" ]]; then
-      aws cloudformation deploy --region $REGION --template-file template_lbh.yml \
+      aws cloudformation deploy --region $REGION --template-file template.yml \
         --stack-name TEAM-IDC-APP \
         --parameter-overrides \
           Login=$IDC_LOGIN_URL \
@@ -117,7 +117,7 @@ else
         --tags $TAGS \
         --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
     else
-      aws cloudformation deploy --region $REGION --template-file template_lbh.yml \
+      aws cloudformation deploy --region $REGION --template-file template.yml \
         --stack-name TEAM-IDC-APP \
         --parameter-overrides \
           Login=$IDC_LOGIN_URL \
@@ -134,7 +134,7 @@ else
     fi
   else
     if [[ ! -z "$UI_DOMAIN" ]]; then
-      aws cloudformation deploy --region $REGION --template-file template_lbh.yml \
+      aws cloudformation deploy --region $REGION --template-file template.yml \
         --stack-name TEAM-IDC-APP \
         --parameter-overrides \
           Login=$IDC_LOGIN_URL \
@@ -149,7 +149,7 @@ else
           githubToken="$GITHUB_TOKEN" \
         --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
     else
-      aws cloudformation deploy --region $REGION --template-file template_lbh.yml \
+      aws cloudformation deploy --region $REGION --template-file template.yml \
         --stack-name TEAM-IDC-APP \
         --parameter-overrides \
           Login=$IDC_LOGIN_URL \

@@ -23,6 +23,15 @@ else
   export AWS_PROFILE=$TEAM_ACCOUNT_PROFILE
 fi
 
+if [ -n "$SECRET_NAME" ]; then
+  echo "Retrieving GitHub PAT from SecretsManager..."
+  GITHUB_TOKEN=$(aws secretsmanager get-secret-value --secret-id "$SECRET_NAME" --query 'SecretString' --output text | jq -r .token)
+  if [ -z "$GITHUB_TOKEN" ]; then
+    echo "Error: Failed to retrieve GitHub token from SecretsManager"
+    exit 1
+  fi
+fi
+
 if [ -z "$SECRET_NAME" ]; then
   git remote remove origin
   git remote add origin codecommit::$REGION://team-idc-app
@@ -31,7 +40,7 @@ if [ -z "$SECRET_NAME" ]; then
 
   if [[ ! -z "$TAGS" ]]; then
     if [[ ! -z "$UI_DOMAIN" ]]; then
-      aws cloudformation deploy --region $REGION --template-file template_lbh.yml \
+      aws cloudformation deploy --region $REGION --template-file template.yml \
         --stack-name TEAM-IDC-APP \
         --parameter-overrides \
           Login=$IDC_LOGIN_URL \
@@ -41,10 +50,11 @@ if [ -z "$SECRET_NAME" ]; then
           tags="$TAGS" \
           teamAccount="$TEAM_ACCOUNT" \
           customAmplifyDomain="$UI_DOMAIN" \
+          githubToken="$GITHUB_TOKEN" \
         --tags $TAGS \
         --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
     else
-      aws cloudformation deploy --region $REGION --template-file template_lbh.yml \
+      aws cloudformation deploy --region $REGION --template-file template.yml \
         --stack-name TEAM-IDC-APP \
         --parameter-overrides \
           Login=$IDC_LOGIN_URL \
@@ -53,12 +63,13 @@ if [ -z "$SECRET_NAME" ]; then
           teamAuditGroup="$TEAM_AUDITOR_GROUP" \
           tags="$TAGS" \
           teamAccount="$TEAM_ACCOUNT" \
+          githubToken="$GITHUB_TOKEN" \
         --tags $TAGS \
         --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
     fi
   else
     if [[ ! -z "$UI_DOMAIN" ]]; then
-      aws cloudformation deploy --region $REGION --template-file template_lbh.yml \
+      aws cloudformation deploy --region $REGION --template-file template.yml \
         --stack-name TEAM-IDC-APP \
         --parameter-overrides \
           Login=$IDC_LOGIN_URL \
@@ -68,9 +79,10 @@ if [ -z "$SECRET_NAME" ]; then
           teamAccount="$TEAM_ACCOUNT" \
           tags="$TAGS" \
           customAmplifyDomain="$UI_DOMAIN" \
+          githubToken="$GITHUB_TOKEN" \
         --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
     else
-      aws cloudformation deploy --region $REGION --template-file template_lbh.yml \
+      aws cloudformation deploy --region $REGION --template-file template.yml \
         --stack-name TEAM-IDC-APP \
         --parameter-overrides \
           Login=$IDC_LOGIN_URL \
@@ -78,6 +90,7 @@ if [ -z "$SECRET_NAME" ]; then
           teamAdminGroup="$TEAM_ADMIN_GROUP" \
           teamAuditGroup="$TEAM_AUDITOR_GROUP" \
           teamAccount="$TEAM_ACCOUNT" \
+          githubToken="$GITHUB_TOKEN" \
         --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
     fi
   fi
@@ -87,7 +100,7 @@ if [ -z "$SECRET_NAME" ]; then
 else
   if [[ ! -z "$TAGS" ]]; then
     if [[ ! -z "$UI_DOMAIN" ]]; then
-      aws cloudformation deploy --region $REGION --template-file template_lbh.yml \
+      aws cloudformation deploy --region $REGION --template-file template.yml \
         --stack-name TEAM-IDC-APP \
         --parameter-overrides \
           Login=$IDC_LOGIN_URL \
@@ -99,10 +112,11 @@ else
           customAmplifyDomain="$UI_DOMAIN" \
           customRepository="Yes" \
           customRepositorySecretName="$SECRET_NAME" \
+          githubToken="$GITHUB_TOKEN" \
         --tags $TAGS \
         --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
     else
-      aws cloudformation deploy --region $REGION --template-file template_lbh.yml \
+      aws cloudformation deploy --region $REGION --template-file template.yml \
         --stack-name TEAM-IDC-APP \
         --parameter-overrides \
           Login=$IDC_LOGIN_URL \
@@ -113,12 +127,13 @@ else
           teamAccount="$TEAM_ACCOUNT" \
           customRepository="Yes" \
           customRepositorySecretName="$SECRET_NAME" \
+          githubToken="$GITHUB_TOKEN" \
         --tags $TAGS \
         --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
     fi
   else
     if [[ ! -z "$UI_DOMAIN" ]]; then
-      aws cloudformation deploy --region $REGION --template-file template_lbh.yml \
+      aws cloudformation deploy --region $REGION --template-file template.yml \
         --stack-name TEAM-IDC-APP \
         --parameter-overrides \
           Login=$IDC_LOGIN_URL \
@@ -130,9 +145,10 @@ else
           customRepositorySecretName="$SECRET_NAME" \
           tags="$TAGS" \
           customAmplifyDomain="$UI_DOMAIN" \
+          githubToken="$GITHUB_TOKEN" \
         --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
     else
-      aws cloudformation deploy --region $REGION --template-file template_lbh.yml \
+      aws cloudformation deploy --region $REGION --template-file template.yml \
         --stack-name TEAM-IDC-APP \
         --parameter-overrides \
           Login=$IDC_LOGIN_URL \
@@ -142,6 +158,7 @@ else
           customRepository="Yes" \
           customRepositorySecretName="$SECRET_NAME" \
           teamAccount="$TEAM_ACCOUNT" \
+          githubToken="$GITHUB_TOKEN" \
         --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
     fi
   fi

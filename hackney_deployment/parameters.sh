@@ -21,7 +21,9 @@ TEAM_ADMIN_GROUP="team-test-org-cloud-engineering"
 TEAM_AUDITOR_GROUP="team-test-org-security-team"
 TAGS="Application=TEAM Environment=dev TeamEmail=cloudengineering@hackney.gov.uk"
 CLOUDTRAIL_AUDIT_LOGS=arn:aws:cloudtrail:eu-west-2:482016828483:eventdatastore/9d489d5b-629c-40cd-83b0-8558d4323859
-SECRET_NAME=ce-team-repo-token-classic
+SECRET_NAME=ce-team-classic-gh-token
+
+
 
 # Uncomment the next line only if you have a custom domain
 # UI_DOMAIN=portal.teamtest.online
