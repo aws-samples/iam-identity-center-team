@@ -99,7 +99,7 @@ Resources:
                 - '# 12.0.1 Updates auth lambdas to node18'
                 - npm i -g @aws-amplify/cli@12.12.6
                 - '# Update deployment parameters with helper script'
-                - node ./external/iam-identity-center-team/parameters.js
+                - node ce-team/external/iam-identity-center-team/parameters.js
             build:
               commands:
                 - npm i -S graphql-ttl-transformer graphql-ttl-transformer-v2-beta
