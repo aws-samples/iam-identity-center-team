@@ -1,0 +1,229 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CloudFormation Template for Amplify-GitHub Integration
+Parameters:
+  Login:
+    Type: String
+    Description: IAM IDC Login URL
+  CloudTrailAuditLogs:
+    Type: String
+    AllowedPattern: (read_write|read|write|none|arn.*)
+    Description: Which events should be logged on the TEAM Application Cloudtrail
+      Lake EventDataStore.  Acceptable values are "read","write","read_write",
+      and "none".  You may also enter the arn of an existing Cloudtrail Lake
+      EDS.
+    Default: read_write
+  teamAdminGroup:
+    Type: String
+    Description: TEAM application Admin group
+  teamAuditGroup:
+    Type: String
+    Description: TEAM application Auditor group
+  tags:
+    Type: String
+    Description: TEAM application tags
+    Default: "Application=Team Environment=dev TeamEmail=cloudengineering@hackney.gov.uk"
+  teamAccount:
+    Type: String
+    Description: TEAM deployment account ID
+  customAmplifyDomain:
+    Type: String
+    Description: Custom domain for the TEAM application
+    Default: ''
+  gitHubURL:
+    Type: String
+    Default: 'https://github.com/LBHackney-IT/ce-team'
+  githubToken:
+    Type: String
+    NoEcho: true
+    Description: GitHub personal access token (PAT) used for Amplify OAuth.
+
+
+Conditions:
+  IsEmptyCloudTrailAuditLogs: !Equals
+    - !Ref CloudTrailAuditLogs
+    - ''
+
+Resources:
+  TriggerAmplifyBuild:
+    Type: Custom::TriggerAmplifyBuild
+    Properties:
+      ServiceToken: !GetAtt 'TriggerBuildLambda.Arn'
+      appId: !GetAtt AmplifyApp.AppId
+      branchName: main
+      branch: !GetAtt AmplifyBranch.Arn
+
+  AmplifyRole:
+    Type: AWS::IAM::Role
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W9
+            reason: This is the main Amplify service role.
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - amplify.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: /
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AdministratorAccess
+
+  AmplifyApp:
+    Type: AWS::Amplify::App
+    Properties:
+      Name: TEAM-IDC-APP
+      Repository: !Ref gitHubURL
+      Description: Temporary Elevated Access Management Application
+      CustomRules:
+        - Source: /<*>
+          Status: 404
+          Target: /index.html
+        - Source: </^[^.]+$|\.(?!(css|gif|ico|jpg|js|png|txt|svg|woff|ttf|map|json)$)([^.]+$)/>
+          Status: 200
+          Target: /index.html
+      EnvironmentVariables:
+        - Name: AMPLIFY_DESTRUCTIVE_UPDATES
+          Value: true
+      OauthToken: !Ref githubToken
+      BuildSpec: |-
+        version: 1
+        backend:
+          phases:
+            preBuild:
+              commands:
+                - '# 12.0.1 Updates auth lambdas to node18'
+                - npm i -g @aws-amplify/cli@12.12.6
+                - '# Update deployment parameters with helper script'
+                - node parameters.js
+            build:
+              commands:
+                - npm i -S graphql-ttl-transformer graphql-ttl-transformer-v2-beta
+                - '# Execute Amplify CLI with the helper script'
+                - update-alternatives --install /usr/bin/python3 python3 /usr/local/bin/python3.9 11
+                - /usr/local/bin/pip3.9 install --user pipenv==2023.6.12
+                - amplifyPush --simple --allow-destructive-graphql-schema-update
+        frontend:
+          phases:
+            preBuild:
+              commands:
+                - npm ci
+            build:
+              commands:
+                - npm run build
+          artifacts:
+            baseDirectory: build
+            files:
+              - '**/*'
+          cache:
+            paths:
+              - node_modules/**/*
+      Tags:
+        - Key: Name
+          Value: TEAM
+      IAMServiceRole: !GetAtt AmplifyRole.Arn
+
+  AmplifyBranch:
+    Type: AWS::Amplify::Branch
+    Properties:
+      BranchName: main
+      AppId: !GetAtt AmplifyApp.AppId
+      EnableAutoBuild: true
+      EnvironmentVariables:
+        - Name: SSO_LOGIN
+          Value: !Ref Login
+        - Name: TEAM_ACCOUNT
+          Value: !Ref teamAccount
+        - Name: CLOUDTRAIL_AUDIT_LOGS
+          Value: !If
+            - IsEmptyCloudTrailAuditLogs
+            - read_write
+            - !Ref CloudTrailAuditLogs
+        - Name: TEAM_ADMIN_GROUP
+          Value: !Ref teamAdminGroup
+        - Name: TEAM_AUDITOR_GROUP
+          Value: !Ref teamAuditGroup
+        - Name: TAGS
+          Value: !Ref tags
+        - Name: AMPLIFY_CUSTOM_DOMAIN
+          Value: !Ref customAmplifyDomain
+        - Name: _CUSTOM_IMAGE
+          Value: amplify:al2
+      Tags:
+        - Key: Branch
+          Value: main
+
+  TriggerBuildLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: index.handler
+      Runtime: python3.9
+      Role: !GetAtt AmplifyLambdaRole.Arn
+      Timeout: 120
+      Architectures:
+        - arm64
+      Code:
+        ZipFile: |
+          import json
+          import cfnresponse
+          import boto3
+          import logging
+          from botocore.exceptions import ClientError
+          client = boto3.client('amplify')
+          logger = logging.getLogger()
+          logger.setLevel(logging.INFO)
+          def handler(event, context):
+              logger.info("Received event: %s" % json.dumps(event))
+              appId = event['ResourceProperties']['appId']
+              branchName = event['ResourceProperties']['branchName']
+              result = cfnresponse.SUCCESS
+              try:
+                  if event['RequestType'] == 'Create' or event['RequestType'] == 'Update':
+                      response = client.start_job(
+                          appId = appId,
+                          branchName = branchName,
+                          jobType='RELEASE'
+                      )
+                  elif event['RequestType'] == 'Delete':
+                      pass
+              except ClientError as e:
+                  logger.error('Error: %s', e)
+                  result = cfnresponse.FAILED
+              cfnresponse.send(event, context, result, {})
+
+  AmplifyLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Path: /
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: AmplifyLambdaPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Sid: AllowLogging
+                Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: '*'
+              - Sid: startBuild
+                Effect: Allow
+                Action:
+                  - amplify:StartJob
+                Resource: '*'
+
+Outputs:
+  DefaultDomain:
+    Value: !GetAtt AmplifyApp.DefaultDomain
