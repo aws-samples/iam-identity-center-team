@@ -12,17 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-IDC_LOGIN_URL=https://d-90676dxxxx.awsapps.com/start
-REGION=us-east-1
-TEAM_ACCOUNT=123456789101
-ORG_MASTER_PROFILE=org_master_profile
-TEAM_ACCOUNT_PROFILE=team_account_profile
-TEAM_ADMIN_GROUP="team_admin_group_name"
-TEAM_AUDITOR_GROUP="team_auditor_group_name"
+IDC_LOGIN_URL=https://easyfundraising.awsapps.com/start
+REGION=eu-west-1
+TEAM_ACCOUNT=182822471806
+ORG_MASTER_PROFILE=default
+TEAM_ACCOUNT_PROFILE=default
+TEAM_ADMIN_GROUP="team-devops"
+TEAM_AUDITOR_GROUP="team-devops"
 TAGS="project=iam-identity-center-team environment=prod"
-CLOUDTRAIL_AUDIT_LOGS=arn:aws:cloudtrail:us-east-1:123456789101:eventdatastore/e646f20d-7959-4682-be84-6c5b8a37cf15
+CLOUDTRAIL_AUDIT_LOGS=arn:aws:cloudtrail:eu-west-1:182822471806:eventdatastore/1c6fb7ab-a148-462f-8a56-2df6645e3692
 SECRET_NAME=TEAM-IDC-APP
-
 # Uncomment the next line only if you have a custom domain
 # UI_DOMAIN=portal.teamtest.online
 
