@@ -19,7 +19,7 @@ ORG_MASTER_PROFILE=cloud-engineering-team-775052747630 # this is the local aws c
 TEAM_ACCOUNT_PROFILE=cloud-engineering-team-482016828483
 TEAM_ADMIN_GROUP="team-test-org-cloud-engineering"
 TEAM_AUDITOR_GROUP="team-test-org-security-team"
-TAGS="Application=TEAM Environment=dev TeamEmail=cloudengineering@hackney.gov.uk"
+TAGS="Application=TEAM Environment=dev TeamEmail=cloudengineering@hackney.gov.uk Confidentiality=Internal"
 CLOUDTRAIL_AUDIT_LOGS=arn:aws:cloudtrail:eu-west-2:482016828483:eventdatastore/9d489d5b-629c-40cd-83b0-8558d4323859
 SECRET_NAME=ce-team-classic-gh-token
 

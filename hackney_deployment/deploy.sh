@@ -40,7 +40,7 @@ if [ -z "$SECRET_NAME" ]; then
   git remote add origin codecommit::$REGION://team-idc-app
   git push origin main
 
-  cd ./deployment
+  cd ./hackney_deployment
   if [[ ! -z "$TAGS" ]]; then
     if [[ ! -z "$UI_DOMAIN" ]]; then
       aws cloudformation deploy --region $REGION --template-file template.yml \
@@ -98,7 +98,7 @@ if [ -z "$SECRET_NAME" ]; then
     fi
   fi
 else
-  cd ./deployment
+  cd ./hackney_deployment
   if [[ ! -z "$TAGS" ]]; then
     if [[ ! -z "$UI_DOMAIN" ]]; then
       aws cloudformation deploy --region $REGION --template-file template.yml \

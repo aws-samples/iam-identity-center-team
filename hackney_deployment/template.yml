@@ -21,7 +21,7 @@ Parameters:
   tags:
     Type: String
     Description: TEAM application tags
-    Default: "Application=Team Environment=dev TeamEmail=cloudengineering@hackney.gov.uk"
+    Default: "Application=Team Environment=dev TeamEmail=cloudengineering@hackney.gov.uk Confidentiality=Internal"
   teamAccount:
     Type: String
     Description: TEAM deployment account ID
@@ -29,19 +29,27 @@ Parameters:
     Type: String
     Description: Custom domain for the TEAM application
     Default: ''
+  customRepository:
+    Type: String
+    Description: Use a custom repository for the TEAM application?
   gitHubURL:
     Type: String
-    Default: 'https://github.com/LBHackney-IT/ce-team'
+    Default: 'https://github.com/LBHackney-IT/iam-identity-center-team'  
   githubToken:
     Type: String
     NoEcho: true
     Description: GitHub personal access token (PAT) used for Amplify OAuth.
+  customRepositorySecretName:
+    Type: String
+    Description: Name of the secret in AWS Secrets Manager
+    Default: ''
 
 
 Conditions:
   IsEmptyCloudTrailAuditLogs: !Equals
     - !Ref CloudTrailAuditLogs
     - ''
+  UseExternalRepo: !Equals [!Ref customRepository, 'Yes']
 
 Resources:
   TriggerAmplifyBuild:
@@ -89,7 +97,11 @@ Resources:
       EnvironmentVariables:
         - Name: AMPLIFY_DESTRUCTIVE_UPDATES
           Value: true
-      OauthToken: !Ref githubToken
+      OauthToken: !If
+        - UseExternalRepo
+        - !Sub >-
+          {{resolve:secretsmanager:${customRepositorySecretName}:SecretString:AccessToken}}
+        - !Ref 'AWS::NoValue'
       BuildSpec: |-
         version: 1
         backend:
@@ -97,9 +109,9 @@ Resources:
             preBuild:
               commands:
                 - '# 12.0.1 Updates auth lambdas to node18'
-                - npm i -g @aws-amplify/cli@13.0.1
+                - npm i -g @aws-amplify/cli@12.14.4
                 - '# Update deployment parameters with helper script'
-                - node ce-team/external/iam-identity-center-team/parameters.js
+                - node parameters.js
             build:
               commands:
                 - npm i -S graphql-ttl-transformer graphql-ttl-transformer-v2-beta
