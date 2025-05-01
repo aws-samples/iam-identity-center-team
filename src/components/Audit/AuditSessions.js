@@ -441,7 +441,7 @@ function AuditSessions(props) {
                   />
                   <ValueWithLabel
                     label="End Time"
-                    children={convertAwsDateTime(selectedItems[0].endTime)}
+                    children={selectedItems[0].endTime ? convertAwsDateTime(selectedItems[0].endTime) : "-"}
                   />
                 </SpaceBetween>
               </ColumnLayout>
