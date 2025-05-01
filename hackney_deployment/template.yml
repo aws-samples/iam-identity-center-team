@@ -97,7 +97,7 @@ Resources:
             preBuild:
               commands:
                 - '# 12.0.1 Updates auth lambdas to node18'
-                - npm i -g @aws-amplify/cli@12.12.6
+                - npm i -g @aws-amplify/cli@13.0.1
                 - '# Update deployment parameters with helper script'
                 - node ce-team/external/iam-identity-center-team/parameters.js
             build:
