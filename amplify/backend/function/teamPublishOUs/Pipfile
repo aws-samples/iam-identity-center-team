@@ -9,6 +9,8 @@ verify_ssl = true
 src = {editable = true, path = "./src"}
 requests = "*"
 requests-aws-sign = "*"
+setuptools = "*"
+wheel = "*"
 
 [requires]
 python_version = "3.9"

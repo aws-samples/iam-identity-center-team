@@ -11,6 +11,8 @@ requests = "*"
 requests-aws-sign = "*"
 boto3 = "*"
 botocore = "*"
+setuptools = "*"
+wheel = "*"
 
 [requires]
 python_version = "3.9"
