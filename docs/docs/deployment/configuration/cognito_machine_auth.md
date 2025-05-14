@@ -61,10 +61,3 @@ In order to use machine authentication on the Graph API, you need:
 1. Obtain the client Id and Secret from the Cognito User Pool Client named `machine_auth` or using the **get-machine-auth-credentials.sh** script.
 2. Use these to obtain a token from the token endpoint for the Cognito User Pool. This process is detailed in the [AWS Cognito Guide](https://docs.aws.amazon.com/cognito/latest/developerguide/token-endpoint.html).
 3. Use this token in the `Authorization` header when making calls to the TEAM Graph API. 
-
-### Using the Terraform Provider
-
-Explore the community-supported [Terraform provider designed for awsteam](https://registry.terraform.io/providers/brittandeyoung/awsteam/latest), enabling seamless configuration management through Terraform. Machine authentication credentials are required to use the provider.
-
-> The Terraform provider is maintained independently of the aws-samples community, and the TEAM authors do not assume responsibility for its maintenance.
-{: .important}

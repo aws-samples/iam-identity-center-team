@@ -80,8 +80,22 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
+                "username": {
+                    "name": "username",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "approver": {
                     "name": "approver",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "approverId": {
+                    "name": "approverId",
                     "isArray": false,
                     "type": "String",
                     "isRequired": false,
@@ -110,6 +124,13 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
+                "revokerId": {
+                    "name": "revokerId",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "endTime": {
                     "name": "endTime",
                     "isArray": false,
@@ -126,6 +147,13 @@ export const schema = {
                 },
                 "revokeComment": {
                     "name": "revokeComment",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "session_duration": {
+                    "name": "session_duration",
                     "isArray": false,
                     "type": "String",
                     "isRequired": false,
@@ -176,7 +204,7 @@ export const schema = {
                         "name": "byApproverAndStatus",
                         "queryField": "requestByApproverAndStatus",
                         "fields": [
-                            "approver",
+                            "approverId",
                             "status"
                         ]
                     }
@@ -200,23 +228,28 @@ export const schema = {
                                 "provider": "userPools",
                                 "ownerField": "owner",
                                 "allow": "owner",
-                                "identityClaim": "cognito:username",
                                 "operations": [
                                     "create",
-                                    "update",
-                                    "delete",
                                     "read"
-                                ]
+                                ],
+                                "identityClaim": "cognito:username"
                             },
                             {
                                 "provider": "userPools",
                                 "ownerField": "approver_ids",
                                 "allow": "owner",
                                 "operations": [
-                                    "update",
                                     "read"
                                 ],
                                 "identityClaim": "cognito:username"
+                            },
+                            {
+                                "allow": "private",
+                                "provider": "iam",
+                                "operations": [
+                                    "read",
+                                    "update"
+                                ]
                             }
                         ]
                     }
@@ -229,7 +262,7 @@ export const schema = {
                 "id": {
                     "name": "id",
                     "isArray": false,
-                    "type": "ID",
+                    "type": "String",
                     "isRequired": true,
                     "attributes": []
                 },
@@ -283,6 +316,13 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
+                "expireAt": {
+                    "name": "expireAt",
+                    "isArray": false,
+                    "type": "AWSTimestamp",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "createdAt": {
                     "name": "createdAt",
                     "isArray": false,
@@ -332,6 +372,18 @@ export const schema = {
                             {
                                 "provider": "userPools",
                                 "ownerField": "owner",
+                                "allow": "owner",
+                                "identityClaim": "cognito:username",
+                                "operations": [
+                                    "create",
+                                    "update",
+                                    "delete",
+                                    "read"
+                                ]
+                            },
+                            {
+                                "provider": "userPools",
+                                "ownerField": "username",
                                 "allow": "owner",
                                 "identityClaim": "cognito:username",
                                 "operations": [
@@ -413,6 +465,13 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
+                "modifiedBy": {
+                    "name": "modifiedBy",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "createdAt": {
                     "name": "createdAt",
                     "isArray": false,
@@ -447,6 +506,210 @@ export const schema = {
                                 "allow": "groups",
                                 "groups": [
                                     "Admin"
+                                ],
+                                "operations": [
+                                    "create",
+                                    "update",
+                                    "delete",
+                                    "read"
+                                ]
+                            },
+                            {
+                                "groupClaim": "scope",
+                                "provider": "userPools",
+                                "allow": "groups",
+                                "groups": [
+                                    "api/admin"
+                                ],
+                                "operations": [
+                                    "create",
+                                    "update",
+                                    "delete",
+                                    "read"
+                                ]
+                            },
+                            {
+                                "allow": "private",
+                                "operations": [
+                                    "read"
+                                ]
+                            },
+                            {
+                                "allow": "private",
+                                "provider": "iam",
+                                "operations": [
+                                    "read",
+                                    "update"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "Settings": {
+            "name": "Settings",
+            "fields": {
+                "id": {
+                    "name": "id",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "duration": {
+                    "name": "duration",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "expiry": {
+                    "name": "expiry",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "comments": {
+                    "name": "comments",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "ticketNo": {
+                    "name": "ticketNo",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "approval": {
+                    "name": "approval",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "modifiedBy": {
+                    "name": "modifiedBy",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "sesNotificationsEnabled": {
+                    "name": "sesNotificationsEnabled",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "snsNotificationsEnabled": {
+                    "name": "snsNotificationsEnabled",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "slackNotificationsEnabled": {
+                    "name": "slackNotificationsEnabled",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "slackAuditNotificationsChannel": {
+                    "name": "slackAuditNotificationsChannel",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "sesSourceEmail": {
+                    "name": "sesSourceEmail",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "sesSourceArn": {
+                    "name": "sesSourceArn",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "slackToken": {
+                    "name": "slackToken",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "teamAdminGroup": {
+                    "name": "teamAdminGroup",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "teamAuditorGroup": {
+                    "name": "teamAuditorGroup",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "createdAt": {
+                    "name": "createdAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isReadOnly": true
+                },
+                "updatedAt": {
+                    "name": "updatedAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isReadOnly": true
+                }
+            },
+            "syncable": true,
+            "pluralName": "Settings",
+            "attributes": [
+                {
+                    "type": "model",
+                    "properties": {}
+                },
+                {
+                    "type": "auth",
+                    "properties": {
+                        "rules": [
+                            {
+                                "groupClaim": "cognito:groups",
+                                "provider": "userPools",
+                                "allow": "groups",
+                                "groups": [
+                                    "Admin"
+                                ],
+                                "operations": [
+                                    "create",
+                                    "update",
+                                    "delete",
+                                    "read"
+                                ]
+                            },
+                            {
+                                "groupClaim": "scope",
+                                "provider": "userPools",
+                                "allow": "groups",
+                                "groups": [
+                                    "api/admin"
                                 ],
                                 "operations": [
                                     "create",
@@ -527,6 +790,27 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
+                "approvalRequired": {
+                    "name": "approvalRequired",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "duration": {
+                    "name": "duration",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "modifiedBy": {
+                    "name": "modifiedBy",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "createdAt": {
                     "name": "createdAt",
                     "isArray": false,
@@ -570,9 +854,31 @@ export const schema = {
                                 ]
                             },
                             {
+                                "groupClaim": "scope",
+                                "provider": "userPools",
+                                "allow": "groups",
+                                "groups": [
+                                    "api/admin"
+                                ],
+                                "operations": [
+                                    "create",
+                                    "update",
+                                    "delete",
+                                    "read"
+                                ]
+                            },
+                            {
                                 "allow": "private",
                                 "operations": [
                                     "read"
+                                ]
+                            },
+                            {
+                                "allow": "private",
+                                "provider": "iam",
+                                "operations": [
+                                    "read",
+                                    "update"
                                 ]
                             }
                         ]
@@ -583,6 +889,25 @@ export const schema = {
     },
     "enums": {},
     "nonModels": {
+        "data": {
+            "name": "data",
+            "fields": {
+                "name": {
+                    "name": "name",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "id": {
+                    "name": "id",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                }
+            }
+        },
         "Accounts": {
             "name": "Accounts",
             "fields": {
@@ -602,88 +927,42 @@ export const schema = {
                 }
             }
         },
-        "OUs": {
-            "name": "OUs",
+        "Entitlement": {
+            "name": "Entitlement",
             "fields": {
-                "Id": {
-                    "name": "Id",
-                    "isArray": false,
-                    "type": "String",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "Arn": {
-                    "name": "Arn",
-                    "isArray": false,
-                    "type": "String",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "Name": {
-                    "name": "Name",
-                    "isArray": false,
-                    "type": "String",
-                    "isRequired": true,
-                    "attributes": []
-                }
-            }
-        },
-        "OU": {
-            "name": "OU",
-            "fields": {
-                "Id": {
-                    "name": "Id",
-                    "isArray": false,
-                    "type": "String",
-                    "isRequired": true,
-                    "attributes": []
-                }
-            }
-        },
-        "Permissions": {
-            "name": "Permissions",
-            "fields": {
-                "Name": {
-                    "name": "Name",
-                    "isArray": false,
-                    "type": "String",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "Arn": {
-                    "name": "Arn",
-                    "isArray": false,
-                    "type": "String",
-                    "isRequired": true,
-                    "attributes": []
-                }
-            }
-        },
-        "Groups": {
-            "name": "Groups",
-            "fields": {
-                "groups": {
-                    "name": "groups",
+                "accounts": {
+                    "name": "accounts",
                     "isArray": true,
-                    "type": "String",
+                    "type": {
+                        "nonModel": "data"
+                    },
                     "isRequired": false,
                     "attributes": [],
                     "isArrayNullable": true
                 },
-                "userId": {
-                    "name": "userId",
+                "permissions": {
+                    "name": "permissions",
+                    "isArray": true,
+                    "type": {
+                        "nonModel": "data"
+                    },
+                    "isRequired": false,
+                    "attributes": [],
+                    "isArrayNullable": true
+                },
+                "approvalRequired": {
+                    "name": "approvalRequired",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "duration": {
+                    "name": "duration",
                     "isArray": false,
                     "type": "String",
                     "isRequired": false,
                     "attributes": []
-                },
-                "groupIds": {
-                    "name": "groupIds",
-                    "isArray": true,
-                    "type": "String",
-                    "isRequired": false,
-                    "attributes": [],
-                    "isArrayNullable": true
                 }
             }
         },
@@ -758,47 +1037,43 @@ export const schema = {
                 }
             }
         },
-        "Entitlement": {
-            "name": "Entitlement",
+        "OU": {
+            "name": "OU",
             "fields": {
-                "accounts": {
-                    "name": "accounts",
-                    "isArray": true,
-                    "type": {
-                        "nonModel": "data"
-                    },
-                    "isRequired": false,
-                    "attributes": [],
-                    "isArrayNullable": true
-                },
-                "permissions": {
-                    "name": "permissions",
-                    "isArray": true,
-                    "type": {
-                        "nonModel": "data"
-                    },
-                    "isRequired": false,
-                    "attributes": [],
-                    "isArrayNullable": true
+                "Id": {
+                    "name": "Id",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
                 }
             }
         },
-        "data": {
-            "name": "data",
+        "Groups": {
+            "name": "Groups",
             "fields": {
-                "name": {
-                    "name": "name",
+                "groups": {
+                    "name": "groups",
+                    "isArray": true,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isArrayNullable": true
+                },
+                "userId": {
+                    "name": "userId",
                     "isArray": false,
                     "type": "String",
                     "isRequired": false,
                     "attributes": []
                 },
-                "id": {
-                    "name": "id",
-                    "isArray": false,
+                "groupIds": {
+                    "name": "groupIds",
+                    "isArray": true,
                     "type": "String",
                     "isRequired": false,
-                    "attributes": []
+                    "attributes": [],
+                    "isArrayNullable": true
                 }
             }
         },
@@ -814,8 +1089,103 @@ export const schema = {
                     "isArrayNullable": true
                 }
             }
+        },
+        "Permissions": {
+            "name": "Permissions",
+            "fields": {
+                "Name": {
+                    "name": "Name",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "Arn": {
+                    "name": "Arn",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "Duration": {
+                    "name": "Duration",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                }
+            }
+        },
+        "MgmtPs": {
+            "name": "MgmtPs",
+            "fields": {
+                "permissions": {
+                    "name": "permissions",
+                    "isArray": true,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isArrayNullable": true
+                }
+            }
+        },
+        "Policy": {
+            "name": "Policy",
+            "fields": {
+                "id": {
+                    "name": "id",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "policy": {
+                    "name": "policy",
+                    "isArray": true,
+                    "type": {
+                        "nonModel": "Entitlement"
+                    },
+                    "isRequired": false,
+                    "attributes": [],
+                    "isArrayNullable": true
+                }
+            }
+        },
+        "OUs": {
+            "name": "OUs",
+            "fields": {
+                "ous": {
+                    "name": "ous",
+                    "isArray": false,
+                    "type": "AWSJSON",
+                    "isRequired": false,
+                    "attributes": []
+                }
+            }
+        },
+        "Permission": {
+            "name": "Permission",
+            "fields": {
+                "id": {
+                    "name": "id",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "permissions": {
+                    "name": "permissions",
+                    "isArray": true,
+                    "type": {
+                        "nonModel": "Permissions"
+                    },
+                    "isRequired": false,
+                    "attributes": [],
+                    "isArrayNullable": true
+                }
+            }
         }
     },
-    "codegenVersion": "3.3.1",
-    "version": "adee63136a5ec7298cb70dc572353349"
+    "codegenVersion": "3.4.4",
+    "version": "fc07e42e84b950bb45581d50e1b5438e"
 };

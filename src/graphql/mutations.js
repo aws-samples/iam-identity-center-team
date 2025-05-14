@@ -245,6 +245,7 @@ export const createSettings = /* GraphQL */ `
       sesNotificationsEnabled
       snsNotificationsEnabled
       slackNotificationsEnabled
+      slackAuditNotificationsChannel
       sesSourceEmail
       sesSourceArn
       slackToken
@@ -272,6 +273,7 @@ export const updateSettings = /* GraphQL */ `
       sesNotificationsEnabled
       snsNotificationsEnabled
       slackNotificationsEnabled
+      slackAuditNotificationsChannel
       sesSourceEmail
       sesSourceArn
       slackToken
@@ -299,6 +301,7 @@ export const deleteSettings = /* GraphQL */ `
       sesNotificationsEnabled
       snsNotificationsEnabled
       slackNotificationsEnabled
+      slackAuditNotificationsChannel
       sesSourceEmail
       sesSourceArn
       slackToken
@@ -417,20 +420,11 @@ export const publishPolicy = /* GraphQL */ `
     publishPolicy(result: $result) {
       id
       policy {
-        accounts {
-          name
-          id
-          __typename
-        }
-        permissions {
-          name
-          id
-          __typename
-        }
         approvalRequired
         duration
         __typename
       }
+      username
       __typename
     }
   }

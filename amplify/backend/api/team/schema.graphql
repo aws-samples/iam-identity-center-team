@@ -171,6 +171,7 @@ type Settings
   sesNotificationsEnabled: Boolean
   snsNotificationsEnabled: Boolean
   slackNotificationsEnabled: Boolean
+  slackAuditNotificationsChannel: String
   sesSourceEmail: String
   sesSourceArn: String
   slackToken: String
@@ -261,6 +262,7 @@ type MgmtPs {
 type Policy @aws_iam @aws_cognito_user_pools {
   id: String!
   policy: [Entitlement]
+  username: String!
 }
 
 type OUs @aws_iam @aws_cognito_user_pools {
@@ -270,6 +272,7 @@ type OUs @aws_iam @aws_cognito_user_pools {
 input PolicyInput {
   id: String!
   policy: [EntitlementInput]
+  username: String!
 }
 
 input OUsInput {
@@ -370,3 +373,4 @@ type Query {
     @function(name: "teamvalidateRequest-${env}")
     @auth(rules: [{ allow: private }])
 }
+

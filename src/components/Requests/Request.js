@@ -121,25 +121,30 @@ function Request(props) {
       userId: props.userId,
       groupIds: props.groupIds,
     };
-    fetchPolicy(args).then((data) => {
-      const subscription = API.graphql(
-        graphqlOperation(onPublishPolicy)
-      ).subscribe({
-        next: (result) => {
-          if (result.value.data.onPublishPolicy.id === data.id) {
-            const policy = result.value.data.onPublishPolicy.policy;
-            if (policy.length > 0) {
-              setItem(policy);
-              setAccounts(concatenateAccounts(policy));
-            }
-            setAccountStatus("finished");
-            setPermissionStatus("finished");
-            subscription.unsubscribe();
-          }
-        },
-      });
-    });
+    fetchPolicy(args)
   };
+
+  function publishEvent() {
+    const subscription = API.graphql(graphqlOperation(onPublishPolicy)).subscribe({
+      next: (result) => {
+        const policy = result.value.data.onPublishPolicy.policy;
+        if (policy?.length > 0) {
+          setItem(policy);
+          setAccounts(concatenateAccounts(policy));
+        }
+        setAccountStatus("finished");
+        setPermissionStatus("finished");
+        subscription.unsubscribe();
+      },
+      error: (error) => {
+        console.warn(error);
+        subscription.unsubscribe();
+      }
+    });
+    
+    // Return the subscription to allow external cleanup if needed
+    return subscription;
+  }
 
   function getSettings() {
     getSetting("settings").then((data) => {
@@ -165,6 +170,7 @@ function Request(props) {
     props.addNotification([]);
     getMgmtPs();
     setTime(moment().format());
+    publishEvent()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -303,7 +309,10 @@ function Request(props) {
     const account_approvers = await fetchApprovers(account, "Account");
     if (account_approvers) {
       const data = await getGroupMemberships(account_approvers.groupIds);
-      const requesterIsApprover = checkGroupMembership(props.groupIds, account_approvers.groupIds);
+      const requesterIsApprover = checkGroupMembership(
+        props.groupIds,
+        account_approvers.groupIds
+      );
       // If the requester is also an approver, then we need at least 2 approvers to exist (i.e. at
       // least one person who didn't make the request). Otherwise we only need a single approver to exist.
       const approverGroupMembersRequired = requesterIsApprover ? 2 : 1;
@@ -316,7 +325,10 @@ function Request(props) {
     const ou_approvers = await fetchApprovers(ou.Id, "OU");
     if (ou_approvers) {
       const data = await getGroupMemberships(ou_approvers.groupIds);
-      const requesterIsApprover = checkGroupMembership(props.groupIds, ou_approvers.groupIds);
+      const requesterIsApprover = checkGroupMembership(
+        props.groupIds,
+        ou_approvers.groupIds
+      );
       // If the requester is also an approver, then we need at least 2 approvers to exist (i.e. at
       // least one person who didn't make the request). Otherwise we only need a single approver to exist.
       const approverGroupMembersRequired = requesterIsApprover ? 2 : 1;

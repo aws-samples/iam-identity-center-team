@@ -9,7 +9,6 @@ import awsconfig from "./aws-exports";
 import Nav from "./components/Navigation/Nav";
 import home from "./media/Home.svg";
 import "./index.css";
-import { fetchGroups } from "./components/Shared/RequestService";
 import { Button } from "@awsui/components-react";
 
 const { Header, Content } = Layout;

@@ -18,6 +18,7 @@ Visit our **[Documentation pages](https://aws-samples.github.io/iam-identity-cen
 - [Blog Post](https://aws.amazon.com/blogs/security/temporary-elevated-access-management-with-iam-identity-center/)
 - [ReInforce talk](https://www.youtube.com/watch?v=a1Na2G7TTQ0)
 - [Feedback form](https://www.pulse.aws/survey/PZDTVK85)
+- Explore the community-supported [Terraform provider designed for awsteam](https://registry.terraform.io/providers/awsteam-contrib/awsteam/latest)
 
 ## Feedback 
 
