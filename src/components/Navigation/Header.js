@@ -120,7 +120,7 @@ function Header(props) {
           props.addNotification([]);
         }}
       />
-      <Notification />
+      {/*<Notification />*/}
     </div>
   );
 }
