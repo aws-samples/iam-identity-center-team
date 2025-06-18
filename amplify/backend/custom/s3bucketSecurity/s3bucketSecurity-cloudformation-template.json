@@ -138,7 +138,7 @@
         "Architectures": [
           "arm64"
         ],
-        "Runtime": "python3.9",
+        "Runtime": "python3.10",
         "FunctionName": {
           "Fn::Join": [
             "",

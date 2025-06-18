@@ -1,7 +1,6 @@
 {
   "runtimes": [
-    "python3.8",
-    "python3.9"
+    "python3.10"
   ],
   "description": "Updated layer version 2025-04-10T11:24:15.257Z"
 }
