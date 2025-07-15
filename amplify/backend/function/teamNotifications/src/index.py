@@ -179,61 +179,61 @@ def send_slack_notifications(
                 f"Error posting chat message to channel/user id {recipient_slack_id}: {error}"
             )
 
-        # send audit notifications to channel if defined
-        if slack_audit_notifications_channel and audit_message:
-            try:
-                slack_client.chat_postMessage(
-                    channel=slack_audit_notifications_channel,
-                    text="AWS Access Request Audit Notification",
-                    blocks=[
-                        {
-                            "type": "section",
+    # send audit notifications to channel if defined
+    if slack_audit_notifications_channel and audit_message:
+        try:
+            slack_client.chat_postMessage(
+                channel=slack_audit_notifications_channel,
+                text="AWS Access Request Audit Notification",
+                blocks=[
+                    {
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": f"*{audit_message}*",
+                        },
+                        "accessory": {
+                            "type": "button",
                             "text": {
+                                "type": "plain_text",
+                                "text": "Open TEAM",
+                            },
+                            "url": login_url,
+                            "action_id": "button-action",
+                        },
+                    },
+                    {
+                        "type": "section",
+                        "fields": [
+                            {
                                 "type": "mrkdwn",
-                                "text": f"*{audit_message}*",
+                                "text": f"*Account:*\n{account}",
                             },
-                            "accessory": {
-                                "type": "button",
-                                "text": {
-                                    "type": "plain_text",
-                                    "text": "Open TEAM",
-                                },
-                                "url": login_url,
-                                "action_id": "button-action",
+                            {
+                                "type": "mrkdwn",
+                                "text": f"*Start time:*\n{formatted_date}",
                             },
-                        },
-                        {
-                            "type": "section",
-                            "fields": [
-                                {
-                                    "type": "mrkdwn",
-                                    "text": f"*Account:*\n{account}",
-                                },
-                                {
-                                    "type": "mrkdwn",
-                                    "text": f"*Start time:*\n{formatted_date}",
-                                },
-                                {"type": "mrkdwn", "text": f"*Role:*\n{role}"},
-                                {
-                                    "type": "mrkdwn",
-                                    "text": f"*Duration:*\n{duration_hours} hours",
-                                },
-                                {
-                                    "type": "mrkdwn",
-                                    "text": f"*Justification:*\n{justification}",
-                                },
-                                {
-                                    "type": "mrkdwn",
-                                    "text": f"*Ticket Number:*\n{ticket}",
-                                },
-                            ],
-                        },
-                    ],
-                )
-            except Exception as error:
-                print(
-                    f"Error posting audit message to channel {slack_audit_notifications_channel} (ensure bot is invited to the channel): {error}"
-                )
+                            {"type": "mrkdwn", "text": f"*Role:*\n{role}"},
+                            {
+                                "type": "mrkdwn",
+                                "text": f"*Duration:*\n{duration_hours} hours",
+                            },
+                            {
+                                "type": "mrkdwn",
+                                "text": f"*Justification:*\n{justification}",
+                            },
+                            {
+                                "type": "mrkdwn",
+                                "text": f"*Ticket Number:*\n{ticket}",
+                            },
+                        ],
+                    },
+                ],
+            )
+        except Exception as error:
+            print(
+                f"Error posting audit message to channel {slack_audit_notifications_channel} (ensure bot is invited to the channel): {error}"
+            )
 
 
 def lambda_handler(event: dict, context):
