@@ -7,5 +7,5 @@ TEAM_AUDITOR_GROUP="Team-Auditor"
 TAGS="project=iam-identity-center-team environment=prod"
 CLOUDTRAIL_AUDIT_LOGS=arn:aws:cloudtrail:us-west-2:739275461895:trail/management-events
 GITHUB_OWNER=MayurArsule
-GITHUB_REPO=IAM-TEAM-POC
+GITHUB_REPO=iam-identity-center-team
 GITHUB_OAUTH_TOKEN=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
