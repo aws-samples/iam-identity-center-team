@@ -6,5 +6,6 @@
       ]
     }
   },
-  "lambdaLayers": []
+  "lambdaLayers": [],
+  "runtime": "python3.12"
 }
