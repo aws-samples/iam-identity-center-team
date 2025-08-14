@@ -6,7 +6,7 @@
     },
     "CloudTrailAuditLogs":{
       "Type":"String",
-      "AllowedPattern": "(read_write|read|write|none|arn.*)"
+      "AllowedPattern": "(arn:aws:cloudtrail:us-west-2:739275461895:eventdatastore/0f33d88e-cceb-432e-8c0e-9c567f5d16dc)"
     }
   },
   "Conditions":{
