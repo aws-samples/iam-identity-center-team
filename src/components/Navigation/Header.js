@@ -66,8 +66,8 @@ function Header(props) {
           },
           {
             type: "button",
-            text: "v1.3.0",
-            href: "https://github.com/aws-samples/iam-identity-center-team/releases/tag/v1.3.0",
+            text: "v1.4.0",
+            href: "https://github.com/aws-samples/iam-identity-center-team/releases/tag/v1.4.0",
             external: true,
             externalIconAriaLabel: " (opens in a new tab)",
           },
