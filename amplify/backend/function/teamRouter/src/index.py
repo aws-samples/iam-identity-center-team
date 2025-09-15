@@ -501,6 +501,7 @@ def request_is_updated(status,data,username,request_id):
     return updated
 
 def handler(event, context):
+    print("Starting handler from teamRouter")
     data = event["Records"].pop()["dynamodb"]["NewImage"]
     print("Checking if request is updated")
     status = data["status"]["S"]
