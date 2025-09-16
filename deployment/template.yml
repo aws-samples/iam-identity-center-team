@@ -36,6 +36,10 @@ Parameters:
     Type: String
     Description: Name of the secret in AWS Secrets Manager
     Default: ''
+  customBranch:
+    Type: String
+    Description: Custom branch name to deploy from CodeCommit repository
+    Default: 'main'
 
 Conditions:
   IsEmptyCloudTrailAuditLogs: !Equals [!Ref CloudTrailAuditLogs, ""]
@@ -47,7 +51,7 @@ Resources:
     Properties:
       ServiceToken: !GetAtt 'TriggerBuildLambda.Arn'
       appId: !GetAtt AmplifyApp.AppId
-      branchName: main
+      branchName: !Ref customBranch
       branch: !GetAtt AmplifyBranch.Arn
 
   AmplifyRole:
@@ -138,7 +142,7 @@ Resources:
   AmplifyBranch:
     Type: AWS::Amplify::Branch
     Properties:
-      BranchName: main
+      BranchName: !Ref customBranch
       AppId: !GetAtt AmplifyApp.AppId
       EnableAutoBuild: true
       EnvironmentVariables: 
@@ -163,7 +167,7 @@ Resources:
           Value: amplify:al2
       Tags:
         - Key: Branch
-          Value: main
+          Value: !Ref customBranch
   
   TriggerBuildLambda:
     Type: AWS::Lambda::Function
