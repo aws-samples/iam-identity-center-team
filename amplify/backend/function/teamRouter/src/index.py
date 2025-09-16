@@ -21,6 +21,7 @@ approver_table = dynamodb.Table(approver_table_name)
 policy_table = dynamodb.Table(policy_table_name)
 settings_table = dynamodb.Table(settings_table_name)
 
+preapproval = os.getenv("PREAPPROVAL_SM")
 grant = os.getenv("GRANT_SM")
 revoke = os.getenv("REVOKE_SM")
 reject = os.getenv("REJECT_SM")
@@ -320,9 +321,16 @@ def check_settings():
         
 def invoke_workflow(request, approval_required, notification_config, team_config):
     workflow = None
+    
+    # Pre-approval logic using comment detection
     if approval_required and request["status"] == "pending":
-        print("sending approval")
-        workflow = approval
+        # Check if this is a new request (no pre-approval comment yet)
+        if not request.get("comment") or "Pre-approval validation passed" not in request.get("comment", ""):
+            print("sending to pre-approval workflow")
+            workflow = preapproval
+        else:
+            print("sending approval (pre-approval completed)")
+            workflow = approval
     elif approval_required and request["status"] == "approved" and request["email"] != request["approver"]:
         print("scheduling session")
         workflow = schedule
