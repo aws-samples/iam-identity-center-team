@@ -11,6 +11,21 @@ from dateutil import parser, tz
 
 session = boto3.Session()
 
+# Notification matrix: enable/disable channels per request_status
+NOTIFICATION_MATRIX = {
+    "pending":   {"ses": True, "sns": True, "slack": True},
+    "scheduled": {"ses": True, "sns": True, "slack": True},
+    "expired":   {"ses": True, "sns": True, "slack": True},
+    "ended":     {"ses": True, "sns": True, "slack": True},
+    "granted":   {"ses": True, "sns": True, "slack": True},
+    "approved":  {"ses": True, "sns": True, "slack": False},
+    "rejected":  {"ses": True, "sns": True, "slack": True},
+    "cancelled": {"ses": True, "sns": True, "slack": False},
+    "error":     {"ses": True, "sns": True, "slack": True},
+    # Example: to disable SES for 'approved', set "ses": False
+    # "approved":   {"ses": False, "sns": True,  "slack": True},
+}
+
 
 def parse_arn(arn):
     # http://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html
@@ -385,7 +400,10 @@ def lambda_handler(event: dict, context):
             print(f"Request status unexpected, exiting: {request_status}")
             exit()
 
-    if ses_notifications_enabled:
+    # Get notification settings for this status, default to all True if not found
+    notify = NOTIFICATION_MATRIX.get(request_status, {"ses": True, "sns": True, "slack": True})
+
+    if ses_notifications_enabled and notify.get("ses", True):
         send_ses_notification(
             source_email=ses_source_email,
             source_arn=ses_source_arn,
@@ -395,14 +413,14 @@ def lambda_handler(event: dict, context):
             cc_addresses=email_cc_addresses,
         )
 
-    if sns_notifications_enabled:
+    if sns_notifications_enabled and notify.get("sns", True):
         send_sns_notification(
             message=sns_message,
             subject=subject,
             notification_topic_arn=notification_topic_arn,
         )
 
-    if slack_notifications_enabled:
+    if slack_notifications_enabled and notify.get("slack", True):
         send_slack_notifications(
             recipients=slack_recipients,
             message=slack_message,
