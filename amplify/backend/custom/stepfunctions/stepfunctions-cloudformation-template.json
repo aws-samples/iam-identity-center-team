@@ -86,7 +86,7 @@
               "ResultPath": "$.grant",
               "Retry": [
                 {
-                  "ErrorEquals": ["ThrottlingException", "ServiceUnavailable", "InternalServerError"],
+                  "ErrorEquals": ["SsoAdmin.ThrottlingException", "ThrottlingException", "ServiceUnavailable", "InternalServerError"],
                   "IntervalSeconds": 3,
                   "BackoffRate": 2,
                   "MaxAttempts": 5
@@ -615,7 +615,7 @@
               "ResultPath": "$.revoke",
               "Retry": [
                 {
-                  "ErrorEquals": ["ThrottlingException", "ServiceUnavailable", "InternalServerError"],
+                  "ErrorEquals": ["SsoAdmin.ThrottlingException", "ThrottlingException", "ServiceUnavailable", "InternalServerError"],
                   "IntervalSeconds": 3,
                   "BackoffRate": 2,
                   "MaxAttempts": 5

@@ -99,6 +99,8 @@ Resources:
       EnvironmentVariables: 
         - Name: AMPLIFY_DESTRUCTIVE_UPDATES
           Value: true
+        - Name: _LIVE_UPDATES
+          Value: '[{"name":"Node.js version","pkg":"node","type":"nvm","version":"22.17"}]'
 
 
       BuildSpec: |-
@@ -107,8 +109,8 @@ Resources:
           phases:
             preBuild:
               commands:
-                - '# 12.0.1 Updates auth lambdas to node18'
-                - npm i -g @aws-amplify/cli@12.10.1
+                - '# 14.0.0 Enforces SSL on S3 deployment bucket'
+                - npm i -g @aws-amplify/cli@14.0.0
                 - '# Update deployment parameters with helper script'
                 - node parameters.js
             build:
