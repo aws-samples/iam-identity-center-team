@@ -312,7 +312,7 @@ def lambda_handler(event: dict, context):
             if datetime.now(timezone.utc) > parser.parse(request_start_time).astimezone(
                 timezone.utc
             ):
-                exit()
+                return
             # Notify requester request scheduled
             slack_recipients = [requester]
             slack_message = f"Your AWS access session is scheduled."
@@ -383,7 +383,7 @@ def lambda_handler(event: dict, context):
             email_message_html = f'<html><body><p>TEAM encountered an error handling AWS access for {requester}. Please review the Step Function logs to troubleshoot the error and ensure access is properly granted or revoked. Open <a href="{login_url}">TEAM</a> to view additional details.</p><p><b>Error Details:</b> {event.get("statusError")}<br /></p><p><b>Account:</b> {account}<br /><b>Role:</b> {role}<br /><b>Start Time:</b> {request_start_time}<br /><b>Duration:</b> {duration_hours} hours<br /><b>Justification:</b> {justification}<br /><b>Ticket Number:</b> {ticket}<br /></p></body></html>'
         case _:
             print(f"Request status unexpected, exiting: {request_status}")
-            exit()
+            return
 
     if ses_notifications_enabled:
         send_ses_notification(
