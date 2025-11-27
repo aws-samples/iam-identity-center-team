@@ -6,16 +6,17 @@ import json
 import boto3
 import os
 import time
-import threading
 from botocore.exceptions import ClientError
 from operator import itemgetter
 
 client = boto3.client('organizations')
 dynamodb = boto3.resource('dynamodb')
+lambda_client = boto3.client('lambda')
 
 ACCOUNT_ID = os.environ['ACCOUNT_ID']
 CACHE_TABLE_NAME = os.environ.get('ACCOUNTS_CACHE_TABLE_NAME', 'team-accounts-cache')
 CACHE_TTL_SECONDS = int(os.environ.get('ACCOUNTS_CACHE_TTL', '300'))  # Default 5 minutes
+FUNCTION_NAME = os.environ.get('AWS_LAMBDA_FUNCTION_NAME')
 
 
 def get_mgmt_account_id():
@@ -104,7 +105,7 @@ def fetch_accounts_from_organizations():
 
 
 def update_cache_background():
-    """Update cache in background thread."""
+    """Update cache (called via async invocation)."""
     try:
         print("Background: Fetching fresh accounts from Organizations API")
         accounts = fetch_accounts_from_organizations()
@@ -114,7 +115,26 @@ def update_cache_background():
         print(f"Background: Cache update failed (non-critical): {e}")
 
 
+def trigger_background_update():
+    """Trigger an async invocation of this Lambda to update the cache."""
+    try:
+        print("Triggering background cache update via async invocation")
+        lambda_client.invoke(
+            FunctionName=FUNCTION_NAME,
+            InvocationType='Event',  # Asynchronous invocation
+            Payload=json.dumps({'action': 'refresh_cache'})
+        )
+    except Exception as e:
+        print(f"Failed to trigger background update: {e}")
+
+
 def handler(event, context):
+    # Check if this is a self-invocation for cache refresh
+    if event.get('action') == 'refresh_cache':
+        print("Handling background cache refresh event")
+        update_cache_background()
+        return {'status': 'cache_updated'}
+
     try:
         # Try to get from cache first
         cached_accounts, is_expired = get_cached_accounts()
@@ -122,11 +142,10 @@ def handler(event, context):
         if cached_accounts is not None:
             # We have cache (valid or expired)
             if is_expired:
-                print("Returning expired cache, starting background update")
+                print("Returning expired cache, triggering background update")
                 # Return expired cache immediately for fast response
-                # Start background update thread (won't block the response)
-                update_thread = threading.Thread(target=update_cache_background, daemon=True)
-                update_thread.start()
+                # Trigger async self-invocation
+                trigger_background_update()
             else:
                 print("Returning valid cached accounts")
             
