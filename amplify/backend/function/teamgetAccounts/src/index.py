@@ -26,19 +26,13 @@ mgmt_account_id = get_mgmt_account_id()
 
 def handler(event, context):
     account = []
-    deployed_in_mgmt = True if ACCOUNT_ID == mgmt_account_id else False
     try:
         p = client.get_paginator('list_accounts')
         paginator = p.paginate()
 
         for page in paginator:
             for acct in page['Accounts']:
-                if not deployed_in_mgmt:
-                    if acct['Id'] != mgmt_account_id:
-                        account.extend(
-                            [{"name": acct['Name'], 'id':acct['Id']}])
-                else:
-                    account.extend([{"name": acct['Name'], 'id':acct['Id']}])
+                account.extend([{"name": acct['Name'], 'id':acct['Id']}])
         return sorted(account, key=itemgetter('name'))
     except ClientError as e:
         print(e.response['Error']['Message'])
