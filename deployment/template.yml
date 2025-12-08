@@ -58,6 +58,7 @@ Resources:
           - id: W9
             reason: "This is the main Amplify service role."
     Properties:
+      RoleName: TEAM-IDC-APP-AmplifyRole
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -67,9 +68,6 @@ Resources:
                 - amplify.amazonaws.com
             Action:
               - sts:AssumeRole
-            Condition:
-              StringEquals:
-                aws:SourceAccount: !Ref AWS::AccountId
       Path: /
       ManagedPolicyArns:
         - "arn:aws:iam::aws:policy/AdministratorAccess" 
