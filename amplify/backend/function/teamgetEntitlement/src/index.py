@@ -80,7 +80,6 @@ def publishPolicy(result):
 
 
 def list_account_for_ou(ouId):
-    deployed_in_mgmt = True if ACCOUNT_ID == mgmt_account_id else False
     account = []
     client = boto3.client("organizations")
     try:
@@ -91,11 +90,7 @@ def list_account_for_ou(ouId):
 
         for page in paginator:
             for acct in page["Accounts"]:
-                if not deployed_in_mgmt:
-                    if acct["Id"] != mgmt_account_id:
-                        account.extend([{"name": acct["Name"], "id": acct["Id"]}])
-                else:
-                    account.extend([{"name": acct["Name"], "id": acct["Id"]}])
+                account.extend([{"name": acct["Name"], "id": acct["Id"]}])
         return account
     except ClientError as e:
         print(e.response["Error"]["Message"])
