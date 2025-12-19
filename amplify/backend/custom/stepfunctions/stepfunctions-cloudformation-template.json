@@ -785,7 +785,7 @@
               "Type": "Choice"
             },
             "Update Request Status": {
-              "Next": "Notify Requester Expired",
+              "Next": "Update Status Field",
               "Parameters": {
                 "FunctionName.$": "$.fn_teamstatus_arn",
                 "Payload.$": "$"
@@ -806,6 +806,12 @@
                 }
               ],
               "Type": "Task"
+            },
+            "Update Status Field": {
+              "Type": "Pass",
+              "Next": "Notify Requester Expired",
+              "Result": "expired",
+              "ResultPath": "$.status"
             },
             "Wait": {
               "Next": "DynamoDB GetStatus",
