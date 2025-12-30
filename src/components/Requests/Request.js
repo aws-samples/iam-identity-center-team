@@ -93,13 +93,24 @@ function Request(props) {
 
   async function getDuration(accountId) {
     setDuration("");
-    const duration = item.map((data) => {
-      data.accounts.map((account, index) => {
-        if (account.id == accountId) {
-          setMaxDuration(data.duration);
+    let minDuration = null;
+    
+    item.forEach((data) => {
+      const matchingAccount = data.accounts.find(
+        (account) => String(account.id) === String(accountId)
+      );
+      
+      if (matchingAccount) {
+        const policyDuration = parseInt(data.duration, 10);
+        if (minDuration === null || policyDuration < minDuration) {
+          minDuration = policyDuration;
         }
-      });
+      }
     });
+    
+    if (minDuration !== null) {
+      setMaxDuration(minDuration);
+    }
   }
 
   async function getPermissions(accountId) {
