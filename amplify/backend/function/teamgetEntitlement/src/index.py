@@ -4,7 +4,6 @@
 # Amazon Web Services, Inc. or Amazon Web Services EMEA SARL or both.
 import json
 import os
-from botocore.exceptions import ClientError
 import boto3
 import requests
 from requests_aws_sign import AWSV4Sign
@@ -12,20 +11,6 @@ from requests_aws_sign import AWSV4Sign
 policy_table_name = os.getenv("POLICY_TABLE_NAME")
 dynamodb = boto3.resource("dynamodb")
 policy_table = dynamodb.Table(policy_table_name)
-
-ACCOUNT_ID = os.environ["ACCOUNT_ID"]
-
-
-def get_mgmt_account_id():
-    org_client = boto3.client("organizations")
-    try:
-        response = org_client.describe_organization()
-        return response["Organization"]["MasterAccountId"]
-    except ClientError as e:
-        print(e.response["Error"]["Message"])
-
-
-mgmt_account_id = get_mgmt_account_id()
 
 
 def publishPolicy(result):
@@ -79,26 +64,68 @@ def publishPolicy(result):
     return result
 
 
-def list_account_for_ou(ouId):
-    deployed_in_mgmt = True if ACCOUNT_ID == mgmt_account_id else False
-    account = []
-    client = boto3.client("organizations")
-    try:
-        p = client.get_paginator("list_accounts_for_parent")
-        paginator = p.paginate(
-            ParentId=ouId,
-        )
+def get_ou_accounts(ou_ids):
+    """Get accounts for multiple OUs using cached GraphQL query"""
+    if not ou_ids:
+        return []
+    
+    session = boto3.session.Session()
+    credentials = session.get_credentials()
+    credentials = credentials.get_frozen_credentials()
+    region = session.region_name
 
-        for page in paginator:
-            for acct in page["Accounts"]:
-                if not deployed_in_mgmt:
-                    if acct["Id"] != mgmt_account_id:
-                        account.extend([{"name": acct["Name"], "id": acct["Id"]}])
-                else:
-                    account.extend([{"name": acct["Name"], "id": acct["Id"]}])
-        return account
-    except ClientError as e:
-        print(e.response["Error"]["Message"])
+    query = """
+        query GetOUAccounts($ouIds: [String]!) {
+            getOUAccounts(ouIds: $ouIds) {
+                results {
+                    ouId
+                    accounts {
+                        name
+                        id
+                    }
+                    cached
+                }
+            }
+        }
+    """
+
+    endpoint = os.environ.get("API_TEAM_GRAPHQLAPIENDPOINTOUTPUT", None)
+    headers = {"Content-Type": "application/json"}
+    appsync_region = region
+    auth = AWSV4Sign(credentials, appsync_region, "appsync")
+    
+    all_accounts = []
+    batch_size = 20
+    
+    # Process in batches of 20
+    for i in range(0, len(ou_ids), batch_size):
+        batch = ou_ids[i:i + batch_size]
+        payload = {"query": query, "variables": {"ouIds": batch}}
+        
+        try:
+            response = requests.post(
+                endpoint, auth=auth, json=payload, headers=headers
+            ).json()
+            if "errors" in response:
+                print(f"Error querying OU accounts batch {i//batch_size + 1}")
+                print(response["errors"])
+                continue
+            
+            results = response.get("data", {}).get("getOUAccounts", {}).get("results", [])
+            
+            # Flatten accounts from this batch
+            for result in results:
+                accounts = result.get("accounts", [])
+                all_accounts.extend(accounts)
+                cached_status = "cached" if result.get("cached") else "fetched"
+                print(f"OU {result.get('ouId')}: {len(accounts)} accounts ({cached_status})")
+        
+        except Exception as exception:
+            print(f"Error calling getOUAccounts batch {i//batch_size + 1}")
+            print(exception)
+            continue
+    
+    return all_accounts
 
 
 def get_entitlements(id):
@@ -128,9 +155,13 @@ def handler(event, context):
         policy = {}
         policy["accounts"] = entitlement["Item"]["accounts"]
 
-        for ou in entitlement["Item"]["ous"]:
-            data = list_account_for_ou(ou["id"])
-            policy["accounts"].extend(data)
+        # Collect all OU IDs for batch query
+        ou_ids = [ou["id"] for ou in entitlement["Item"]["ous"]]
+        
+        if ou_ids:
+            # Single GraphQL call for all OUs
+            ou_accounts = get_ou_accounts(ou_ids)
+            policy["accounts"].extend(ou_accounts)
 
         policy["permissions"] = entitlement["Item"]["permissions"]
         policy["approvalRequired"] = entitlement["Item"]["approvalRequired"]

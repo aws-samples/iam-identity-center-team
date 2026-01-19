@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "setting": "open",
+    "auth": [
+      "ALLOW"
+    ]
+  }
+}
