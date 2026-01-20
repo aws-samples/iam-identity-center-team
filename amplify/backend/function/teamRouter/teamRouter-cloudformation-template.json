@@ -58,6 +58,10 @@
     "functionteamNotificationsArn": {
       "Type": "String",
       "Default": "functionteamNotificationsArn"
+    },
+    "customsnsNotificationTopicArn": {
+      "Type": "String",
+      "Default": "customsnsNotificationTopicArn"
     }
   },
   "Conditions": {
@@ -127,7 +131,7 @@
               }
             },
             "NOTIFICATION_TOPIC_ARN": {
-              "Fn::ImportValue": "NotificationTopicArn"
+              "Ref": "customsnsNotificationTopicArn"
             },
             "API_TEAM_GRAPHQLAPIENDPOINTOUTPUT": {
               "Ref": "apiteamGraphQLAPIEndpointOutput"
