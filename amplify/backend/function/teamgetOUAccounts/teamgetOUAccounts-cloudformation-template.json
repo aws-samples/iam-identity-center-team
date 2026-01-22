@@ -21,9 +21,6 @@
     "cacheTTL": {
       "Type": "String",
       "Default": "604800"
-    },
-    "storageOUAccountsCacheTableName": {
-      "Type": "String"
     }
   },
   "Conditions": {
@@ -83,7 +80,7 @@
               "Ref": "AWS::Region"
             },
             "CACHE_TABLE_NAME": {
-              "Ref": "storageOUAccountsCacheTableName"
+              "Fn::Sub": "${apiteamGraphQLAPIIdOutput}-OUAccountsCache-${env}"
             },
             "CACHE_TTL": {
               "Ref": "cacheTTL"
@@ -205,20 +202,7 @@
                 "dynamodb:UpdateItem"
               ],
               "Resource": {
-                "Fn::Sub": [
-                  "arn:aws:dynamodb:${region}:${account}:table/${tableName}",
-                  {
-                    "region": {
-                      "Ref": "AWS::Region"
-                    },
-                    "account": {
-                      "Ref": "AWS::AccountId"
-                    },
-                    "tableName": {
-                      "Ref": "storageOUAccountsCacheTableName"
-                    }
-                  }
-                ]
+                "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${apiteamGraphQLAPIIdOutput}-OUAccountsCache-${env}"
               }
             }
           ]

@@ -17,9 +17,6 @@
     },
     "apiteamGraphQLAPIIdOutput": {
       "Type": "String"
-    },
-    "storageOUAccountsCacheTableName": {
-      "Type": "String"
     }
   },
   "Conditions": {
@@ -79,7 +76,7 @@
               "Ref": "AWS::Region"
             },
             "CACHE_TABLE_NAME": {
-              "Ref": "storageOUAccountsCacheTableName"
+              "Fn::Sub": "${apiteamGraphQLAPIIdOutput}-OUAccountsCache-${env}"
             }
           }
         },
@@ -193,20 +190,7 @@
                 "dynamodb:DeleteItem"
               ],
               "Resource": {
-                "Fn::Sub": [
-                  "arn:aws:dynamodb:${region}:${account}:table/${tableName}",
-                  {
-                    "region": {
-                      "Ref": "AWS::Region"
-                    },
-                    "account": {
-                      "Ref": "AWS::AccountId"
-                    },
-                    "tableName": {
-                      "Ref": "storageOUAccountsCacheTableName"
-                    }
-                  }
-                ]
+                "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${apiteamGraphQLAPIIdOutput}-OUAccountsCache-${env}"
               }
             }
           ]
