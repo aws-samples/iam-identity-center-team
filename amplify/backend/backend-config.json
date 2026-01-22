@@ -298,6 +298,13 @@
           ],
           "category": "api",
           "resourceName": "team"
+        },
+        {
+          "attributes": [
+            "Name"
+          ],
+          "category": "storage",
+          "resourceName": "OUAccountsCache"
         }
       ],
       "providerPlugin": "awscloudformation",
@@ -312,6 +319,13 @@
           ],
           "category": "api",
           "resourceName": "team"
+        },
+        {
+          "attributes": [
+            "Name"
+          ],
+          "category": "storage",
+          "resourceName": "OUAccountsCache"
         }
       ],
       "providerPlugin": "awscloudformation",
