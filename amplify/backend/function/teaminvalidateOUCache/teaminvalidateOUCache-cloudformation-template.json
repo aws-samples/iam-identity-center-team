@@ -17,6 +17,9 @@
     },
     "apiteamGraphQLAPIIdOutput": {
       "Type": "String"
+    },
+    "storageOUAccountsCacheTableName": {
+      "Type": "String"
     }
   },
   "Conditions": {
@@ -76,7 +79,7 @@
               "Ref": "AWS::Region"
             },
             "CACHE_TABLE_NAME": {
-              "Fn::Sub": "${apiteamGraphQLAPIIdOutput}:GetAtt:OUAccountsCacheTable:Name"
+              "Ref": "storageOUAccountsCacheTableName"
             }
           }
         },
@@ -191,13 +194,16 @@
               ],
               "Resource": {
                 "Fn::Sub": [
-                  "arn:aws:dynamodb:${region}:${account}:table/${apiteamGraphQLAPIIdOutput}:GetAtt:OUAccountsCacheTable:Name",
+                  "arn:aws:dynamodb:${region}:${account}:table/${tableName}",
                   {
                     "region": {
                       "Ref": "AWS::Region"
                     },
                     "account": {
                       "Ref": "AWS::AccountId"
+                    },
+                    "tableName": {
+                      "Ref": "storageOUAccountsCacheTableName"
                     }
                   }
                 ]
