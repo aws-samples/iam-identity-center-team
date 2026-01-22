@@ -207,9 +207,35 @@ type Eligibility
   duration: String
   modifiedBy: String
 }
+type OUAccountsCache
+  @model(subscriptions: null, queries: null, mutations: null)
+  @auth(
+    rules: [
+      { allow: private, provider: iam, operations: [create, read, update, delete] }
+    ]
+  ) {
+  ou_id: ID! @primaryKey
+  accounts: AWSJSON
+  cached_at: AWSTimestamp
+  ttl: AWSTimestamp
+  status: String
+}
 type Accounts {
   name: String!
   id: String!
+}
+type OUAccounts @aws_cognito_user_pools {
+  ouId: String!
+  accounts: [Accounts]
+  cached: Boolean
+}
+type OUAccountsBatch @aws_cognito_user_pools {
+  results: [OUAccounts]
+}
+type InvalidateCacheResult @aws_cognito_user_pools {
+  invalidated: [String]
+  failed: [String]
+  message: String
 }
 type Entitlement @aws_iam @aws_cognito_user_pools {
   accounts: [data]
@@ -302,6 +328,9 @@ type Mutation {
   @auth(rules: [{ allow: private, provider: iam} { allow: private }])
   publishPermissions(result: PermissionInput): Permission
   @auth(rules: [{ allow: private, provider: iam} { allow: private }])
+  invalidateOUCache(ouIds: [String]!): InvalidateCacheResult
+  @function(name: "teaminvalidateOUCache-${env}")
+  @auth(rules: [{ allow: groups, groups: ["Admin"] }])
 }
 
 type Subscription {
@@ -371,6 +400,11 @@ type Query {
     @auth(rules: [{ allow: private }])
   validateRequest: requests
     @function(name: "teamvalidateRequest-${env}")
+    @auth(rules: [{ allow: private }])
+  getOUAccounts(
+    ouIds: [String]!
+  ): OUAccountsBatch
+    @function(name: "teamgetOUAccounts-${env}")
     @auth(rules: [{ allow: private }])
 }
 

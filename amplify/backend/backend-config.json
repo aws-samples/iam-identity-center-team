@@ -289,6 +289,34 @@
       "providerPlugin": "awscloudformation",
       "service": "Lambda"
     },
+    "teamgetOUAccounts": {
+      "build": true,
+      "dependsOn": [
+        {
+          "attributes": [
+            "GraphQLAPIIdOutput"
+          ],
+          "category": "api",
+          "resourceName": "team"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
+    "teaminvalidateOUCache": {
+      "build": true,
+      "dependsOn": [
+        {
+          "attributes": [
+            "GraphQLAPIIdOutput"
+          ],
+          "category": "api",
+          "resourceName": "team"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
     "teamgetIdCGroups": {
       "build": true,
       "providerPlugin": "awscloudformation",

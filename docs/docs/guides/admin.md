@@ -107,3 +107,14 @@ An administrator can configure global TEAM application settings, such as:
 <source src="https://d3f99z5n3ls8r1.cloudfront.net/videos/admin_guides/admin_settings.mov">
 </video>
 
+## Invalidate OU account cache
+
+TEAM caches AWS accounts for organizational units (OUs) to improve performance when loading eligibility policies. The cache automatically refreshes when AWS Organizations detects account changes. If needed, administrators can manually clear the cache for specific OUs.
+
+1. Log into the application as TEAM admin.
+2. In the left-hand menu go to *Administration* &rarr; *Settings*.
+3. Scroll to the **OU Account Cache** section.
+4. Select one or more OUs from the dropdown.
+5. Click *Invalidate Cache*.
+   > The cache will be repopulated automatically the next time those OUs are accessed.
+
