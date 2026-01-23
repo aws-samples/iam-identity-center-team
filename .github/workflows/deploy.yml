@@ -1,0 +1,30 @@
+name: Deploy
+
+on:
+  pull_request:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Create parameters.sh
+        run: |
+          cat > deployment/parameters.sh << 'EOF'
+          IDC_LOGIN_URL=https://d-9767a50354.awsapps.com/start
+          REGION=ap-southeast-2
+          TEAM_ACCOUNT=472248901343
+          ORG_MASTER_PROFILE=default
+          TEAM_ACCOUNT_PROFILE=default
+          TEAM_ADMIN_GROUP="team-admins"
+          TEAM_AUDITOR_GROUP="team-auditors"
+          TAGS="project=iam-identity-center-team environment=sandbox"
+          CLOUDTRAIL_AUDIT_LOGS=none
+          EOF
+      
+      - name: Run deployment
+        run: |
+          chmod +x deployment/deploy.sh
+          cd deployment
+          ./deploy.sh
