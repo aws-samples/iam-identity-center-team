@@ -76,7 +76,9 @@
               "Ref": "AWS::Region"
             },
             "CACHE_TABLE_NAME": {
-              "Fn::Sub": "${apiteamGraphQLAPIIdOutput}-OUAccountsCache-${env}"
+              "Fn::ImportValue": {
+                "Fn::Sub": "${apiteamGraphQLAPIIdOutput}:GetAtt:OUAccountsCacheTable:Name"
+              }
             }
           }
         },
@@ -190,7 +192,25 @@
                 "dynamodb:DeleteItem"
               ],
               "Resource": {
-                "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${apiteamGraphQLAPIIdOutput}-OUAccountsCache-${env}"
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:dynamodb:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":table/",
+                    {
+                      "Fn::ImportValue": {
+                        "Fn::Sub": "${apiteamGraphQLAPIIdOutput}:GetAtt:OUAccountsCacheTable:Name"
+                      }
+                    }
+                  ]
+                ]
               }
             }
           ]
