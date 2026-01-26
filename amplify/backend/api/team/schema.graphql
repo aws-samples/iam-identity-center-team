@@ -217,7 +217,7 @@ type OUAccountsCache
   ou_id: ID! @primaryKey
   accounts: AWSJSON
   cached_at: AWSTimestamp
-  ttl: AWSTimestamp
+  ttl: AWSTimestamp @ttl
   status: String
 }
 type Accounts @aws_iam @aws_cognito_user_pools {
