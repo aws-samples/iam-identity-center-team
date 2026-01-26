@@ -75,7 +75,11 @@
             },
             "ACCOUNT_ID": {
               "Ref": "AWS::AccountId"
-            }
+            },
+            "ACCOUNTS_CACHE_TABLE_NAME": {
+              "Ref": "AccountsCacheTable"
+            },
+            "ACCOUNTS_CACHE_TTL": "300"
           }
         },
         "Role": {
@@ -197,6 +201,119 @@
         ]
       },
       "DependsOn": "LambdaExecutionRole"
+    },
+    "AccountsCacheTable": {
+      "Type": "AWS::DynamoDB::Table",
+      "Properties": {
+        "TableName": {
+          "Fn::If": [
+            "ShouldNotCreateEnvResources",
+            "team-accounts-cache",
+            {
+              "Fn::Join": [
+                "",
+                [
+                  "team-accounts-cache",
+                  "-",
+                  {
+                    "Ref": "env"
+                  }
+                ]
+              ]
+            }
+          ]
+        },
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "cache_key",
+            "AttributeType": "S"
+          }
+        ],
+        "KeySchema": [
+          {
+            "AttributeName": "cache_key",
+            "KeyType": "HASH"
+          }
+        ],
+        "BillingMode": "PAY_PER_REQUEST",
+        "TimeToLiveSpecification": {
+          "AttributeName": "ttl",
+          "Enabled": true
+        },
+        "PointInTimeRecoverySpecification": {
+          "PointInTimeRecoveryEnabled": false
+        },
+        "SSESpecification": {
+          "SSEEnabled": true
+        }
+      }
+    },
+    "DynamoDBCachePolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "dynamodb-cache-policy",
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "dynamodb:GetItem",
+                "dynamodb:PutItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:Query"
+              ],
+              "Resource": {
+                "Fn::GetAtt": [
+                  "AccountsCacheTable",
+                  "Arn"
+                ]
+              }
+            }
+          ]
+        },
+        "Roles": [
+          {
+            "Ref": "LambdaExecutionRole"
+          }
+        ]
+      },
+      "DependsOn": [
+        "LambdaExecutionRole",
+        "AccountsCacheTable"
+      ]
+    },
+    "SelfInvokePolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "self-invoke-policy",
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "lambda:InvokeFunction"
+              ],
+              "Resource": {
+                "Fn::GetAtt": [
+                  "LambdaFunction",
+                  "Arn"
+                ]
+              }
+            }
+          ]
+        },
+        "Roles": [
+          {
+            "Ref": "LambdaExecutionRole"
+          }
+        ]
+      },
+      "DependsOn": [
+        "LambdaExecutionRole",
+        "LambdaFunction"
+      ]
     }
   },
   "Outputs": {
@@ -227,6 +344,19 @@
       "Value": {
         "Fn::GetAtt": [
           "LambdaExecutionRole",
+          "Arn"
+        ]
+      }
+    },
+    "AccountsCacheTableName": {
+      "Value": {
+        "Ref": "AccountsCacheTable"
+      }
+    },
+    "AccountsCacheTableArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "AccountsCacheTable",
           "Arn"
         ]
       }
