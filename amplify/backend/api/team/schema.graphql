@@ -220,7 +220,7 @@ type OUAccountsCache
   ttl: AWSTimestamp
   status: String
 }
-type Accounts {
+type Accounts @aws_iam @aws_cognito_user_pools {
   name: String!
   id: String!
 }
