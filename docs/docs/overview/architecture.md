@@ -32,8 +32,8 @@ The following DynamoDB tables are deployed as part of the solution:
 - **Approver Table** - Stores details of Approver groups for accounts and Organizational Units
 - **Eligibility Table** - Stores data relating to accounts, permission sets or roles an entity (user or group) is eligible to request access to
 - **Session Table** - An ephemeral datastore that stores and manages the state of an [AWS CloudTrail Lake](https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-lake.html) query. This helps to provide asynchronous Pub/Sub API for retrieving session activity logs
-- **Settings Table** - Stores configurable values of TEAM application wide settings such as mandatory fields, default timeouts, maximum duration, approval settings etc
-- **OU Accounts Cache Table** - Caches AWS accounts for organizational units to improve eligibility policy loading performance. Automatically refreshed when AWS Organizations detects account changes
+- **Settings Table** - Stores configurable values of TEAM application wide settings such as mandatory fields, default timeouts, maximum duration, approval settings, and OU cache behavior
+- **OU Accounts Cache Table** - Caches AWS accounts for organizational units to improve eligibility policy loading performance. Cache entries expire based on the configured TTL (default: 1 week). Administrators can toggle between cached and direct API queries, or manually invalidate specific OU cache entries via the Settings page
 
 ### TEAM Router
 A TEAM request record is stored in the request DynamoDB table whenever a request is created or updated on the web UI <br>

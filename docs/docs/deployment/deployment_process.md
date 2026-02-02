@@ -62,7 +62,7 @@ Update the parameters in the **parameters.sh** file as follows:
 **Optional:**
 - **TAGS** - Tags that should be propagated to nested stacks and underlying resources
 - **UI_DOMAIN** - Custom domain for Amplify hosted frontend application (should only be included if you have setup a custom domain for the frontend application)
-- **CACHE_TTL** - Cache time-to-live in seconds for organizational unit (OU) account lists (default: 604800 = 1 week). The cache automatically refreshes when AWS Organizations detects account changes. Consider increasing this value (e.g., 2592000 = 30 days) for organizations with infrequent account changes, or decreasing it if you prefer to rely on manual cache invalidation.
+- **CACHE_TTL** - Cache time-to-live in seconds for organizational unit (OU) account lists (default: 604800 = 1 week). Cached entries automatically expire after this duration. Consider increasing this value (e.g., 2592000 = 30 days) for organizations with infrequent account changes. Administrators can also manually invalidate specific OU cache entries or disable caching entirely via the Settings page.
 
 For example:
 
