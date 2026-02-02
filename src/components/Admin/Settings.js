@@ -57,6 +57,7 @@ function Settings(props) {
   const [groupStatus, setGroupStatus] = useState("");
   const [teamAdminGroup, setTeamAdminGroup] = useState("");
   const [teamAuditorGroup, setTeamAuditorGroup] = useState("");
+  const [useOUCache, setUseOUCache] = useState(null);
 
   function getGroups() {
     setGroupStatus("loading");
@@ -181,6 +182,7 @@ function Settings(props) {
       setSlackToken(item.slackToken ?? "");
       setTeamAdminGroup(item.teamAdminGroup ?? params.teamAdminGroup);
       setTeamAuditorGroup(item.teamAuditorGroup ?? params.teamAuditorGroup);
+      setUseOUCache(item.useOUCache ?? true);
     }
     setVisible(false);
   }
@@ -203,6 +205,7 @@ function Settings(props) {
         slackToken,
         teamAdminGroup,
         teamAuditorGroup,
+        useOUCache,
       };
       const action = item === null ? createSetting : updateSetting;
       action(data).then(() => {
@@ -236,6 +239,7 @@ function Settings(props) {
       setSlackToken(data?.slackToken ?? "");
       setTeamAdminGroup(data?.teamAdminGroup ?? params.teamAdminGroup);
       setTeamAuditorGroup(data?.teamAuditorGroup ?? params.teamAuditorGroup);
+      setUseOUCache(data?.useOUCache ?? true);
     });
   }
 
@@ -333,6 +337,23 @@ function Settings(props) {
                 <>
                   {" "}
                   {expiry !== null ? <div>{expiry} hours</div> : <Spinner />}
+                </>
+              </div>
+              <div>
+                <Box variant="awsui-key-label">OU account cache</Box>
+                <>
+                  {" "}
+                  {useOUCache !== null ? (
+                    <div>
+                      <StatusIndicator
+                        type={useOUCache === true ? "success" : "warning"}
+                      >
+                        {useOUCache === true ? "Enabled (cached)" : "Disabled (direct API)"}
+                      </StatusIndicator>
+                    </div>
+                  ) : (
+                    <Spinner />
+                  )}
                 </>
               </div>
             </SpaceBetween>
@@ -631,6 +652,20 @@ function Settings(props) {
                     type="number"
                   />
                 </FormField>
+                <br />
+                <FormField
+                  label="OU account cache"
+                  stretch
+                  description="Use cached OU account data for faster loading. Disable to query Organizations API directly (slower but always fresh)."
+                >
+                  <Toggle
+                    onChange={({ detail }) => setUseOUCache(detail.checked)}
+                    checked={useOUCache}
+                  >
+                    {useOUCache ? "Enabled (cached)" : "Disabled (direct API)"}
+                  </Toggle>
+                </FormField>
+                <br />
               </div>
               <div>
                 <Box variant="h3">Notification settings</Box>

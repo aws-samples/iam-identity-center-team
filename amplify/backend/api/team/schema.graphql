@@ -237,7 +237,7 @@ type InvalidateCacheResult @aws_cognito_user_pools {
   failed: [String]
   message: String
 }
-type RequestValidationResult @aws_cognito_user_pools {
+type RequestValidationResult @aws_iam @aws_cognito_user_pools {
   valid: Boolean!
   reason: String
 }
@@ -405,13 +405,13 @@ type Query {
   updateRequestData: requests
     @function(name: "teamupdateRequest-${env}")
     @auth(rules: [{ allow: private }])
-  validateRequest: requests
-    @function(name: "teamvalidateRequest-${env}")
-    @auth(rules: [{ allow: private }])
+  validateRequest(accountId: String!, roleId: String!, userId: String!, groupIds: [String]!): RequestValidationResult
+  @function(name: "teamvalidateRequest-${env}")
+  @auth(rules: [{ allow: private }])
   getOUAccounts(
     ouIds: [String]!
   ): OUAccountsBatch
     @function(name: "teamgetOUAccounts-${env}")
-    @auth(rules: [{ allow: private }])
+    @auth(rules: [{ allow: private, provider: iam} { allow: private }])
 }
 

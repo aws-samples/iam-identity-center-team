@@ -94,6 +94,11 @@
               "Fn::ImportValue": {
                 "Fn::Sub": "${apiteamGraphQLAPIIdOutput}:GetAtt:EligibilityTable:Name"
               }
+            },
+            "SETTINGS_TABLE_NAME": {
+              "Fn::ImportValue": {
+                "Fn::Sub": "${apiteamGraphQLAPIIdOutput}:GetAtt:SettingsTable:Name"
+              }
             }
           }
         },
@@ -194,8 +199,19 @@
               "Resource": [
                 {
                   "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/Eligibility-*"
+                },
+                {
+                  "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/Settings-*"
                 }
               ]
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "organizations:ListAccountsForParent",
+                "organizations:DescribeOrganization"
+              ],
+              "Resource": "*"
             }
           ]
         }

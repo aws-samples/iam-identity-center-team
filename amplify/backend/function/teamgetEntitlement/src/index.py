@@ -7,10 +7,39 @@ import os
 import boto3
 import requests
 from requests_aws_sign import AWSV4Sign
+from botocore.exceptions import ClientError
 
 policy_table_name = os.getenv("POLICY_TABLE_NAME")
+settings_table_name = os.getenv("SETTINGS_TABLE_NAME")
 dynamodb = boto3.resource("dynamodb")
 policy_table = dynamodb.Table(policy_table_name)
+settings_table = dynamodb.Table(settings_table_name)
+
+ACCOUNT_ID = os.environ.get("ACCOUNT_ID", "")
+
+
+def get_mgmt_account_id():
+    """Get the management account ID from Organizations"""
+    org_client = boto3.client("organizations")
+    try:
+        response = org_client.describe_organization()
+        return response["Organization"]["MasterAccountId"]
+    except ClientError as e:
+        print(f"Error getting management account ID: {e}")
+        return None
+
+
+mgmt_account_id = get_mgmt_account_id()
+
+
+def get_settings():
+    """Get settings from DynamoDB"""
+    try:
+        response = settings_table.get_item(Key={"id": "settings"})
+        return response.get("Item", {})
+    except ClientError as e:
+        print(f"Error getting settings: {e}")
+        return {}
 
 
 def publishPolicy(result):
@@ -128,6 +157,33 @@ def get_ou_accounts(ou_ids):
     return all_accounts
 
 
+def list_account_for_ou(ou_id):
+    """
+    Original implementation: Direct Organizations API call for OU accounts.
+    Used when useOUCache feature flag is disabled.
+    """
+    deployed_in_mgmt = True if ACCOUNT_ID == mgmt_account_id else False
+    accounts = []
+    client = boto3.client("organizations")
+    
+    try:
+        paginator = client.get_paginator("list_accounts_for_parent")
+        page_iterator = paginator.paginate(ParentId=ou_id)
+
+        for page in page_iterator:
+            for acct in page["Accounts"]:
+                # Skip management account if not deployed in management account
+                if not deployed_in_mgmt and acct["Id"] == mgmt_account_id:
+                    continue
+                accounts.append({"name": acct["Name"], "id": acct["Id"]})
+        
+        print(f"OU {ou_id}: {len(accounts)} accounts (direct API)")
+        return accounts
+    except ClientError as e:
+        print(f"Error listing accounts for OU {ou_id}: {e}")
+        return []
+
+
 def get_entitlements(id):
     response = policy_table.get_item(Key={"id": id})
     return response
@@ -141,6 +197,11 @@ def handler(event, context):
     maxDuration = 0
     
     print("Id: ", event["id"])
+    
+    # Get feature flag setting
+    settings = get_settings()
+    use_ou_cache = settings.get("useOUCache", True)  # Default to True (cached)
+    print(f"Using OU cache: {use_ou_cache}")
 
     for id in [userId] + groupIds:
         if not id:
@@ -155,13 +216,19 @@ def handler(event, context):
         policy = {}
         policy["accounts"] = entitlement["Item"]["accounts"]
 
-        # Collect all OU IDs for batch query
+        # Get OU accounts based on feature flag
         ou_ids = [ou["id"] for ou in entitlement["Item"]["ous"]]
         
         if ou_ids:
-            # Single GraphQL call for all OUs
-            ou_accounts = get_ou_accounts(ou_ids)
-            policy["accounts"].extend(ou_accounts)
+            if use_ou_cache:
+                # New implementation: Use cached GraphQL query
+                ou_accounts = get_ou_accounts(ou_ids)
+                policy["accounts"].extend(ou_accounts)
+            else:
+                # Original implementation: Direct Organizations API calls
+                for ou_id in ou_ids:
+                    ou_accounts = list_account_for_ou(ou_id)
+                    policy["accounts"].extend(ou_accounts)
 
         policy["permissions"] = entitlement["Item"]["permissions"]
         policy["approvalRequired"] = entitlement["Item"]["approvalRequired"]
