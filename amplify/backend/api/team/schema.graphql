@@ -159,6 +159,7 @@ type Settings
       { allow: groups, groups: ["Admin"] }
       { allow: groups, groupClaim: "scope", groups: ["api/admin"] }
       { allow: private, operations: [read] }
+      { allow: private, provider: iam, operations: [read] }
     ]
   ) {
   id: String
@@ -177,6 +178,7 @@ type Settings
   slackToken: String
   teamAdminGroup: String
   teamAuditorGroup: String
+  useOUCache: Boolean
 }
 type data @aws_iam @aws_cognito_user_pools {
   name: String

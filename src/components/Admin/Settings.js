@@ -182,7 +182,7 @@ function Settings(props) {
       setSlackToken(item.slackToken ?? "");
       setTeamAdminGroup(item.teamAdminGroup ?? params.teamAdminGroup);
       setTeamAuditorGroup(item.teamAuditorGroup ?? params.teamAuditorGroup);
-      setUseOUCache(item.useOUCache ?? true);
+      setUseOUCache(item.useOUCache !== undefined ? item.useOUCache : true);
     }
     setVisible(false);
   }
@@ -239,7 +239,7 @@ function Settings(props) {
       setSlackToken(data?.slackToken ?? "");
       setTeamAdminGroup(data?.teamAdminGroup ?? params.teamAdminGroup);
       setTeamAuditorGroup(data?.teamAuditorGroup ?? params.teamAuditorGroup);
-      setUseOUCache(data?.useOUCache ?? true);
+      setUseOUCache(data?.useOUCache !== undefined ? data.useOUCache : true);
     });
   }
 
