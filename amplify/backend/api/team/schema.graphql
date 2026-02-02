@@ -237,6 +237,10 @@ type InvalidateCacheResult @aws_cognito_user_pools {
   failed: [String]
   message: String
 }
+type RequestValidationResult @aws_cognito_user_pools {
+  valid: Boolean!
+  reason: String
+}
 type Entitlement @aws_iam @aws_cognito_user_pools {
   accounts: [data]
   permissions: [data]
@@ -331,6 +335,9 @@ type Mutation {
   invalidateOUCache(ouIds: [String]!): InvalidateCacheResult
   @function(name: "teaminvalidateOUCache-${env}")
   @auth(rules: [{ allow: groups, groups: ["Admin"] }])
+  validateRequest(accountId: String!, roleId: String!, userId: String!, groupIds: [String]!): RequestValidationResult
+  @function(name: "teamvalidateRequest-${env}")
+  @auth(rules: [{ allow: private }])
 }
 
 type Subscription {
