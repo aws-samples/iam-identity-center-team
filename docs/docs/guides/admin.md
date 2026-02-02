@@ -128,7 +128,10 @@ Administrators can control whether TEAM uses cached OU account data or queries A
 
 ### Manual cache invalidation
 
-If accounts are moved between OUs or organizational structure changes, administrators can manually clear the cache for specific OUs:
+If the state of accounts changes within an existing OU (added or removed) the cache will need to first be invalidated otherwise it will show an innacurate list of accounts to users. TEAM provides a way to manually do this in the UI. 
+For organizations with frequent or automated account changes (creation, deletion, move between OUs) it's recommended to add a cache clearing component to your automation. 
+
+Instructions to invalidate an entry:
 
 1. Log into the application as TEAM admin.
 2. In the left-hand menu go to *Administration* &rarr; *Settings*.
