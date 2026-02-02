@@ -1,14 +1,10 @@
 import json
 import os
-import re
 import boto3
 from botocore.exceptions import ClientError
 
 dynamodb = boto3.resource("dynamodb")
 cache_table = dynamodb.Table(os.environ["CACHE_TABLE_NAME"])
-
-# OU ID format validation
-OU_ID_PATTERN = re.compile(r'^ou-[a-z0-9]{4,32}-[a-z0-9]{8,32}$')
 
 
 def invalidate_cache(ou_id):
@@ -39,10 +35,6 @@ def handler(event, context):
     failed = []
     
     for ou_id in ou_ids:
-        if not OU_ID_PATTERN.match(ou_id):
-            failed.append(ou_id)
-            continue
-        
         if invalidate_cache(ou_id):
             invalidated.append(ou_id)
         else:
