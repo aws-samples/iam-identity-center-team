@@ -29,6 +29,7 @@ import {
   updateSetting,
   fetchIdCGroups,
 } from "../Shared/RequestService";
+import CacheManagement from "./CacheManagement";
 
 function Settings(props) {
   const [duration, setDuration] = useState(null);
@@ -766,6 +767,7 @@ function Settings(props) {
             </SpaceBetween>
           </Form>
         </Modal>
+        <CacheManagement addNotification={props.addNotification} />
       </ContentLayout>
     </div>
   );

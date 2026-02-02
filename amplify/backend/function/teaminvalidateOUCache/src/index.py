@@ -21,56 +21,11 @@ def invalidate_cache(ou_id):
         return False
 
 
-def handle_eventbridge_event(event):
-    """Handle EventBridge Organizations events"""
-    detail = event.get("detail", {})
-    event_name = detail.get("eventName", "")
+def handler(event, context):
+    print(f"Received event: {json.dumps(event)}")
     
-    ou_ids_to_invalidate = set()
-    
-    if event_name == "MoveAccount":
-        source_parent = detail.get("requestParameters", {}).get("sourceParentId")
-        dest_parent = detail.get("requestParameters", {}).get("destinationParentId")
-        if source_parent:
-            ou_ids_to_invalidate.add(source_parent)
-        if dest_parent:
-            ou_ids_to_invalidate.add(dest_parent)
-    
-    elif event_name in ["CreateAccount", "CloseAccount", "RemoveAccountFromOrganization"]:
-        response_elements = detail.get("responseElements", {})
-        request_params = detail.get("requestParameters", {})
-        
-        parent_id = (
-            response_elements.get("createAccountStatus", {}).get("organizationalUnitId") or
-            request_params.get("parentId") or
-            request_params.get("accountId")
-        )
-        
-        if parent_id:
-            ou_ids_to_invalidate.add(parent_id)
-    
-    elif event_name == "DeleteOrganizationalUnit":
-        ou_id = detail.get("requestParameters", {}).get("organizationalUnitId")
-        if ou_id:
-            ou_ids_to_invalidate.add(ou_id)
-    
-    results = []
-    for ou_id in ou_ids_to_invalidate:
-        success = invalidate_cache(ou_id)
-        results.append({"ouId": ou_id, "success": success})
-    
-    return {
-        "statusCode": 200,
-        "body": json.dumps({
-            "message": f"Processed {event_name}",
-            "invalidated": results
-        })
-    }
-
-
-def handle_graphql_request(event):
-    """Handle manual GraphQL mutation from admins"""
-    ou_ids = event["arguments"].get("ouIds", [])
+    # Handle GraphQL mutation
+    ou_ids = event.get("arguments", {}).get("ouIds", [])
     
     if not ou_ids:
         return {
@@ -103,20 +58,3 @@ def handle_graphql_request(event):
         "message": message
     }
 
-
-def handler(event, context):
-    print(f"Received event: {json.dumps(event)}")
-    
-    # Detect event source
-    if "detail-type" in event and event.get("source") == "aws.organizations":
-        # EventBridge event
-        return handle_eventbridge_event(event)
-    elif "arguments" in event:
-        # GraphQL mutation
-        return handle_graphql_request(event)
-    else:
-        print("Unknown event type")
-        return {
-            "statusCode": 400,
-            "body": json.dumps({"message": "Unknown event type"})
-        }
