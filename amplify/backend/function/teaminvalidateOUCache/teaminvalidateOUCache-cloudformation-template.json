@@ -1,11 +1,10 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
-  "Description": "Lambda Function resource stack creation using Amplify CLI",
+  "Description": "Lambda Function for invalidating OU cache",
   "Parameters": {
     "CloudWatchRule": {
       "Type": "String",
-      "Default": "NONE",
-      "Description": " Schedule Expression"
+      "Default": "NONE"
     },
     "deploymentBucketName": {
       "Type": "String"
@@ -17,12 +16,7 @@
       "Type": "String"
     },
     "apiteamGraphQLAPIIdOutput": {
-      "Type": "String",
-      "Default": "apiteamGraphQLAPIIdOutput"
-    },
-    "apiteamGraphQLAPIEndpointOutput": {
-      "Type": "String",
-      "Default": "apiteamGraphQLAPIEndpointOutput"
+      "Type": "String"
     }
   },
   "Conditions": {
@@ -58,12 +52,12 @@
         "FunctionName": {
           "Fn::If": [
             "ShouldNotCreateEnvResources",
-            "teamgetEntitlement",
+            "teaminvalidateOUCache",
             {
               "Fn::Join": [
                 "",
                 [
-                  "teamgetEntitlement",
+                  "teaminvalidateOUCache",
                   "-",
                   {
                     "Ref": "env"
@@ -81,23 +75,9 @@
             "REGION": {
               "Ref": "AWS::Region"
             },
-            "API_TEAM_GRAPHQLAPIIDOUTPUT": {
-              "Ref": "apiteamGraphQLAPIIdOutput"
-            },
-            "API_TEAM_GRAPHQLAPIENDPOINTOUTPUT": {
-              "Ref": "apiteamGraphQLAPIEndpointOutput"
-            },
-            "ACCOUNT_ID": {
-              "Ref": "AWS::AccountId"
-            },
-            "POLICY_TABLE_NAME": {
+            "CACHE_TABLE_NAME": {
               "Fn::ImportValue": {
-                "Fn::Sub": "${apiteamGraphQLAPIIdOutput}:GetAtt:EligibilityTable:Name"
-              }
-            },
-            "SETTINGS_TABLE_NAME": {
-              "Fn::ImportValue": {
-                "Fn::Sub": "${apiteamGraphQLAPIIdOutput}:GetAtt:SettingsTable:Name"
+                "Fn::Sub": "${apiteamGraphQLAPIIdOutput}:GetAtt:OUAccountsCacheTable:Name"
               }
             }
           }
@@ -108,9 +88,8 @@
             "Arn"
           ]
         },
-        "Runtime": "python3.10",
-        "Layers": [],
-        "Timeout": 300
+        "Runtime": "python3.12",
+        "Timeout": 30
       }
     },
     "LambdaExecutionRole": {
@@ -119,12 +98,12 @@
         "RoleName": {
           "Fn::If": [
             "ShouldNotCreateEnvResources",
-            "teamidcappLambdaRole3c74512d",
+            "teamLambdaRoleinvalidateOUCache",
             {
               "Fn::Join": [
                 "",
                 [
-                  "teamidcappLambdaRole3c74512d",
+                  "teamLambdaRoleinvalidateOUCache",
                   "-",
                   {
                     "Ref": "env"
@@ -190,40 +169,15 @@
                   }
                 ]
               }
-            },
-            {
-              "Effect": "Allow",
-              "Action": [
-                "dynamodb:GetItem"
-              ],
-              "Resource": [
-                {
-                  "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/Eligibility-*"
-                },
-                {
-                  "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/Settings-*"
-                }
-              ]
-            },
-            {
-              "Effect": "Allow",
-              "Action": [
-                "organizations:ListAccountsForParent",
-                "organizations:DescribeOrganization"
-              ],
-              "Resource": "*"
             }
           ]
         }
       }
     },
-    "AmplifyResourcesPolicy": {
-      "DependsOn": [
-        "LambdaExecutionRole"
-      ],
+    "DynamoDBPolicy": {
       "Type": "AWS::IAM::Policy",
       "Properties": {
-        "PolicyName": "amplify-lambda-execution-policy",
+        "PolicyName": "dynamodb-cache-policy",
         "Roles": [
           {
             "Ref": "LambdaExecutionRole"
@@ -235,101 +189,33 @@
             {
               "Effect": "Allow",
               "Action": [
-                "appsync:GraphQL"
+                "dynamodb:DeleteItem"
               ],
-              "Resource": [
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:appsync:",
-                      {
-                        "Ref": "AWS::Region"
-                      },
-                      ":",
-                      {
-                        "Ref": "AWS::AccountId"
-                      },
-                      ":apis/",
-                      {
-                        "Ref": "apiteamGraphQLAPIIdOutput"
-                      },
-                      "/types/Query/*"
-                    ]
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:dynamodb:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":table/",
+                    {
+                      "Fn::ImportValue": {
+                        "Fn::Sub": "${apiteamGraphQLAPIIdOutput}:GetAtt:OUAccountsCacheTable:Name"
+                      }
+                    }
                   ]
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:appsync:",
-                      {
-                        "Ref": "AWS::Region"
-                      },
-                      ":",
-                      {
-                        "Ref": "AWS::AccountId"
-                      },
-                      ":apis/",
-                      {
-                        "Ref": "apiteamGraphQLAPIIdOutput"
-                      },
-                      "/types/Mutation/*"
-                    ]
-                  ]
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:appsync:",
-                      {
-                        "Ref": "AWS::Region"
-                      },
-                      ":",
-                      {
-                        "Ref": "AWS::AccountId"
-                      },
-                      ":apis/",
-                      {
-                        "Ref": "apiteamGraphQLAPIIdOutput"
-                      },
-                      "/types/Subscription/*"
-                    ]
-                  ]
-                }
-              ]
+                ]
+              }
             }
           ]
         }
       }
-    },
-    "CustomLambdaExecutionPolicy": {
-      "Type": "AWS::IAM::Policy",
-      "Properties": {
-        "PolicyName": "custom-lambda-execution-policy",
-        "PolicyDocument": {
-          "Version": "2012-10-17",
-          "Statement": [
-            {
-              "Action": [
-                "organizations:Describe*",
-                "organizations:List*"
-              ],
-              "Resource": [
-                "*"
-              ],
-              "Effect": "Allow"
-            }
-          ]
-        },
-        "Roles": [
-          {
-            "Ref": "LambdaExecutionRole"
-          }
-        ]
-      },
-      "DependsOn": "LambdaExecutionRole"
     }
   },
   "Outputs": {
