@@ -656,7 +656,7 @@ function Settings(props) {
                 <FormField
                   label="OU account cache"
                   stretch
-                  description="Use cached OU account data for faster loading. Disable to query Organizations API directly (slower but always fresh)."
+                  description="Use cached OU account data for faster loading of the account drop down in Create Request. Disable to query Organizations API directly (slower but always fresh)."
                 >
                   <Toggle
                     onChange={({ detail }) => setUseOUCache(detail.checked)}

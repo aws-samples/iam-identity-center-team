@@ -35,7 +35,11 @@ function CacheManagement(props) {
       return;
     }
 
-    const invalidIds = ids.filter(id => !id.match(/^ou-[a-z0-9]{4,32}-[a-z0-9]{8,32}$/));
+    // Validate OU ID format: ou-xxxx-xxxxxxxx or root: r-xxxx
+    const invalidIds = ids.filter(id => 
+      !id.match(/^ou-[a-z0-9]{4,32}-[a-z0-9]{8,32}$/) && 
+      !id.match(/^r-[a-z0-9]{4}$/)
+    );
     if (invalidIds.length > 0) {
       setError(`Invalid OU ID format: ${invalidIds.join(", ")}`);
       return;
