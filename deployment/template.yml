@@ -36,6 +36,10 @@ Parameters:
     Type: String
     Description: Name of the secret in AWS Secrets Manager
     Default: ''
+  cacheTTL:
+    Type: Number
+    Description: Cache TTL in seconds for OU accounts cache
+    Default: 604800
 
 Conditions:
   IsEmptyCloudTrailAuditLogs: !Equals [!Ref CloudTrailAuditLogs, ""]
@@ -164,6 +168,8 @@ Resources:
           Value: !Ref tags
         - Name: AMPLIFY_CUSTOM_DOMAIN
           Value: !Ref customAmplifyDomain
+        - Name: CACHE_TTL
+          Value: !Ref cacheTTL
         - Name: _CUSTOM_IMAGE
           Value: amplify:al2023
       Tags:

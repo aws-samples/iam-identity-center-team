@@ -251,6 +251,7 @@ export const createSettings = /* GraphQL */ `
       slackToken
       teamAdminGroup
       teamAuditorGroup
+      useOUCache
       createdAt
       updatedAt
       __typename
@@ -279,6 +280,7 @@ export const updateSettings = /* GraphQL */ `
       slackToken
       teamAdminGroup
       teamAuditorGroup
+      useOUCache
       createdAt
       updatedAt
       __typename
