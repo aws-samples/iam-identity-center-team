@@ -124,7 +124,7 @@ Administrators can control whether TEAM uses cached OU account data or queries A
    - **Disabled (direct API)** - Queries AWS Organizations API directly. May be slower and subject to API throttling in large organizations where eligibility is mapped to OUs.
 6. Choose **Submit** to save changes.
 
-> **Note:** The cache is enabled by default. 
+> **Note:** The cache is disabled by default. 
 
 ### Manual cache invalidation
 
