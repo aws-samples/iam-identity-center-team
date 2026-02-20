@@ -200,7 +200,7 @@ def handler(event, context):
     
     # Get feature flag setting
     settings = get_settings()
-    use_ou_cache = settings.get("useOUCache", True)  # Default to True (cached)
+    use_ou_cache = settings.get("useOUCache", False)  # Default to False (direct API)
     print(f"Using OU cache: {use_ou_cache}")
 
     for id in [userId] + groupIds:

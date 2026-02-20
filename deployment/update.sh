@@ -100,7 +100,6 @@ else
           teamAuditGroup="$TEAM_AUDITOR_GROUP" \
           tags="$TAGS" \
           teamAccount="$TEAM_ACCOUNT" \
-          cacheTTL=$CACHE_TTL \
           customAmplifyDomain="$UI_DOMAIN" \
           cacheTTL=$CACHE_TTL \
           customRepository="Yes" \
@@ -133,7 +132,6 @@ else
           teamAdminGroup="$TEAM_ADMIN_GROUP" \
           teamAuditGroup="$TEAM_AUDITOR_GROUP" \
           teamAccount="$TEAM_ACCOUNT" \
-          cacheTTL=$CACHE_TTL \
           customRepository="Yes" \
           customRepositorySecretName="$SECRET_NAME" \
           tags="$TAGS" \
