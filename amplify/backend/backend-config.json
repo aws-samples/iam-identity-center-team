@@ -111,6 +111,13 @@
       "dependsOn": [
         {
           "attributes": [
+            "NotificationTopicArn"
+          ],
+          "category": "custom",
+          "resourceName": "sns"
+        },
+        {
+          "attributes": [
             "Arn"
           ],
           "category": "function",
@@ -178,6 +185,13 @@
       "dependsOn": [
         {
           "attributes": [
+            "NotificationTopicArn"
+          ],
+          "category": "custom",
+          "resourceName": "sns"
+        },
+        {
+          "attributes": [
             "GraphQLAPIIdOutput"
           ],
           "category": "api",
@@ -205,6 +219,13 @@
     "teamRouter": {
       "build": true,
       "dependsOn": [
+        {
+          "attributes": [
+            "NotificationTopicArn"
+          ],
+          "category": "custom",
+          "resourceName": "sns"
+        },
         {
           "attributes": [
             "GraphQLAPIIdOutput",

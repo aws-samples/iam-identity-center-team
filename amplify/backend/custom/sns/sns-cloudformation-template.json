@@ -30,9 +30,6 @@
       "Description": "The ARN of the SNS topic where TEAM notifications will be sent",
       "Value": {
         "Ref": "snsNotificationTopic"
-      },
-      "Export": {
-        "Name": "NotificationTopicArn"
       }
     }
   }
