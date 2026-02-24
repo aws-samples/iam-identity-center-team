@@ -21,6 +21,7 @@ import {
   getEligibility,
   listGroups,
   getSettings,
+  getSettingsAdmin,
   getMgmtPermissions,
   getUserPolicy
 } from "../../graphql/queries";
@@ -416,6 +417,20 @@ export async function getSetting(id) {
     return data;
   } catch (err) {
     console.log("error fetching settings");
+  }
+}
+
+export async function getSettingAdmin(id) {
+  try {
+    const request = await API.graphql(
+      graphqlOperation(getSettingsAdmin, {
+        id: id,
+      })
+    );
+    const data = await request.data.getSettings;
+    return data;
+  } catch (err) {
+    console.log("error fetching admin settings");
   }
 }
 
