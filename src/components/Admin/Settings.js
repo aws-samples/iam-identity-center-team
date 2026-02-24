@@ -24,7 +24,7 @@ import StatusIndicator from "@awsui/components-react/status-indicator";
 import { Divider } from "antd";
 import "../../index.css";
 import {
-  getSetting,
+  getSettingAdmin,
   createSetting,
   updateSetting,
   fetchIdCGroups,
@@ -223,7 +223,7 @@ function Settings(props) {
   }
 
   function getSettings() {
-    getSetting("settings").then((data) => {
+    getSettingAdmin("settings").then((data) => {
       setItem(data ?? null);
       setDuration(data?.duration ?? "9");
       setExpiry(data?.expiry ?? "3");

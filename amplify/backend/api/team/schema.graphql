@@ -176,6 +176,12 @@ type Settings
   sesSourceEmail: String
   sesSourceArn: String
   slackToken: String
+    @auth(
+      rules: [
+        { allow: groups, groups: ["Admin"], operations: [create, read, update] }
+        { allow: groups, groupClaim: "scope", groups: ["api/admin"], operations: [create, read, update] }
+      ]
+    )
   teamAdminGroup: String
   teamAuditorGroup: String
   useOUCache: Boolean
@@ -416,4 +422,3 @@ type Query {
     @function(name: "teamgetOUAccounts-${env}")
     @auth(rules: [{ allow: private, provider: iam} { allow: private }])
 }
-

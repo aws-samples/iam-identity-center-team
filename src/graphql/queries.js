@@ -275,6 +275,31 @@ export const getSettings = /* GraphQL */ `
       slackAuditNotificationsChannel
       sesSourceEmail
       sesSourceArn
+      teamAdminGroup
+      teamAuditorGroup
+      useOUCache
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const getSettingsAdmin = /* GraphQL */ `
+  query GetSettingsAdmin($id: ID!) {
+    getSettings(id: $id) {
+      id
+      duration
+      expiry
+      comments
+      ticketNo
+      approval
+      modifiedBy
+      sesNotificationsEnabled
+      snsNotificationsEnabled
+      slackNotificationsEnabled
+      slackAuditNotificationsChannel
+      sesSourceEmail
+      sesSourceArn
       slackToken
       teamAdminGroup
       teamAuditorGroup
@@ -306,7 +331,6 @@ export const listSettings = /* GraphQL */ `
         slackAuditNotificationsChannel
         sesSourceEmail
         sesSourceArn
-        slackToken
         teamAdminGroup
         teamAuditorGroup
         createdAt
