@@ -63,6 +63,7 @@ Update the parameters in the **parameters.sh** file as follows:
 - **TAGS** - Tags that should be propagated to nested stacks and underlying resources
 - **UI_DOMAIN** - Custom domain for Amplify hosted frontend application (should only be included if you have setup a custom domain for the frontend application)
 - **CACHE_TTL** - Cache time-to-live in seconds for organizational unit (OU) account lists (default: 604800 = 1 week). Cached entries automatically expire after this duration. Consider increasing this value (e.g., 2592000 = 30 days) for organizations with infrequent account changes. Administrators can also manually invalidate specific OU cache entries or disable caching entirely via the Settings page.
+- **DISABLE_LANDING_PAGE** - When set to `true`, bypasses the landing page and redirects unauthenticated users directly to SSO. Defaults to `false`.
 
 For example:
 
@@ -79,6 +80,7 @@ CLOUDTRAIL_AUDIT_LOGS=arn:aws:cloudtrail:us-east-1:123456789101:eventdatastore/e
 UI_DOMAIN=portal.teamtest.online
 SECRET_NAME=TEAM-IDC-APP
 CACHE_TTL=604800
+DISABLE_LANDING_PAGE=false
 ```
 
 ---
@@ -164,4 +166,3 @@ To deploy TEAM into management account:
     and uses **ORG_MASTER_PROFILE** to deploy the solution.
 
 2. Do **not** run the initialisation script **init.sh**. You can proceed straight to running the deployment script **deploy.sh**.
-
