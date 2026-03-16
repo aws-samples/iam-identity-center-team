@@ -210,6 +210,16 @@ export const schema = {
                     }
                 },
                 {
+                    "type": "key",
+                    "properties": {
+                        "name": "byStatus",
+                        "queryField": "requestByStatus",
+                        "fields": [
+                            "status"
+                        ]
+                    }
+                },
+                {
                     "type": "auth",
                     "properties": {
                         "rules": [
