@@ -22,7 +22,10 @@ import {
   listGroups,
   getSettings,
   getMgmtPermissions,
-  getUserPolicy
+  getUserPolicy,
+  listPolicies,
+  listPoliciesWithAccounts,
+  getPolicies
 } from "../../graphql/queries";
 import {
   createRequests,
@@ -36,7 +39,10 @@ import {
   deleteEligibility,
   updateEligibility,
   createSettings,
-  updateSettings
+  updateSettings,
+  createPolicies,
+  updatePolicies,
+  deletePolicies
 } from "../../graphql/mutations";
 
 export async function fetchAccounts() {
@@ -299,7 +305,8 @@ export async function addApprovers(data) {
     );
     return req.data.createApprovers.Id;
   } catch (err) {
-    console.log("error adding Approvers");
+    console.log("error adding Approvers", err);
+    throw err;
   }
 }
 
@@ -347,7 +354,8 @@ export async function addPolicy(data) {
     );
     return req.data.createEligibility.id;
   } catch (err) {
-    console.log("error creating policy");
+    console.log("error creating policy", err);
+    throw err;
   }
 }
 
@@ -358,7 +366,8 @@ export async function delPolicy(data) {
     );
     return req.data.deleteEligibility;
   } catch (err) {
-    console.log("error deleting policy");
+    console.log("error deleting policy", err);
+    throw err;
   }
 }
 
@@ -369,7 +378,8 @@ export async function editPolicy(data) {
     );
     return req.data.updateEligibility;
   } catch (err) {
-    console.log("error updating policy");
+    console.log("error updating policy", err);
+    throw err;
   }
 }
 
@@ -448,6 +458,110 @@ export async function revokePim(data) {
   }
 }
 
+// Policies CRUD operations
+export async function getAllPolicies() {
+  let nextToken = null;
+  let data = [];
+  try {
+    do {
+      const request = await API.graphql(graphqlOperation(listPolicies, {
+        nextToken
+      }));
+      data = data.concat(request.data.listPolicies.items);
+      nextToken = request.data.listPolicies.nextToken;
+    } while (nextToken);
+    return data;
+  } catch (err) {
+    console.log("error fetching policies");
+    return { "error": err };
+  }
+}
+
+export async function getAllPoliciesWithAccounts() {
+  try {
+    const request = await API.graphql(graphqlOperation(listPoliciesWithAccounts));
+    return request.data.listPoliciesWithAccounts || [];
+  } catch (err) {
+    console.log("error fetching policies with accounts");
+    return { "error": err };
+  }
+}
+
+export async function getPolicy(id) {
+  try {
+    const request = await API.graphql(
+      graphqlOperation(getPolicies, {
+        id: id,
+      })
+    );
+    const data = await request.data.getPolicies;
+    return data;
+  } catch (err) {
+    console.log("error fetching policy");
+  }
+}
+
+export async function addPolicyTemplate(data) {
+  try {
+    const req = await API.graphql(
+      graphqlOperation(createPolicies, { input: data })
+    );
+    return req.data.createPolicies.id;
+  } catch (err) {
+    console.log("error creating policy template", err);
+    throw err;
+  }
+}
+
+export async function editPolicyTemplate(data) {
+  try {
+    const req = await API.graphql(
+      graphqlOperation(updatePolicies, { input: data })
+    );
+    return req.data.updatePolicies;
+  } catch (err) {
+    console.log("error updating policy template", err);
+    throw err;
+  }
+}
+
+export async function delPolicyTemplate(data) {
+  try {
+    const req = await API.graphql(
+      graphqlOperation(deletePolicies, { input: data })
+    );
+    return req.data.deletePolicies;
+  } catch (err) {
+    console.log("error deleting policy template");
+  }
+}
+
+// Check if approver group is used in any policy
+export async function getApproverGroupUsage(approverGroupId) {
+  const policies = await getAllPolicies();
+  if (policies.error) {
+    return { error: policies.error };
+  }
+  const usedIn = policies.filter(policy =>
+    policy.approverGroupIds &&
+    policy.approverGroupIds.some(group => group.id === approverGroupId)
+  );
+  return usedIn;
+}
+
+// Check if policy is used in any eligibility
+export async function getPolicyUsage(policyId) {
+  const eligibilities = await getAllEligibility();
+  if (eligibilities.error) {
+    return { error: eligibilities.error };
+  }
+  const usedIn = eligibilities.filter(eligibility =>
+    eligibility.policyIds &&
+    eligibility.policyIds.includes(policyId)
+  );
+  return usedIn;
+}
+
 export async function invalidateOUCache(ouIds) {
   try {
     const mutation = `
@@ -469,18 +583,18 @@ export async function invalidateOUCache(ouIds) {
   }
 }
 
-export async function validateRequest(accountId, roleId, userId, groupIds) {
+export async function validateRequest(accountId, roleId, userId, groupIds, policyId = null) {
   try {
     const mutation = `
-      mutation ValidateRequest($accountId: String!, $roleId: String!, $userId: String!, $groupIds: [String]!) {
-        validateRequest(accountId: $accountId, roleId: $roleId, userId: $userId, groupIds: $groupIds) {
+      mutation ValidateRequest($accountId: String!, $roleId: String!, $userId: String!, $groupIds: [String]!, $policyId: String) {
+        validateRequest(accountId: $accountId, roleId: $roleId, userId: $userId, groupIds: $groupIds, policyId: $policyId) {
           valid
           reason
         }
       }
     `;
     const response = await API.graphql(
-      graphqlOperation(mutation, { accountId, roleId, userId, groupIds })
+      graphqlOperation(mutation, { accountId, roleId, userId, groupIds, policyId })
     );
     return response.data.validateRequest;
   } catch (err) {

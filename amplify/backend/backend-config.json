@@ -180,6 +180,20 @@
       "providerPlugin": "awscloudformation",
       "service": "Lambda"
     },
+    "teamListPoliciesWithAccounts": {
+      "build": true,
+      "dependsOn": [
+        {
+          "attributes": [
+            "GraphQLAPIIdOutput"
+          ],
+          "category": "api",
+          "resourceName": "team"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
     "teamNotifications": {
       "build": true,
       "dependsOn": [
@@ -310,48 +324,6 @@
       "providerPlugin": "awscloudformation",
       "service": "Lambda"
     },
-    "teamgetOUAccounts": {
-      "build": true,
-      "dependsOn": [
-        {
-          "attributes": [
-            "GraphQLAPIIdOutput"
-          ],
-          "category": "api",
-          "resourceName": "team"
-        }
-      ],
-      "providerPlugin": "awscloudformation",
-      "service": "Lambda"
-    },
-    "teaminvalidateOUCache": {
-      "build": true,
-      "dependsOn": [
-        {
-          "attributes": [
-            "GraphQLAPIIdOutput"
-          ],
-          "category": "api",
-          "resourceName": "team"
-        }
-      ],
-      "providerPlugin": "awscloudformation",
-      "service": "Lambda"
-    },
-    "teamvalidateRequest": {
-      "build": true,
-      "dependsOn": [
-        {
-          "attributes": [
-            "GraphQLAPIIdOutput"
-          ],
-          "category": "api",
-          "resourceName": "team"
-        }
-      ],
-      "providerPlugin": "awscloudformation",
-      "service": "Lambda"
-    },
     "teamgetIdCGroups": {
       "build": true,
       "providerPlugin": "awscloudformation",
@@ -386,6 +358,20 @@
     },
     "teamgetOU": {
       "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
+    "teamgetOUAccounts": {
+      "build": true,
+      "dependsOn": [
+        {
+          "attributes": [
+            "GraphQLAPIIdOutput"
+          ],
+          "category": "api",
+          "resourceName": "team"
+        }
+      ],
       "providerPlugin": "awscloudformation",
       "service": "Lambda"
     },
@@ -446,6 +432,20 @@
       "providerPlugin": "awscloudformation",
       "service": "Lambda"
     },
+    "teaminvalidateOUCache": {
+      "build": true,
+      "dependsOn": [
+        {
+          "attributes": [
+            "GraphQLAPIIdOutput"
+          ],
+          "category": "api",
+          "resourceName": "team"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
     "teamqueryLogs": {
       "build": true,
       "dependsOn": [
@@ -455,6 +455,20 @@
           ],
           "category": "custom",
           "resourceName": "cloudtrailLake"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
+    "teamvalidateRequest": {
+      "build": true,
+      "dependsOn": [
+        {
+          "attributes": [
+            "GraphQLAPIIdOutput"
+          ],
+          "category": "api",
+          "resourceName": "team"
         }
       ],
       "providerPlugin": "awscloudformation",
@@ -514,6 +528,22 @@
         {
           "category": "function",
           "resourceName": "teamListGroups"
+        }
+      ]
+    },
+    "AMPLIFY_function_teamListPoliciesWithAccounts_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teamListPoliciesWithAccounts"
+        }
+      ]
+    },
+    "AMPLIFY_function_teamListPoliciesWithAccounts_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teamListPoliciesWithAccounts"
         }
       ]
     },
@@ -677,6 +707,22 @@
         }
       ]
     },
+    "AMPLIFY_function_teamgetOUAccounts_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teamgetOUAccounts"
+        }
+      ]
+    },
+    "AMPLIFY_function_teamgetOUAccounts_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teamgetOUAccounts"
+        }
+      ]
+    },
     "AMPLIFY_function_teamgetOU_deploymentBucketName": {
       "usedBy": [
         {
@@ -757,6 +803,22 @@
         }
       ]
     },
+    "AMPLIFY_function_teaminvalidateOUCache_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teaminvalidateOUCache"
+        }
+      ]
+    },
+    "AMPLIFY_function_teaminvalidateOUCache_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teaminvalidateOUCache"
+        }
+      ]
+    },
     "AMPLIFY_function_teamqueryLogs_deploymentBucketName": {
       "usedBy": [
         {
@@ -770,6 +832,22 @@
         {
           "category": "function",
           "resourceName": "teamqueryLogs"
+        }
+      ]
+    },
+    "AMPLIFY_function_teamvalidateRequest_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teamvalidateRequest"
+        }
+      ]
+    },
+    "AMPLIFY_function_teamvalidateRequest_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teamvalidateRequest"
         }
       ]
     },

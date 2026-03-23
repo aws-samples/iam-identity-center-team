@@ -35,7 +35,8 @@ import {
   delApprover,
   editApprover,
   fetchIdCGroups,
-  getSetting
+  getSetting,
+  getApproverGroupUsage
 } from "../Shared/RequestService";
 import "../../index.css";
 
@@ -232,6 +233,7 @@ function Approvers(props) {
   const { selectedItems } = collectionProps;
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [tableLoading, setTableLoading] = useState(true);
+  const [refreshLoading, setRefreshLoading] = useState(false);
   const [visible, setVisible] = useState(false);
   const [deleteVisible, setDeleteVisible] = useState(false);
   const [editVisible, setEditVisible] = useState(false);
@@ -243,6 +245,7 @@ function Approvers(props) {
   const [ticketError, setTicketError] = useState("");
   const [resource, setResource] = useState("");
   const [resourceError, setResourceError] = useState("");
+  const [groupName, setGroupName] = useState("");
 
   const [accounts, setAccounts] = useState([]);
   const [accountStatus, setAccountStatus] = useState("finished");
@@ -268,12 +271,20 @@ function Approvers(props) {
     getAllApprovers().then((items) => {
       setAllItems(items);
       setTableLoading(false);
+      setRefreshLoading(false);
       setConfirmLoading(false);
       setVisible(false);
       setDeleteVisible(false);
       handleDismiss();
       getSettings();
     });
+  }
+
+  function handleRefresh() {
+    setRefreshLoading(true);
+    setTableLoading(true);
+    props.addNotification([]);
+    views();
   }
 
   function handleAdd() {
@@ -294,24 +305,40 @@ function Approvers(props) {
     } else handleEdit();
   }
 
-  function handleDelete() {
-    selectedItems.forEach((item) => {
-      setConfirmLoading(true);
-      const data = {
-        id: item.id,
-      };
-      delApprover(data).then(() => {
-        views();
+  async function handleDelete() {
+    setConfirmLoading(true);
+    for (const item of selectedItems) {
+      // Check if approver group is used in any policy
+      const usedInPolicies = await getApproverGroupUsage(item.id);
+      if (usedInPolicies.length > 0) {
+        setConfirmLoading(false);
+        setDeleteVisible(false);
         props.addNotification([
           {
-            type: "success",
-            content: `Approvers deleted successfully`,
+            type: "error",
+            content: `Cannot delete "${item.name}" - it is used in ${usedInPolicies.length} policy/policies. Remove it from policies first.`,
             dismissible: true,
             onDismiss: () => props.addNotification([]),
           },
         ]);
-      });
-    });
+        return;
+      }
+      const data = {
+        id: item.id,
+      };
+      await delApprover(data);
+    }
+    views();
+    setConfirmLoading(false);
+    setDeleteVisible(false);
+    props.addNotification([
+      {
+        type: "success",
+        content: `Approvers deleted successfully`,
+        dismissible: true,
+        onDismiss: () => props.addNotification([]),
+      },
+    ]);
   }
 
   function handleConfirmEdit() {
@@ -406,13 +433,29 @@ function Approvers(props) {
       setTicketError("Enter valid change management ticket number");
       valid = false;
     }
-    if (!resource && action === "submit") {
-      setResourceError("Select a valid entity");
-      valid = false;
-    }
     if (!Type && action === "submit") {
       setTypeError("Select a valid entity type");
       valid = false;
+    }
+    if (action === "submit") {
+      if (Type.value === "Group") {
+        if (!groupName || groupName.trim() === "") {
+          setResourceError("Enter a valid group name");
+          valid = false;
+        } else if (!/^[a-zA-Z0-9\-_#]+$/.test(groupName.trim())) {
+          setResourceError("Group name can only contain alphanumeric characters, hyphens, underscores and #");
+          valid = false;
+        } else if (groupName.trim().length > 2048) {
+          setResourceError("Group name exceeds maximum length of 2048 characters");
+          valid = false;
+        } else if (allItems.some(item => item.id === groupName.trim())) {
+          setResourceError("Group name already exists");
+          valid = false;
+        }
+      } else if (!resource) {
+        setResourceError("Select a valid entity");
+        valid = false;
+      }
     }
     return valid;
   }
@@ -422,27 +465,73 @@ function Approvers(props) {
     validate(action).then((valid) => {
       if (valid) {
         event.preventDefault();
-        resource.forEach((item) => {
+        if (Type.value === "Group") {
           const data = {
             type: Type.value,
-            name: item.label,
+            name: groupName.trim(),
             approvers: approver.map(({ label }) => label),
             groupIds: approver.map(({ value }) => value),
-            id: item.value,
+            id: groupName.trim(),
             ticketNo: ticketNo,
           };
-          addApprovers(data).then(() => {
-            views();
-            props.addNotification([
-              {
-                type: "success",
-                content: "Approvers added successfully",
-                dismissible: true,
-                onDismiss: () => props.addNotification([]),
-              },
-            ]);
+          addApprovers(data)
+            .then(() => {
+              views();
+              props.addNotification([
+                {
+                  type: "success",
+                  content: "Approver group added successfully",
+                  dismissible: true,
+                  onDismiss: () => props.addNotification([]),
+                },
+              ]);
+            })
+            .catch((err) => {
+              const errorMessage = err?.errors?.[0]?.message || "Failed to add approver group";
+              props.addNotification([
+                {
+                  type: "error",
+                  content: errorMessage,
+                  dismissible: true,
+                  onDismiss: () => props.addNotification([]),
+                },
+              ]);
+            });
+        } else {
+          resource.forEach((item) => {
+            const data = {
+              type: Type.value,
+              name: item.label,
+              approvers: approver.map(({ label }) => label),
+              groupIds: approver.map(({ value }) => value),
+              id: item.value,
+              ticketNo: ticketNo,
+            };
+            addApprovers(data)
+              .then(() => {
+                views();
+                props.addNotification([
+                  {
+                    type: "success",
+                    content: "Approvers added successfully",
+                    dismissible: true,
+                    onDismiss: () => props.addNotification([]),
+                  },
+                ]);
+              })
+              .catch((err) => {
+                const errorMessage = err?.errors?.[0]?.message || "Failed to add approver";
+                props.addNotification([
+                  {
+                    type: "error",
+                    content: errorMessage,
+                    dismissible: true,
+                    onDismiss: () => props.addNotification([]),
+                  },
+                ]);
+              });
           });
-        });
+        }
       }
     });
   }
@@ -455,6 +544,7 @@ function Approvers(props) {
     setTypeError("");
     setResource("");
     setResourceError("");
+    setGroupName("");
     setApprover([]);
     setApproverError("");
     setTicketNo("");
@@ -485,7 +575,11 @@ function Approvers(props) {
             }
             actions={
               <SpaceBetween size="s" direction="horizontal">
-                <Button iconName="refresh" />
+                <Button
+                  iconName="refresh"
+                  onClick={handleRefresh}
+                  loading={refreshLoading}
+                />
                 <ButtonDropdown
                   items={[
                     {
@@ -571,7 +665,7 @@ function Approvers(props) {
             <FormField
               label="Entity type"
               stretch
-              description="Account or organisation unit"
+              description="Account, Organisation unit or Group"
               errorText={typeError}
             >
               <Select
@@ -585,6 +679,10 @@ function Approvers(props) {
                     label: "Account",
                     value: "Account",
                   },
+                  {
+                    label: "Group",
+                    value: "Group",
+                  }
                 ]}
                 selectedOption={Type}
                 onChange={(event) => {
@@ -636,6 +734,23 @@ function Approvers(props) {
                   action="create"
                   allItems={allItems}
                   />) : <Spinner size="large"/>}
+              </FormField>
+            )}
+            {Type.value === "Group" && (
+              <FormField
+                label="Group name"
+                stretch
+                description="Name for the approver group (used as identifier)"
+                errorText={resourceError}
+              >
+                <Input
+                  value={groupName}
+                  placeholder="Enter group name (e.g. Security Team)"
+                  onChange={(event) => {
+                    setResourceError("");
+                    setGroupName(event.detail.value);
+                  }}
+                />
               </FormField>
             )}
             <FormField
