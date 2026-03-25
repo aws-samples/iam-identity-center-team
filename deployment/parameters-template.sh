@@ -24,6 +24,10 @@ CLOUDTRAIL_AUDIT_LOGS=arn:aws:cloudtrail:us-east-1:123456789101:eventdatastore/e
 SECRET_NAME=TEAM-IDC-APP
 CACHE_TTL=604800
 
+# Optional: KMS key ARN for IAM Identity Center CMK encryption
+# Required when Identity Center uses customer managed keys
+IDENTITY_CENTER_KMS_KEY_ARN=""
+
 # Uncomment the next line only if you have a custom domain
 # UI_DOMAIN=portal.teamtest.online
 

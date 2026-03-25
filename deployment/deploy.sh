@@ -44,6 +44,7 @@ if [ -z "$SECRET_NAME" ]; then
           tags="$TAGS" \
           teamAccount="$TEAM_ACCOUNT" \
           cacheTTL=$CACHE_TTL \
+          IdentityCenterKmsKeyArn="$IDENTITY_CENTER_KMS_KEY_ARN" \
           customAmplifyDomain="$UI_DOMAIN" \
         --tags $TAGS \
         --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
@@ -58,6 +59,7 @@ if [ -z "$SECRET_NAME" ]; then
           tags="$TAGS" \
           teamAccount="$TEAM_ACCOUNT" \
           cacheTTL=$CACHE_TTL \
+          IdentityCenterKmsKeyArn="$IDENTITY_CENTER_KMS_KEY_ARN" \
         --tags $TAGS \
         --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
     fi
@@ -74,6 +76,7 @@ if [ -z "$SECRET_NAME" ]; then
           tags="$TAGS" \
           customAmplifyDomain="$UI_DOMAIN" \
           cacheTTL=$CACHE_TTL \
+          IdentityCenterKmsKeyArn="$IDENTITY_CENTER_KMS_KEY_ARN" \
         --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
     else
       aws cloudformation deploy --region $REGION --template-file template.yml \
@@ -85,6 +88,7 @@ if [ -z "$SECRET_NAME" ]; then
           teamAuditGroup="$TEAM_AUDITOR_GROUP" \
           teamAccount="$TEAM_ACCOUNT" \
           cacheTTL=$CACHE_TTL \
+          IdentityCenterKmsKeyArn="$IDENTITY_CENTER_KMS_KEY_ARN" \
         --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
     fi
   fi
@@ -103,6 +107,7 @@ else
           teamAccount="$TEAM_ACCOUNT" \
           customAmplifyDomain="$UI_DOMAIN" \
           cacheTTL=$CACHE_TTL \
+          IdentityCenterKmsKeyArn="$IDENTITY_CENTER_KMS_KEY_ARN" \
           customRepository="Yes" \
           customRepositorySecretName="$SECRET_NAME" \
         --tags $TAGS \
@@ -118,6 +123,7 @@ else
           tags="$TAGS" \
           teamAccount="$TEAM_ACCOUNT" \
           cacheTTL=$CACHE_TTL \
+          IdentityCenterKmsKeyArn="$IDENTITY_CENTER_KMS_KEY_ARN" \
           customRepository="Yes" \
           customRepositorySecretName="$SECRET_NAME" \
         --tags $TAGS \
@@ -136,6 +142,7 @@ else
           tags="$TAGS" \
           customAmplifyDomain="$UI_DOMAIN" \
           cacheTTL=$CACHE_TTL \
+          IdentityCenterKmsKeyArn="$IDENTITY_CENTER_KMS_KEY_ARN" \
           customRepository="Yes" \
           customRepositorySecretName="$SECRET_NAME" \
         --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
@@ -149,6 +156,7 @@ else
           teamAuditGroup="$TEAM_AUDITOR_GROUP" \
           teamAccount="$TEAM_ACCOUNT" \
           cacheTTL=$CACHE_TTL \
+          IdentityCenterKmsKeyArn="$IDENTITY_CENTER_KMS_KEY_ARN" \
           customRepository="Yes" \
           customRepositorySecretName="$SECRET_NAME" \
         --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
