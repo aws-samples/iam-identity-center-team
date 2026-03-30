@@ -278,6 +278,7 @@ export const getSettings = /* GraphQL */ `
       slackToken
       teamAdminGroup
       teamAuditorGroup
+      useOUCache
       createdAt
       updatedAt
       __typename

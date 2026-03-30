@@ -12,6 +12,6 @@
   },
   "author": "",
   "dependencies": {
-    "@aws-sdk/client-cloudtrail": "^3.53.0"
+    "@aws-sdk/client-cloudtrail": "^3.777.0"
   }
 }

@@ -36,6 +36,10 @@ Parameters:
     Type: String
     Description: Name of the secret in AWS Secrets Manager
     Default: ''
+  cacheTTL:
+    Type: Number
+    Description: Cache TTL in seconds for OU accounts cache
+    Default: 604800
 
 Conditions:
   IsEmptyCloudTrailAuditLogs: !Equals [!Ref CloudTrailAuditLogs, ""]
@@ -99,6 +103,8 @@ Resources:
       EnvironmentVariables: 
         - Name: AMPLIFY_DESTRUCTIVE_UPDATES
           Value: true
+        - Name: _LIVE_UPDATES
+          Value: '[{"name":"Node.js version","pkg":"node","type":"nvm","version":"22.17"}]'
 
 
       BuildSpec: |-
@@ -107,8 +113,8 @@ Resources:
           phases:
             preBuild:
               commands:
-                - '# 12.0.1 Updates auth lambdas to node18'
-                - npm i -g @aws-amplify/cli@12.10.1
+                - '# 14.0.0 Enforces SSL on S3 deployment bucket'
+                - npm i -g @aws-amplify/cli@14.0.0
                 - '# Update deployment parameters with helper script'
                 - node parameters.js
             build:
@@ -162,6 +168,8 @@ Resources:
           Value: !Ref tags
         - Name: AMPLIFY_CUSTOM_DOMAIN
           Value: !Ref customAmplifyDomain
+        - Name: CACHE_TTL
+          Value: !Ref cacheTTL
         - Name: _CUSTOM_IMAGE
           Value: amplify:al2023
       Tags:
@@ -172,7 +180,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       Handler: index.handler
-      Runtime: python3.9
+      Runtime: python3.10
       Role: !GetAtt AmplifyLambdaRole.Arn
       Timeout: 120
       Architectures:
