@@ -26,6 +26,7 @@ export const getRequests = /* GraphQL */ `
       ticketNo
       revokeComment
       session_duration
+      policyId
       createdAt
       updatedAt
       owner
@@ -63,6 +64,7 @@ export const listRequests = /* GraphQL */ `
         ticketNo
         revokeComment
         session_duration
+        policyId
         createdAt
         updatedAt
         owner
@@ -113,6 +115,7 @@ export const requestByEmailAndStatus = /* GraphQL */ `
         ticketNo
         revokeComment
         session_duration
+        policyId
         createdAt
         updatedAt
         owner
@@ -163,6 +166,7 @@ export const requestByApproverAndStatus = /* GraphQL */ `
         ticketNo
         revokeComment
         session_duration
+        policyId
         createdAt
         updatedAt
         owner
@@ -278,7 +282,13 @@ export const getSettings = /* GraphQL */ `
       slackToken
       teamAdminGroup
       teamAuditorGroup
+      allowLegacyEligibility
       useOUCache
+      supportContacts {
+        key
+        value
+        __typename
+      }
       createdAt
       updatedAt
       __typename
@@ -309,6 +319,13 @@ export const listSettings = /* GraphQL */ `
         slackToken
         teamAdminGroup
         teamAuditorGroup
+        allowLegacyEligibility
+        useOUCache
+        supportContacts {
+          key
+          value
+          __typename
+        }
         createdAt
         updatedAt
         __typename
@@ -334,6 +351,7 @@ export const getEligibility = /* GraphQL */ `
         id
         __typename
       }
+      policyIds
       permissions {
         name
         id
@@ -370,6 +388,7 @@ export const listEligibilities = /* GraphQL */ `
           id
           __typename
         }
+        policyIds
         permissions {
           name
           id
@@ -377,6 +396,80 @@ export const listEligibilities = /* GraphQL */ `
         }
         ticketNo
         approvalRequired
+        duration
+        modifiedBy
+        createdAt
+        updatedAt
+        __typename
+      }
+      nextToken
+      __typename
+    }
+  }
+`;
+export const getPolicies = /* GraphQL */ `
+  query GetPolicies($id: ID!) {
+    getPolicies(id: $id) {
+      id
+      accounts {
+        name
+        id
+        __typename
+      }
+      ous {
+        name
+        id
+        __typename
+      }
+      permissions {
+        name
+        id
+        __typename
+      }
+      approvalRequired
+      approverGroupIds {
+        name
+        id
+        __typename
+      }
+      duration
+      modifiedBy
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const listPolicies = /* GraphQL */ `
+  query ListPolicies(
+    $filter: ModelPoliciesFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listPolicies(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+        accounts {
+          name
+          id
+          __typename
+        }
+        ous {
+          name
+          id
+          __typename
+        }
+        permissions {
+          name
+          id
+          __typename
+        }
+        approvalRequired
+        approverGroupIds {
+          name
+          id
+          __typename
+        }
         duration
         modifiedBy
         createdAt
@@ -478,6 +571,12 @@ export const getUserPolicy = /* GraphQL */ `
         }
         approvalRequired
         duration
+        policyIds
+        approverGroupIds {
+          name
+          id
+          __typename
+        }
         __typename
       }
       username
@@ -518,6 +617,7 @@ export const updateRequestData = /* GraphQL */ `
       ticketNo
       revokeComment
       session_duration
+      policyId
       createdAt
       updatedAt
       owner
@@ -526,33 +626,75 @@ export const updateRequestData = /* GraphQL */ `
   }
 `;
 export const validateRequest = /* GraphQL */ `
-  query ValidateRequest {
-    validateRequest {
+  query ValidateRequest(
+    $accountId: String!
+    $roleId: String!
+    $userId: String!
+    $groupIds: [String]!
+    $policyId: String
+  ) {
+    validateRequest(
+      accountId: $accountId
+      roleId: $roleId
+      userId: $userId
+      groupIds: $groupIds
+      policyId: $policyId
+    ) {
+      valid
+      reason
+      __typename
+    }
+  }
+`;
+export const getOUAccounts = /* GraphQL */ `
+  query GetOUAccounts($ouIds: [String]!) {
+    getOUAccounts(ouIds: $ouIds) {
+      results {
+        ouId
+        accounts {
+          name
+          id
+          __typename
+        }
+        cached
+        __typename
+      }
+      __typename
+    }
+  }
+`;
+export const listPoliciesWithAccounts = /* GraphQL */ `
+  query ListPoliciesWithAccounts {
+    listPoliciesWithAccounts {
       id
-      email
-      accountId
-      accountName
-      role
-      roleId
-      startTime
+      accounts {
+        name
+        id
+        __typename
+      }
+      resolvedAccounts {
+        name
+        id
+        __typename
+      }
+      ous {
+        name
+        id
+        __typename
+      }
+      permissions {
+        name
+        id
+        __typename
+      }
+      approvalRequired
+      approverGroupIds {
+        name
+        id
+        __typename
+      }
       duration
-      justification
-      status
-      comment
-      username
-      approver
-      approverId
-      approvers
-      approver_ids
-      revoker
-      revokerId
-      endTime
-      ticketNo
-      revokeComment
-      session_duration
-      createdAt
-      updatedAt
-      owner
+      modifiedBy
       __typename
     }
   }

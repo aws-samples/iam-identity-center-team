@@ -4,6 +4,7 @@
 # Amazon Web Services, Inc. or Amazon Web Services EMEA SARL or both.
 import os
 import json
+import time
 import boto3
 import requests
 from botocore.exceptions import ClientError
@@ -15,11 +16,13 @@ policy_table_name = os.getenv("POLICY_TABLE_NAME")
 settings_table_name = os.getenv("SETTINGS_TABLE_NAME")
 approver_table_name = os.getenv("APPROVER_TABLE_NAME")
 requests_table_name = os.getenv("REQUESTS_TABLE_NAME")
+policies_table_name = os.getenv("POLICIES_TABLE_NAME")
 user_pool_id = os.getenv("AUTH_TEAM06DBB7FC_USERPOOLID")
 dynamodb = boto3.resource('dynamodb')
 approver_table = dynamodb.Table(approver_table_name)
 policy_table = dynamodb.Table(policy_table_name)
 settings_table = dynamodb.Table(settings_table_name)
+policies_table = dynamodb.Table(policies_table_name)
 
 grant = os.getenv("GRANT_SM")
 revoke = os.getenv("REVOKE_SM")
@@ -39,6 +42,56 @@ team_config = {
     "fn_teamnotifications_arn": fn_teamnotifications_arn,
 }
 
+
+def batch_get_with_backoff(table_name, keys, batch_size=100, max_no_progress=10, max_time_per_batch=30):
+    """
+    Perform DynamoDB batch_get_item with exponential backoff for UnprocessedKeys.
+
+    Fails if no progress made after max_no_progress retries or max_time_per_batch seconds.
+
+    Args:
+        table_name: Name of the DynamoDB table
+        keys: List of key dictionaries (e.g., [{'id': 'key1'}, {'id': 'key2'}])
+        batch_size: Maximum items per batch (default 100, DynamoDB limit)
+        max_no_progress: Max retries without progress before failing (default 10)
+        max_time_per_batch: Max seconds per batch before failing (default 30)
+
+    Returns:
+        List of all retrieved items
+
+    Raises:
+        Exception: If unable to fetch all items due to persistent throttling
+    """
+    if not keys:
+        return []
+
+    all_items = []
+
+    for i in range(0, len(keys), batch_size):
+        batch_keys = keys[i:i + batch_size]
+        request_items = {table_name: {'Keys': batch_keys}}
+        no_progress_count = 0
+        batch_start = time.time()
+
+        while request_items:
+            response = dynamodb.batch_get_item(RequestItems=request_items)
+            items = response.get('Responses', {}).get(table_name, [])
+            all_items.extend(items)
+            request_items = response.get('UnprocessedKeys', {})
+
+            if request_items:
+                if items:
+                    no_progress_count = 0
+                else:
+                    no_progress_count += 1
+
+                elapsed = time.time() - batch_start
+                if no_progress_count >= max_no_progress or elapsed >= max_time_per_batch:
+                    raise Exception(f"DynamoDB throttling: unable to fetch all items after {elapsed:.1f}s")
+
+                time.sleep(min(0.05 * (2 ** no_progress_count), 2))
+
+    return all_items
 
 
 def list_account_for_ou(ouId):
@@ -95,6 +148,7 @@ def getEntitlements(userId, groupIds):
         policy['permissions'] = entitlement['Item']['permissions']
         policy['approvalRequired'] = entitlement['Item']['approvalRequired']
         policy['duration'] = str(maxDuration)
+        policy['policyIds'] = entitlement['Item'].get("policyIds", [])
         
         eligibility.append(policy)
 
@@ -252,6 +306,9 @@ def get_request_data(data, expire, approval_required):
         "expire": expire,
         "approvalRequired": approval_required
     }
+    policy_id = data.get("policyId", {}).get("S")
+    if policy_id:
+        request["policyId"] = data["policyId"]["S"]
     return request
 
 def eligibility_error(request):
@@ -261,8 +318,21 @@ def eligibility_error(request):
             'status': 'error'
             }
     updateRequest(input)
+
+def get_eligibility_policy(policy_id):
+    try:
+        response = policies_table.get_item(
+            Key={
+                'id': policy_id
+            }
+        )
+    except ClientError as e:
+        print(e.response['Error']['Message'])
+        return {}
+    else:
+        return response.get("Item", {})
     
-def get_eligibility(request, userId):
+def get_eligibility(request, userId, policy_id_data):
     eligible = False
     # Initially assume approval is required
     approvalRequired = True
@@ -270,6 +340,20 @@ def get_eligibility(request, userId):
     entitlement = getEntitlements(userId=userId, groupIds=groupIds)
     print(entitlement)
     max_duration_error = True
+    # For policy-based requests, verify the policy is assigned to at least one of the user's eligibility groups
+    if policy_id_data:
+        if not any(policy_id_data["id"] in eligibility["policyIds"] for eligibility in entitlement):
+            return eligibility_error(request)
+        # Resolve OUs to accounts for policy
+        policy_accounts = list(policy_id_data.get("accounts", []))
+        for ou in policy_id_data.get("ous", []):
+            ou_accounts = list_account_for_ou(ou["id"])
+            if ou_accounts:
+                policy_accounts.extend(ou_accounts)
+        policy_id_data["accounts"] = policy_accounts
+        # User is eligible for this policy; use policy data for validation instead of full entitlements
+        entitlement = [policy_id_data]
+
     for eligibility in entitlement:
         if int(request["time"]) <= int(eligibility["duration"]):
             max_duration_error = False
@@ -389,24 +473,29 @@ async def getPsDuration(ps):
     )
     return response['PermissionSet']['SessionDuration']
 
-def list_approvers(id):
+def list_approvers(ids):
     try:
-        response = approver_table.get_item(
-            Key={
-                'id': id
-            }
-        )
-        if "Item" in response.keys():
-            return (response['Item']['groupIds'])
+        if isinstance(ids, list):
+            approver_keys = [{"id": approver_id} for approver_id in ids]
+            all_items = batch_get_with_backoff(approver_table_name, approver_keys)
+            return list(set(group_id for item in all_items for group_id in item.get("groupIds", [])))
         else:
-            return []
+            response = approver_table.get_item(
+                Key={
+                    'id': ids
+                }
+            )
+            return response.get("Item", {}).get("groupIds", [])
     except ClientError as e:
         print(e.response['Error']['Message'])
+        return []
         
-def get_approver_group_ids(accountId):
+def get_approver_group_ids(account_id, approver_group_ids):
     approvers = []
-    approvers.extend(list_approvers(accountId))
-    ou = get_ou(accountId)
+    if approver_group_ids:
+        return list_approvers(approver_group_ids)
+    approvers.extend(list_approvers(account_id))
+    ou = get_ou(account_id)
     if ou:
         approvers.extend(list_approvers(ou["Id"]))
     return approvers
@@ -438,8 +527,8 @@ def list_group_membership(groupId):
     except ClientError as e:
         print(e.response['Error']['Message'])
         
-async def get_approvers_details(accountId):
-    approver_groups = get_approver_group_ids(accountId)
+async def get_approvers_details(account_id, approver_group_ids):
+    approver_groups = get_approver_group_ids(account_id, approver_group_ids)
     approvers = []
     approver_ids = []
     if approver_groups:
@@ -452,12 +541,12 @@ async def get_approvers_details(accountId):
                     approver_ids.append(data["approver_id"].lower())
     return {"approvers":approvers, "approver_ids":approver_ids}
 
-async def updateRequestDetails(request_id, username, accountId, roleId):
+async def updateRequestDetails(request_id, username, accountId, roleId, policy_based):
     email = get_email(username)
-    approver_details = await get_approvers_details(accountId)
+    approver_details = await get_approvers_details(accountId, policy_based.get("approverGroupIds", None))
     approver_ids = approver_details["approver_ids"]
     approvers = approver_details["approvers"]
-    session_duration = await getPsDuration(roleId)
+    session_duration = policy_based.get("duration") or await getPsDuration(roleId)
     
     input = {
         'id': request_id,
@@ -485,12 +574,16 @@ def updateRevokerDetails(request_id,username):
             }
     updateRequest(input)
 
-def request_is_updated(status,data,username,request_id):
+def request_is_updated(status,data,username,request_id,policy_id_data):
     updated = False
+    policy_based = {}
+    if policy_id_data:
+        policy_based["approverGroupIds"] = [approver_group_id["id"] for approver_group_id in policy_id_data["approverGroupIds"]]
+        policy_based["duration"] = policy_id_data["duration"]
     if status in ["error", "ended"]:
         return updated
     elif status == "pending" and "email" not in data.keys():
-        asyncio.run(updateRequestDetails(request_id, username, data["accountId"]["S"], data["roleId"]["S"]))
+        asyncio.run(updateRequestDetails(request_id, username, data["accountId"]["S"], data["roleId"]["S"], policy_based))
         print("updating request details")
     elif status in ["approved","rejected"] and "approver" not in data.keys():
         updateApproverDetails(request_id,data["approverId"]["S"])
@@ -506,7 +599,10 @@ def handler(event, context):
     status = data["status"]["S"]
     username = data["username"]["S"]
     request_id = data["id"]["S"]
-    if request_is_updated(status,data,username,request_id):
+    policy_id_data = {}
+    if "policyId" in data.keys():
+        policy_id_data = get_eligibility_policy(data["policyId"]["S"])
+    if request_is_updated(status,data,username,request_id,policy_id_data):
         settings = check_settings()
         approval_required = settings["approval_required"]
         notification_config = settings["notification_config"]
@@ -522,7 +618,7 @@ def handler(event, context):
         print("Received event: %s" % json.dumps(request))
         userId = get_user((data["username"]["S"])[4:])
         request["userId"] = userId
-        eligible = get_eligibility(request, userId)
+        eligible = get_eligibility(request, userId, policy_id_data)
         if eligible:
             if approval_required:
                 approval_required = eligible["approval"]

@@ -29,6 +29,7 @@ export const createRequests = /* GraphQL */ `
       ticketNo
       revokeComment
       session_duration
+      policyId
       createdAt
       updatedAt
       owner
@@ -64,6 +65,7 @@ export const updateRequests = /* GraphQL */ `
       ticketNo
       revokeComment
       session_duration
+      policyId
       createdAt
       updatedAt
       owner
@@ -99,6 +101,7 @@ export const deleteRequests = /* GraphQL */ `
       ticketNo
       revokeComment
       session_duration
+      policyId
       createdAt
       updatedAt
       owner
@@ -251,7 +254,13 @@ export const createSettings = /* GraphQL */ `
       slackToken
       teamAdminGroup
       teamAuditorGroup
+      allowLegacyEligibility
       useOUCache
+      supportContacts {
+        key
+        value
+        __typename
+      }
       createdAt
       updatedAt
       __typename
@@ -280,7 +289,13 @@ export const updateSettings = /* GraphQL */ `
       slackToken
       teamAdminGroup
       teamAuditorGroup
+      allowLegacyEligibility
       useOUCache
+      supportContacts {
+        key
+        value
+        __typename
+      }
       createdAt
       updatedAt
       __typename
@@ -309,6 +324,13 @@ export const deleteSettings = /* GraphQL */ `
       slackToken
       teamAdminGroup
       teamAuditorGroup
+      allowLegacyEligibility
+      useOUCache
+      supportContacts {
+        key
+        value
+        __typename
+      }
       createdAt
       updatedAt
       __typename
@@ -334,6 +356,7 @@ export const createEligibility = /* GraphQL */ `
         id
         __typename
       }
+      policyIds
       permissions {
         name
         id
@@ -368,6 +391,7 @@ export const updateEligibility = /* GraphQL */ `
         id
         __typename
       }
+      policyIds
       permissions {
         name
         id
@@ -402,6 +426,7 @@ export const deleteEligibility = /* GraphQL */ `
         id
         __typename
       }
+      policyIds
       permissions {
         name
         id
@@ -417,13 +442,137 @@ export const deleteEligibility = /* GraphQL */ `
     }
   }
 `;
+export const createPolicies = /* GraphQL */ `
+  mutation CreatePolicies(
+    $input: CreatePoliciesInput!
+    $condition: ModelPoliciesConditionInput
+  ) {
+    createPolicies(input: $input, condition: $condition) {
+      id
+      accounts {
+        name
+        id
+        __typename
+      }
+      ous {
+        name
+        id
+        __typename
+      }
+      permissions {
+        name
+        id
+        __typename
+      }
+      approvalRequired
+      approverGroupIds {
+        name
+        id
+        __typename
+      }
+      duration
+      modifiedBy
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const updatePolicies = /* GraphQL */ `
+  mutation UpdatePolicies(
+    $input: UpdatePoliciesInput!
+    $condition: ModelPoliciesConditionInput
+  ) {
+    updatePolicies(input: $input, condition: $condition) {
+      id
+      accounts {
+        name
+        id
+        __typename
+      }
+      ous {
+        name
+        id
+        __typename
+      }
+      permissions {
+        name
+        id
+        __typename
+      }
+      approvalRequired
+      approverGroupIds {
+        name
+        id
+        __typename
+      }
+      duration
+      modifiedBy
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const deletePolicies = /* GraphQL */ `
+  mutation DeletePolicies(
+    $input: DeletePoliciesInput!
+    $condition: ModelPoliciesConditionInput
+  ) {
+    deletePolicies(input: $input, condition: $condition) {
+      id
+      accounts {
+        name
+        id
+        __typename
+      }
+      ous {
+        name
+        id
+        __typename
+      }
+      permissions {
+        name
+        id
+        __typename
+      }
+      approvalRequired
+      approverGroupIds {
+        name
+        id
+        __typename
+      }
+      duration
+      modifiedBy
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
 export const publishPolicy = /* GraphQL */ `
   mutation PublishPolicy($result: PolicyInput) {
     publishPolicy(result: $result) {
       id
       policy {
+        accounts {
+          name
+          id
+          __typename
+        }
+        permissions {
+          name
+          id
+          __typename
+        }
         approvalRequired
         duration
+        policyIds
+        approverGroupIds {
+          name
+          id
+          __typename
+        }
         __typename
       }
       username
@@ -449,6 +598,37 @@ export const publishPermissions = /* GraphQL */ `
         Duration
         __typename
       }
+      __typename
+    }
+  }
+`;
+export const invalidateOUCache = /* GraphQL */ `
+  mutation InvalidateOUCache($ouIds: [String]!) {
+    invalidateOUCache(ouIds: $ouIds) {
+      invalidated
+      failed
+      message
+      __typename
+    }
+  }
+`;
+export const validateRequest = /* GraphQL */ `
+  mutation ValidateRequest(
+    $accountId: String!
+    $roleId: String!
+    $userId: String!
+    $groupIds: [String]!
+    $policyId: String
+  ) {
+    validateRequest(
+      accountId: $accountId
+      roleId: $roleId
+      userId: $userId
+      groupIds: $groupIds
+      policyId: $policyId
+    ) {
+      valid
+      reason
       __typename
     }
   }

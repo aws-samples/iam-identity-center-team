@@ -19,6 +19,7 @@ import {
   FormField,
   Input,
   Spinner,
+  Table,
 } from "@awsui/components-react";
 import StatusIndicator from "@awsui/components-react/status-indicator";
 import { Divider } from "antd";
@@ -57,7 +58,19 @@ function Settings(props) {
   const [groupStatus, setGroupStatus] = useState("");
   const [teamAdminGroup, setTeamAdminGroup] = useState("");
   const [teamAuditorGroup, setTeamAuditorGroup] = useState("");
+  const [allowLegacyEligibility, setAllowLegacyEligibility] = useState(null);
   const [useOUCache, setUseOUCache] = useState(null);
+  const [supportContacts, setSupportContacts] = useState([]);
+  const [newContactType, setNewContactType] = useState({ label: "Slack", value: "Slack" });
+  const [newContactCustomKey, setNewContactCustomKey] = useState("");
+  const [newContactValue, setNewContactValue] = useState("");
+
+  const CONTACT_TYPE_OPTIONS = [
+    { label: "Slack", value: "Slack" },
+    { label: "Email", value: "Email" },
+    { label: "Phone", value: "Phone" },
+    { label: "Custom", value: "Custom" },
+  ];
 
   function getGroups() {
     setGroupStatus("loading");
@@ -182,8 +195,13 @@ function Settings(props) {
       setSlackToken(item.slackToken ?? "");
       setTeamAdminGroup(item.teamAdminGroup ?? params.teamAdminGroup);
       setTeamAuditorGroup(item.teamAuditorGroup ?? params.teamAuditorGroup);
+      setAllowLegacyEligibility(item.allowLegacyEligibility ?? true);
       setUseOUCache(item.useOUCache !== undefined ? item.useOUCache : false);
+      setSupportContacts(item.supportContacts ?? []);
     }
+    setNewContactType({ label: "Slack", value: "Slack" });
+    setNewContactCustomKey("");
+    setNewContactValue("");
     setVisible(false);
   }
   async function handleSubmit() {
@@ -205,7 +223,9 @@ function Settings(props) {
         slackToken,
         teamAdminGroup,
         teamAuditorGroup,
+        allowLegacyEligibility,
         useOUCache,
+        supportContacts: supportContacts.map(c => ({ key: c.key, value: c.value })),
       };
       const action = item === null ? createSetting : updateSetting;
       action(data).then(() => {
@@ -239,7 +259,9 @@ function Settings(props) {
       setSlackToken(data?.slackToken ?? "");
       setTeamAdminGroup(data?.teamAdminGroup ?? params.teamAdminGroup);
       setTeamAuditorGroup(data?.teamAuditorGroup ?? params.teamAuditorGroup);
+      setAllowLegacyEligibility(data?.allowLegacyEligibility ?? true);
       setUseOUCache(data?.useOUCache !== undefined ? data.useOUCache : false);
+      setSupportContacts(data?.supportContacts ?? []);
     });
   }
 
@@ -322,6 +344,23 @@ function Settings(props) {
                 </>
               </div>
               <div>
+                <Box variant="awsui-key-label">Legacy eligibility</Box>
+                <>
+                  {" "}
+                  {allowLegacyEligibility !== null ? (
+                    <div>
+                      <StatusIndicator
+                        type={allowLegacyEligibility === true ? "success" : "stopped"}
+                      >
+                        {allowLegacyEligibility === true ? "Allowed" : "Disabled (policy-based only)"}
+                      </StatusIndicator>
+                    </div>
+                  ) : (
+                    <Spinner />
+                  )}
+                </>
+              </div>
+              <div>
                 <Box variant="awsui-key-label">Maximum request duration</Box>
                 <>
                   {" "}
@@ -353,6 +392,20 @@ function Settings(props) {
                     </div>
                   ) : (
                     <Spinner />
+                  )}
+                </>
+              </div>
+              <div>
+                <Box variant="awsui-key-label">Support contacts</Box>
+                <>
+                  {supportContacts.length > 0 ? (
+                    <div>
+                      {supportContacts.map((contact, index) => (
+                        <div key={index}><strong>{contact.key}:</strong> {contact.value}</div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div>Not configured</div>
                   )}
                 </>
               </div>
@@ -622,6 +675,19 @@ function Settings(props) {
                 </FormField>
                 <br />
                 <FormField
+                  label="Legacy eligibility"
+                  stretch
+                  description="Allow creating legacy eligibility entries with direct account and permission assignments. If disabled, only policy-based eligibility can be created."
+                >
+                  <Toggle
+                    onChange={({ detail }) => setAllowLegacyEligibility(detail.checked)}
+                    checked={allowLegacyEligibility}
+                  >
+                    {allowLegacyEligibility ? "Allowed" : "Disabled (policy-based only)"}
+                  </Toggle>
+                </FormField>
+                <br />
+                <FormField
                   label="Maximum request duration"
                   stretch
                   description="Default maximum request duration in hours"
@@ -664,6 +730,65 @@ function Settings(props) {
                   >
                     {useOUCache ? "Enabled (cached)" : "Disabled (direct API)"}
                   </Toggle>
+                </FormField>
+                <br />
+                <FormField
+                  label="Support contacts"
+                  stretch
+                  description="Contact information for users who need to request eligibility. Shown when user has no eligibility assigned."
+                >
+                  <SpaceBetween size="s">
+                    {supportContacts.length > 0 && (
+                      <Table
+                        variant="embedded"
+                        columnDefinitions={[
+                          { id: "key", header: "Type", cell: item => item.key, width: 120 },
+                          { id: "value", header: "Contact", cell: item => item.value },
+                          { id: "actions", header: "", cell: item => (
+                            <Button
+                              variant="icon"
+                              iconName="remove"
+                              onClick={() => setSupportContacts(supportContacts.filter(c => c !== item))}
+                            />
+                          ), width: 50 }
+                        ]}
+                        items={supportContacts}
+                      />
+                    )}
+                    <SpaceBetween direction="horizontal" size="s">
+                      <Select
+                        selectedOption={newContactType}
+                        onChange={({ detail }) => setNewContactType(detail.selectedOption)}
+                        options={CONTACT_TYPE_OPTIONS}
+                      />
+                      {newContactType.value === "Custom" && (
+                        <Input
+                          placeholder="Custom type name"
+                          value={newContactCustomKey}
+                          onChange={({ detail }) => setNewContactCustomKey(detail.value)}
+                        />
+                      )}
+                      <Input
+                        placeholder="Contact value (e.g. #channel, email@company.com)"
+                        value={newContactValue}
+                        onChange={({ detail }) => setNewContactValue(detail.value)}
+                      />
+                      <Button
+                        onClick={() => {
+                          const key = newContactType.value === "Custom" ? newContactCustomKey : newContactType.value;
+                          if (key && newContactValue) {
+                            setSupportContacts([...supportContacts, { key, value: newContactValue }]);
+                            setNewContactType({ label: "Slack", value: "Slack" });
+                            setNewContactCustomKey("");
+                            setNewContactValue("");
+                          }
+                        }}
+                        disabled={!newContactValue || (newContactType.value === "Custom" && !newContactCustomKey)}
+                      >
+                        Add
+                      </Button>
+                    </SpaceBetween>
+                  </SpaceBetween>
                 </FormField>
                 <br />
               </div>
