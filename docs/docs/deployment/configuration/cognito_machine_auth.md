@@ -52,7 +52,7 @@ client_id="MyClientID"
 client_secret="MyClientSecret"
 ```
 
-These credentials can then be used for accessing the TEAM graph API programmatically with the language of your choice and can also be used to configure the [terraform provider for awsteam](https://registry.terraform.io/providers/brittandeyoung/awsteam/latest). 
+These credentials can then be used for accessing the TEAM graph API programmatically with the language of your choice and can also be used to configure the [terraform provider for awsteam](https://registry.terraform.io/providers/awsteam-contrib/awsteam/latest). 
 
 
 ### Using Machine Authentication with the Graph API
@@ -60,4 +60,4 @@ These credentials can then be used for accessing the TEAM graph API programmatic
 In order to use machine authentication on the Graph API, you need:
 1. Obtain the client Id and Secret from the Cognito User Pool Client named `machine_auth` or using the **get-machine-auth-credentials.sh** script.
 2. Use these to obtain a token from the token endpoint for the Cognito User Pool. This process is detailed in the [AWS Cognito Guide](https://docs.aws.amazon.com/cognito/latest/developerguide/token-endpoint.html).
-3. Use this token in the `Authorization` header when making calls to the TEAM Graph API. 
+3. Use this token in the `Authorization` header when making calls to the TEAM Graph API.
