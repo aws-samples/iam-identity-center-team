@@ -26,6 +26,51 @@
     "apiteamGraphQLAPIEndpointOutput": {
       "Type": "String",
       "Default": "apiteamGraphQLAPIEndpointOutput"
+    },
+    "AuditMode": {
+      "Type": "String",
+      "Default": "cloudtrail_lake",
+      "Description": "Audit backend mode: cloudtrail_lake or athena"
+    },
+    "AthenaRoleArn": {
+      "Type": "String",
+      "Default": "",
+      "Description": "ARN of the cross-account IAM role for Athena access"
+    },
+    "AthenaWorkgroup": {
+      "Type": "String",
+      "Default": "team-audit",
+      "Description": "Athena workgroup name"
+    },
+    "AthenaDatabase": {
+      "Type": "String",
+      "Default": "team_cloudtrail_db",
+      "Description": "Athena Glue database name"
+    },
+    "AthenaTable": {
+      "Type": "String",
+      "Default": "cloudtrail_logs",
+      "Description": "Athena Glue table name"
+    },
+    "AthenaResultsBucket": {
+      "Type": "String",
+      "Default": "",
+      "Description": "S3 bucket for Athena query results"
+    },
+    "AthenaCloudTrailBucket": {
+      "Type": "String",
+      "Default": "",
+      "Description": "S3 bucket containing CloudTrail logs"
+    },
+    "AthenaCloudTrailPrefix": {
+      "Type": "String",
+      "Default": "",
+      "Description": "S3 prefix for CloudTrail logs"
+    },
+    "AthenaKmsKeyArn": {
+      "Type": "String",
+      "Default": "",
+      "Description": "KMS key ARN for Athena encryption"
     }
   },
   "Conditions": {
@@ -35,6 +80,14 @@
           "Ref": "env"
         },
         "NONE"
+      ]
+    },
+    "IsAthenaMode": {
+      "Fn::Equals": [
+        {
+          "Ref": "AuditMode"
+        },
+        "athena"
       ]
     }
   },
@@ -97,6 +150,33 @@
               "Fn::ImportValue": {
                 "Fn::Sub": "${apiteamGraphQLAPIIdOutput}:GetAtt:sessionsTable:Name"
               }
+            },
+            "AUDIT_MODE": {
+              "Ref": "AuditMode"
+            },
+            "ATHENA_ROLE_ARN": {
+              "Ref": "AthenaRoleArn"
+            },
+            "ATHENA_WORKGROUP": {
+              "Ref": "AthenaWorkgroup"
+            },
+            "ATHENA_DATABASE": {
+              "Ref": "AthenaDatabase"
+            },
+            "ATHENA_TABLE": {
+              "Ref": "AthenaTable"
+            },
+            "ATHENA_RESULTS_BUCKET": {
+              "Ref": "AthenaResultsBucket"
+            },
+            "ATHENA_CLOUDTRAIL_BUCKET": {
+              "Ref": "AthenaCloudTrailBucket"
+            },
+            "ATHENA_CLOUDTRAIL_PREFIX": {
+              "Ref": "AthenaCloudTrailPrefix"
+            },
+            "ATHENA_KMS_KEY_ARN": {
+              "Ref": "AthenaKmsKeyArn"
             }
           }
         },
@@ -372,6 +452,37 @@
         ]
       },
       "DependsOn": "LambdaExecutionRole"
+    },
+    "AthenaAssumeRolePolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Condition": "IsAthenaMode",
+      "DependsOn": [
+        "LambdaExecutionRole"
+      ],
+      "Properties": {
+        "PolicyName": "athena-assume-role-policy",
+        "Roles": [
+          {
+            "Ref": "LambdaExecutionRole"
+          }
+        ],
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "sts:AssumeRole"
+              ],
+              "Resource": [
+                {
+                  "Ref": "AthenaRoleArn"
+                }
+              ]
+            }
+          ]
+        }
+      }
     }
   },
   "Outputs": {

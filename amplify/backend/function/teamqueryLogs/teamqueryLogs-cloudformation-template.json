@@ -18,6 +18,26 @@
     },
     "customcloudtrailLakeEventDataStoreOutput": {
       "Type": "String"
+    },
+    "AuditMode": {
+      "Type": "String",
+      "Default": "cloudtrail_lake"
+    },
+    "AthenaRoleArn": {
+      "Type": "String",
+      "Default": ""
+    },
+    "AthenaDatabase": {
+      "Type": "String",
+      "Default": "team_cloudtrail_db"
+    },
+    "AthenaTable": {
+      "Type": "String",
+      "Default": "cloudtrail_logs"
+    },
+    "AthenaResultsBucket": {
+      "Type": "String",
+      "Default": ""
     }
   },
   "Conditions": {
@@ -27,6 +47,14 @@
           "Ref": "env"
         },
         "NONE"
+      ]
+    },
+    "IsAthenaMode": {
+      "Fn::Equals": [
+        {
+          "Ref": "AuditMode"
+        },
+        "athena"
       ]
     }
   },
@@ -78,6 +106,21 @@
             },
             "EVENT_DATA_STORE": {
               "Ref": "customcloudtrailLakeEventDataStoreOutput"
+            },
+            "AUDIT_MODE": {
+              "Ref": "AuditMode"
+            },
+            "ATHENA_ROLE_ARN": {
+              "Ref": "AthenaRoleArn"
+            },
+            "ATHENA_DATABASE": {
+              "Ref": "AthenaDatabase"
+            },
+            "ATHENA_TABLE": {
+              "Ref": "AthenaTable"
+            },
+            "ATHENA_RESULTS_BUCKET": {
+              "Ref": "AthenaResultsBucket"
             }
           }
         },
@@ -189,6 +232,35 @@
                 "*"
               ],
               "Effect": "Allow"
+            }
+          ]
+        },
+        "Roles": [
+          {
+            "Ref": "LambdaExecutionRole"
+          }
+        ]
+      },
+      "DependsOn": "LambdaExecutionRole"
+    },
+    "AthenaAssumeRolePolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Condition": "IsAthenaMode",
+      "Properties": {
+        "PolicyName": "athena-assume-role-policy",
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "sts:AssumeRole"
+              ],
+              "Resource": [
+                {
+                  "Ref": "AthenaRoleArn"
+                }
+              ]
             }
           ]
         },
