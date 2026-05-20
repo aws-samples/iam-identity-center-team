@@ -40,6 +40,45 @@ Parameters:
     Type: Number
     Description: Cache TTL in seconds for OU accounts cache
     Default: 604800
+  AthenaAuditLogs:
+    Type: String
+    Description: Enable Athena as the audit backend (mutually exclusive with CloudTrail Lake)
+    AllowedValues:
+      - 'enabled'
+      - 'disabled'
+    Default: 'disabled'
+  AthenaRoleArn:
+    Type: String
+    Description: Cross-account IAM role ARN in the Log Archive account for Athena access
+    Default: ''
+  AthenaWorkgroup:
+    Type: String
+    Description: Athena workgroup name in the Log Archive account
+    Default: 'team-audit'
+  AthenaDatabase:
+    Type: String
+    Description: Glue database name containing the CloudTrail table
+    Default: 'team_cloudtrail_db'
+  AthenaTable:
+    Type: String
+    Description: Glue table name for CloudTrail logs
+    Default: 'cloudtrail_logs'
+  AthenaResultsBucket:
+    Type: String
+    Description: S3 bucket for Athena query results in the Log Archive account
+    Default: ''
+  AthenaCloudTrailBucket:
+    Type: String
+    Description: S3 bucket containing CloudTrail logs in the Log Archive account
+    Default: ''
+  AthenaCloudTrailPrefix:
+    Type: String
+    Description: Optional S3 prefix for CloudTrail logs
+    Default: ''
+  AthenaKmsKeyArn:
+    Type: String
+    Description: Optional KMS key ARN for encrypted CloudTrail logs
+    Default: ''
 
 Conditions:
   IsEmptyCloudTrailAuditLogs: !Equals [!Ref CloudTrailAuditLogs, ""]
@@ -170,6 +209,24 @@ Resources:
           Value: !Ref customAmplifyDomain
         - Name: CACHE_TTL
           Value: !Ref cacheTTL
+        - Name: ATHENA_AUDIT_LOGS
+          Value: !Ref AthenaAuditLogs
+        - Name: ATHENA_ROLE_ARN
+          Value: !Ref AthenaRoleArn
+        - Name: ATHENA_WORKGROUP
+          Value: !Ref AthenaWorkgroup
+        - Name: ATHENA_DATABASE
+          Value: !Ref AthenaDatabase
+        - Name: ATHENA_TABLE
+          Value: !Ref AthenaTable
+        - Name: ATHENA_RESULTS_BUCKET
+          Value: !Ref AthenaResultsBucket
+        - Name: ATHENA_CLOUDTRAIL_BUCKET
+          Value: !Ref AthenaCloudTrailBucket
+        - Name: ATHENA_CLOUDTRAIL_PREFIX
+          Value: !Ref AthenaCloudTrailPrefix
+        - Name: ATHENA_KMS_KEY_ARN
+          Value: !Ref AthenaKmsKeyArn
         - Name: _CUSTOM_IMAGE
           Value: amplify:al2023
       Tags:

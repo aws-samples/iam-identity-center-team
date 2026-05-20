@@ -1,0 +1,472 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >
+  Athena Audit Satellite Stack - Deployed in the Log Archive account.
+  Creates cross-account IAM role, Athena workgroup, optional results bucket,
+  and Lambda custom resource for CloudTrail table setup via Athena DDL.
+
+Parameters:
+  TeamAccountId:
+    Type: String
+    Description: TEAM deployment account ID for cross-account trust policy
+    AllowedPattern: "\\d{12}"
+    ConstraintDescription: Must be a valid 12-digit AWS account ID
+
+  TeamLambdaRoleArn:
+    Type: String
+    Description: ARN of the TEAM Lambda execution role allowed to assume the cross-account role
+    AllowedPattern: "arn:aws:iam::\\d{12}:role/.+"
+    ConstraintDescription: Must be a valid IAM role ARN
+
+  CloudTrailBucket:
+    Type: String
+    Description: S3 bucket containing organizational CloudTrail logs
+
+  CloudTrailPrefix:
+    Type: String
+    Description: Optional S3 prefix for CloudTrail logs (e.g. 'CloudTrail' or empty)
+    Default: ""
+
+  OrganizationId:
+    Type: String
+    Description: AWS Organization ID used in the S3 path structure
+    AllowedPattern: "o-[a-z0-9]{10,32}"
+    ConstraintDescription: Must be a valid AWS Organization ID (e.g. o-abc123def4)
+
+  WorkgroupName:
+    Type: String
+    Description: Name for the Athena workgroup
+    Default: "team-audit"
+
+  DatabaseName:
+    Type: String
+    Description: Name for the Athena/Glue database
+    Default: "team_cloudtrail_db"
+
+  TableName:
+    Type: String
+    Description: Name for the CloudTrail external table
+    Default: "cloudtrail_logs"
+
+  AccountIds:
+    Type: String
+    Description: Comma-separated list of AWS account IDs for partition projection
+
+  CreateResultsBucket:
+    Type: String
+    Description: Whether to create a new S3 bucket for Athena query results
+    AllowedValues:
+      - "true"
+      - "false"
+    Default: "true"
+
+  ExistingResultsBucket:
+    Type: String
+    Description: Name of an existing S3 bucket for query results (used when CreateResultsBucket is false)
+    Default: ""
+
+  KmsKeyArn:
+    Type: String
+    Description: Optional KMS key ARN for decrypting encrypted CloudTrail logs
+    Default: ""
+
+Conditions:
+  ShouldCreateResultsBucket: !Equals [!Ref CreateResultsBucket, "true"]
+  HasKmsKey: !Not [!Equals [!Ref KmsKeyArn, ""]]
+  HasCloudTrailPrefix: !Not [!Equals [!Ref CloudTrailPrefix, ""]]
+
+Resources:
+  # ============================================================
+  # Cross-Account IAM Role
+  # ============================================================
+  CrossAccountRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "team-athena-cross-account-${AWS::StackName}"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Ref TeamLambdaRoleArn
+            Action: "sts:AssumeRole"
+      Policies:
+        - PolicyName: AthenaQueryExecution
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: AthenaQueryAccess
+                Effect: Allow
+                Action:
+                  - athena:StartQueryExecution
+                  - athena:GetQueryExecution
+                  - athena:GetQueryResults
+                  - athena:StopQueryExecution
+                Resource:
+                  - !Sub "arn:aws:athena:${AWS::Region}:${AWS::AccountId}:workgroup/${WorkgroupName}"
+              - Sid: GlueCatalogRead
+                Effect: Allow
+                Action:
+                  - glue:GetDatabase
+                  - glue:GetTable
+                  - glue:GetPartitions
+                Resource:
+                  - !Sub "arn:aws:glue:${AWS::Region}:${AWS::AccountId}:catalog"
+                  - !Sub "arn:aws:glue:${AWS::Region}:${AWS::AccountId}:database/${DatabaseName}"
+                  - !Sub "arn:aws:glue:${AWS::Region}:${AWS::AccountId}:table/${DatabaseName}/${TableName}"
+              - Sid: S3CloudTrailRead
+                Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:ListBucket
+                  - s3:GetBucketLocation
+                Resource:
+                  - !Sub "arn:aws:s3:::${CloudTrailBucket}"
+                  - !Sub "arn:aws:s3:::${CloudTrailBucket}/*"
+              - Sid: S3ResultsBucketAccess
+                Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:ListBucket
+                  - s3:GetBucketLocation
+                  - s3:AbortMultipartUpload
+                Resource:
+                  - !Sub
+                    - "arn:aws:s3:::${BucketName}"
+                    - BucketName: !If [ShouldCreateResultsBucket, !Ref ResultsBucket, !Ref ExistingResultsBucket]
+                  - !Sub
+                    - "arn:aws:s3:::${BucketName}/*"
+                    - BucketName: !If [ShouldCreateResultsBucket, !Ref ResultsBucket, !Ref ExistingResultsBucket]
+        - !If
+          - HasKmsKey
+          - PolicyName: KmsDecrypt
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Sid: KmsDecryptCloudTrailLogs
+                  Effect: Allow
+                  Action:
+                    - kms:Decrypt
+                  Resource:
+                    - !Ref KmsKeyArn
+          - !Ref "AWS::NoValue"
+
+  # ============================================================
+  # Athena Workgroup
+  # ============================================================
+  AthenaWorkgroup:
+    Type: AWS::Athena::WorkGroup
+    Properties:
+      Name: !Ref WorkgroupName
+      Description: TEAM application audit query workgroup
+      State: ENABLED
+      WorkGroupConfiguration:
+        EnforceWorkGroupConfiguration: true
+        ResultConfiguration:
+          OutputLocation: !Sub
+            - "s3://${BucketName}/team-query-results/"
+            - BucketName: !If [ShouldCreateResultsBucket, !Ref ResultsBucket, !Ref ExistingResultsBucket]
+          EncryptionConfiguration:
+            EncryptionOption: SSE_S3
+
+  # ============================================================
+  # Query Results S3 Bucket (conditional)
+  # ============================================================
+  ResultsBucket:
+    Type: AWS::S3::Bucket
+    Condition: ShouldCreateResultsBucket
+    DeletionPolicy: Retain
+    Properties:
+      BucketName: !Sub "team-athena-results-${AWS::AccountId}-${AWS::Region}"
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  ResultsBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Condition: ShouldCreateResultsBucket
+    Properties:
+      Bucket: !Ref ResultsBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: DenyUnencryptedObjectUploads
+            Effect: Deny
+            Principal: "*"
+            Action: s3:PutObject
+            Resource: !Sub "arn:aws:s3:::${ResultsBucket}/*"
+            Condition:
+              StringNotEquals:
+                "s3:x-amz-server-side-encryption": "AES256"
+          - Sid: DenyInsecureTransport
+            Effect: Deny
+            Principal: "*"
+            Action: "s3:*"
+            Resource:
+              - !Sub "arn:aws:s3:::${ResultsBucket}"
+              - !Sub "arn:aws:s3:::${ResultsBucket}/*"
+            Condition:
+              Bool:
+                "aws:SecureTransport": "false"
+
+  # ============================================================
+  # Lambda Custom Resource for Table Setup
+  # ============================================================
+  TableSetupRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: "sts:AssumeRole"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: AthenaTableSetup
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: AthenaAccess
+                Effect: Allow
+                Action:
+                  - athena:StartQueryExecution
+                  - athena:GetQueryExecution
+                Resource:
+                  - !Sub "arn:aws:athena:${AWS::Region}:${AWS::AccountId}:workgroup/${WorkgroupName}"
+              - Sid: GlueCatalogWrite
+                Effect: Allow
+                Action:
+                  - glue:CreateDatabase
+                  - glue:GetDatabase
+                  - glue:CreateTable
+                  - glue:GetTable
+                  - glue:UpdateTable
+                Resource:
+                  - !Sub "arn:aws:glue:${AWS::Region}:${AWS::AccountId}:catalog"
+                  - !Sub "arn:aws:glue:${AWS::Region}:${AWS::AccountId}:database/${DatabaseName}"
+                  - !Sub "arn:aws:glue:${AWS::Region}:${AWS::AccountId}:table/${DatabaseName}/${TableName}"
+              - Sid: S3ResultsWrite
+                Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:GetBucketLocation
+                  - s3:ListBucket
+                  - s3:AbortMultipartUpload
+                Resource:
+                  - !Sub
+                    - "arn:aws:s3:::${BucketName}"
+                    - BucketName: !If [ShouldCreateResultsBucket, !Ref ResultsBucket, !Ref ExistingResultsBucket]
+                  - !Sub
+                    - "arn:aws:s3:::${BucketName}/*"
+                    - BucketName: !If [ShouldCreateResultsBucket, !Ref ResultsBucket, !Ref ExistingResultsBucket]
+
+  TableSetupFunction:
+    Type: AWS::Lambda::Function
+    DependsOn: AthenaWorkgroup
+    Properties:
+      Runtime: python3.12
+      Handler: index.handler
+      Timeout: 120
+      Role: !GetAtt TableSetupRole.Arn
+      Environment:
+        Variables:
+          WORKGROUP: !Ref WorkgroupName
+          DATABASE: !Ref DatabaseName
+          TABLE_NAME: !Ref TableName
+          RESULTS_BUCKET: !If [ShouldCreateResultsBucket, !Ref ResultsBucket, !Ref ExistingResultsBucket]
+          CLOUDTRAIL_BUCKET: !Ref CloudTrailBucket
+          CLOUDTRAIL_PREFIX: !Ref CloudTrailPrefix
+          ORGANIZATION_ID: !Ref OrganizationId
+          ACCOUNT_IDS: !Ref AccountIds
+      Code:
+        ZipFile: |
+          import boto3
+          import time
+          import os
+          import cfnresponse
+
+          def run_query(athena, query, workgroup, output_location):
+              """Execute an Athena query and wait for completion."""
+              response = athena.start_query_execution(
+                  QueryString=query,
+                  WorkGroup=workgroup,
+                  ResultConfiguration={
+                      'OutputLocation': output_location
+                  }
+              )
+              execution_id = response['QueryExecutionId']
+
+              # Poll until query completes
+              while True:
+                  result = athena.get_query_execution(QueryExecutionId=execution_id)
+                  state = result['QueryExecution']['Status']['State']
+                  if state in ('SUCCEEDED',):
+                      return execution_id
+                  elif state in ('FAILED', 'CANCELLED'):
+                      reason = result['QueryExecution']['Status'].get('StateChangeReason', 'Unknown')
+                      raise Exception(f"Query {execution_id} {state}: {reason}")
+                  time.sleep(2)
+
+          def build_create_table_ddl():
+              """Build the CREATE EXTERNAL TABLE DDL with partition projection."""
+              database = os.environ['DATABASE']
+              table_name = os.environ['TABLE_NAME']
+              bucket = os.environ['CLOUDTRAIL_BUCKET']
+              prefix = os.environ['CLOUDTRAIL_PREFIX']
+              org_id = os.environ['ORGANIZATION_ID']
+              account_ids = os.environ['ACCOUNT_IDS']
+
+              # Build the S3 location path
+              if prefix:
+                  location = f"s3://{bucket}/{prefix}/AWSLogs/{org_id}/"
+                  storage_template = f"s3://{bucket}/{prefix}/AWSLogs/{org_id}/${{account_id}}/CloudTrail/${{region}}/${{year}}/${{month}}/${{day}}"
+              else:
+                  location = f"s3://{bucket}/AWSLogs/{org_id}/"
+                  storage_template = f"s3://{bucket}/AWSLogs/{org_id}/${{account_id}}/CloudTrail/${{region}}/${{year}}/${{month}}/${{day}}"
+
+              ddl = f"""CREATE EXTERNAL TABLE IF NOT EXISTS {database}.{table_name} (
+            eventVersion STRING,
+            userIdentity STRUCT<
+              type: STRING,
+              principalId: STRING,
+              arn: STRING,
+              accountId: STRING,
+              invokedBy: STRING,
+              accessKeyId: STRING,
+              userName: STRING,
+              sessionContext: STRUCT<
+                attributes: STRUCT<mfaAuthenticated: STRING, creationDate: STRING>,
+                sessionIssuer: STRUCT<type: STRING, principalId: STRING, arn: STRING, accountId: STRING, userName: STRING>
+              >
+            >,
+            eventTime STRING,
+            eventSource STRING,
+            eventName STRING,
+            awsRegion STRING,
+            sourceIPAddress STRING,
+            userAgent STRING,
+            errorCode STRING,
+            errorMessage STRING,
+            requestParameters STRING,
+            responseElements STRING,
+            additionalEventData STRING,
+            requestId STRING,
+            eventId STRING,
+            readOnly STRING,
+            resources ARRAY<STRUCT<arn: STRING, accountId: STRING, type: STRING>>,
+            eventType STRING,
+            apiVersion STRING,
+            recipientAccountId STRING,
+            serviceEventDetails STRING,
+            sharedEventId STRING,
+            vpcEndpointId STRING
+          )
+          PARTITIONED BY (
+            `account_id` string,
+            `region` string,
+            `year` string,
+            `month` string,
+            `day` string
+          )
+          ROW FORMAT SERDE 'org.apache.hive.hcatalog.data.JsonSerDe'
+          STORED AS INPUTFORMAT 'com.amazon.emr.cloudtrail.CloudTrailInputFormat'
+          OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+          LOCATION '{location}'
+          TBLPROPERTIES (
+            'projection.enabled' = 'true',
+            'projection.account_id.type' = 'enum',
+            'projection.account_id.values' = '{account_ids}',
+            'projection.region.type' = 'enum',
+            'projection.region.values' = 'us-east-1,us-east-2,us-west-1,us-west-2,eu-west-1,eu-central-1,ap-southeast-1,ap-northeast-1',
+            'projection.year.type' = 'integer',
+            'projection.year.range' = '2020,2030',
+            'projection.year.digits' = '4',
+            'projection.month.type' = 'integer',
+            'projection.month.range' = '1,12',
+            'projection.month.digits' = '2',
+            'projection.day.type' = 'integer',
+            'projection.day.range' = '1,31',
+            'projection.day.digits' = '2',
+            'storage.location.template' = '{storage_template}'
+          )"""
+
+              return ddl
+
+          def handler(event, context):
+              """CloudFormation custom resource handler."""
+              if event['RequestType'] == 'Delete':
+                  cfnresponse.send(event, context, cfnresponse.SUCCESS, {})
+                  return
+
+              try:
+                  athena = boto3.client('athena')
+                  workgroup = os.environ['WORKGROUP']
+                  results_bucket = os.environ['RESULTS_BUCKET']
+                  database = os.environ['DATABASE']
+                  output_location = f"s3://{results_bucket}/team-setup-results/"
+
+                  # Create database if not exists
+                  create_db_ddl = f"CREATE DATABASE IF NOT EXISTS {database}"
+                  run_query(athena, create_db_ddl, workgroup, output_location)
+
+                  # Create external table with partition projection
+                  create_table_ddl = build_create_table_ddl()
+                  run_query(athena, create_table_ddl, workgroup, output_location)
+
+                  cfnresponse.send(event, context, cfnresponse.SUCCESS, {
+                      'Database': database,
+                      'Table': os.environ['TABLE_NAME']
+                  })
+              except Exception as e:
+                  print(f"Error: {str(e)}")
+                  cfnresponse.send(event, context, cfnresponse.FAILED, {
+                      'Error': str(e)
+                  })
+
+  TableSetupCustomResource:
+    Type: Custom::AthenaTableSetup
+    DependsOn:
+      - AthenaWorkgroup
+      - TableSetupFunction
+    Properties:
+      ServiceToken: !GetAtt TableSetupFunction.Arn
+      # Include parameters that trigger re-creation on update
+      DatabaseName: !Ref DatabaseName
+      TableName: !Ref TableName
+      CloudTrailBucket: !Ref CloudTrailBucket
+      CloudTrailPrefix: !Ref CloudTrailPrefix
+      OrganizationId: !Ref OrganizationId
+      AccountIds: !Ref AccountIds
+
+Outputs:
+  CrossAccountRoleArn:
+    Description: ARN of the cross-account IAM role for TEAM Athena access
+    Value: !GetAtt CrossAccountRole.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}-CrossAccountRoleArn"
+
+  AthenaWorkgroupName:
+    Description: Name of the Athena workgroup
+    Value: !Ref WorkgroupName
+
+  ResultsBucketName:
+    Description: Name of the query results S3 bucket
+    Value: !If [ShouldCreateResultsBucket, !Ref ResultsBucket, !Ref ExistingResultsBucket]
+
+  DatabaseName:
+    Description: Name of the Glue database
+    Value: !Ref DatabaseName
+
+  TableName:
+    Description: Name of the CloudTrail table
+    Value: !Ref TableName
