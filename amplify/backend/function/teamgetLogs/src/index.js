@@ -21,10 +21,25 @@ import {
   DescribeQueryCommand,
 } from "@aws-sdk/client-cloudtrail"
 
+import { STSClient, AssumeRoleCommand } from "@aws-sdk/client-sts";
+import {
+  AthenaClient,
+  StartQueryExecutionCommand,
+  GetQueryExecutionCommand,
+} from "@aws-sdk/client-athena";
+
 const { Sha256 } = crypto;
 const REGION = process.env.REGION;
 const EventDataStore = (process.env.EVENT_DATA_STORE).split("/").pop();
 const GRAPHQL_ENDPOINT = process.env.API_TEAM_GRAPHQLAPIENDPOINTOUTPUT;
+
+// Athena audit mode configuration
+const AUDIT_MODE = process.env.AUDIT_MODE || 'cloudtrail_lake';
+const ATHENA_ROLE_ARN = process.env.ATHENA_ROLE_ARN;
+const ATHENA_WORKGROUP = process.env.ATHENA_WORKGROUP || 'team-audit';
+const ATHENA_DATABASE = process.env.ATHENA_DATABASE;
+const ATHENA_TABLE = process.env.ATHENA_TABLE;
+const ATHENA_RESULTS_BUCKET = process.env.ATHENA_RESULTS_BUCKET;
 
 // const {
 //   CloudTrailClient,
@@ -33,6 +48,87 @@ const GRAPHQL_ENDPOINT = process.env.API_TEAM_GRAPHQLAPIENDPOINTOUTPUT;
 // } = require("@aws-sdk/client-cloudtrail");
 
 const client = new CloudTrailClient({ region: REGION });
+
+const assumeCrossAccountRole = async () => {
+  const stsClient = new STSClient({ region: REGION });
+  const command = new AssumeRoleCommand({
+    RoleArn: ATHENA_ROLE_ARN,
+    RoleSessionName: 'team-athena-getlogs',
+    DurationSeconds: 900,
+  });
+  const response = await stsClient.send(command);
+  return response.Credentials;
+};
+
+export const buildPartitionFilter = (start, end, accountId) => {
+  const filters = [];
+  const current = new Date(start);
+  while (current <= end) {
+    const year = current.getFullYear().toString();
+    const month = String(current.getMonth() + 1).padStart(2, '0');
+    const day = String(current.getDate()).padStart(2, '0');
+    filters.push(`(year='${year}' AND month='${month}' AND day='${day}')`);
+    current.setDate(current.getDate() + 1);
+  }
+  const dateFilter = filters.length > 0 ? `(${filters.join(' OR ')})` : '1=1';
+  return `account_id='${accountId}' AND ${dateFilter}`;
+};
+
+export const buildAthenaQuery = (event) => {
+  const startTime = event["startTime"]["S"];
+  const endTime = event["endTime"]["S"];
+  const username = event["username"]["S"].replace('idc_', '');
+  const accountId = event["accountId"]["S"];
+  const role = event["role"]["S"];
+
+  const start = new Date(startTime);
+  const end = new Date(endTime);
+  const partitionFilter = buildPartitionFilter(start, end, accountId);
+
+  return `SELECT eventID, eventName, eventSource, eventTime
+    FROM "${ATHENA_DATABASE}"."${ATHENA_TABLE}"
+    WHERE ${partitionFilter}
+      AND eventTime > '${startTime}'
+      AND eventTime < '${endTime}'
+      AND lower(useridentity.principalId) LIKE '%:${username}%'
+      AND useridentity.sessionContext.sessionIssuer.arn LIKE '%${role}%'
+      AND recipientAccountId = '${accountId}'`;
+};
+
+const startAthenaQuery = async (event) => {
+  const credentials = await assumeCrossAccountRole();
+  const athenaClient = new AthenaClient({
+    region: REGION,
+    credentials: {
+      accessKeyId: credentials.AccessKeyId,
+      secretAccessKey: credentials.SecretAccessKey,
+      sessionToken: credentials.SessionToken,
+    },
+  });
+
+  const queryString = buildAthenaQuery(event);
+  const command = new StartQueryExecutionCommand({
+    QueryString: queryString,
+    WorkGroup: ATHENA_WORKGROUP,
+    ResultConfiguration: {
+      OutputLocation: `s3://${ATHENA_RESULTS_BUCKET}/team-query-results/`,
+    },
+    QueryExecutionContext: {
+      Database: ATHENA_DATABASE,
+    },
+  });
+
+  const response = await athenaClient.send(command);
+  return { queryExecutionId: response.QueryExecutionId, athenaClient };
+};
+
+const pollAthenaQuery = async (athenaClient, queryExecutionId) => {
+  const command = new GetQueryExecutionCommand({
+    QueryExecutionId: queryExecutionId,
+  });
+  const response = await athenaClient.send(command);
+  return response.QueryExecution.Status.State;
+};
 
 const query = /* GraphQL */ `
   mutation UpdateSessions(
@@ -156,15 +252,35 @@ export const handler = async (event) => {
   data = data["dynamodb"]["NewImage"]
   const id = data["id"]["S"]
   console.log("Event", data);
-  const queryId = await start_query(data);
-  let status = await get_query_status(queryId);
-  while (status) {
-    console.log(status);
-    status = await get_query_status(queryId);
-    if (status === "FINISHED") {
-      console.log("query Finished - queryId:", queryId );
-      const response = await updateItem (id, queryId);
-      return response;
+
+  if (AUDIT_MODE === 'athena') {
+    try {
+      const { queryExecutionId, athenaClient } = await startAthenaQuery(data);
+      let status = await pollAthenaQuery(athenaClient, queryExecutionId);
+      while (status === 'QUEUED' || status === 'RUNNING') {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        status = await pollAthenaQuery(athenaClient, queryExecutionId);
+      }
+      if (status === 'SUCCEEDED') {
+        console.log("Athena query Finished - queryExecutionId:", queryExecutionId);
+        return await updateItem(id, queryExecutionId);
+      } else {
+        console.error(`Athena query failed with status: ${status}, executionId: ${queryExecutionId}, sessionId: ${id}`);
+      }
+    } catch (err) {
+      console.error(`Athena query error for session ${id}:`, err);
+    }
+  } else {
+    const queryId = await start_query(data);
+    let status = await get_query_status(queryId);
+    while (status) {
+      console.log(status);
+      status = await get_query_status(queryId);
+      if (status === "FINISHED") {
+        console.log("query Finished - queryId:", queryId);
+        const response = await updateItem(id, queryId);
+        return response;
+      }
     }
   }
 };
