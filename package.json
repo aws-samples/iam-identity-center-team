@@ -4,55 +4,47 @@
   "private": true,
   "dependencies": {
     "@aws-amplify/api": "^6.0.17",
-    "@aws-amplify/graphql-transformer-core": "^2.4.5",
-    "@aws-amplify/ui-react": "^5.0.0",
+    "@aws-amplify/ui-react": "^6.15.3",
+    "@aws-crypto/sha256-js": "^2.0.1",
+    "@aws-sdk/client-cloudtrail": "^3.777.0",
+    "@aws-sdk/credential-provider-node": "^3.76.0",
+    "@aws-sdk/protocol-http": "^3.58.0",
+    "@aws-sdk/signature-v4": "^3.58.0",
     "@awsui/collection-hooks": "^1.0.21",
     "@awsui/components-react": "^3.0.312",
     "@awsui/global-styles": "^1.0.10",
     "@hookform/resolvers": "^2.8.8",
-    "@testing-library/jest-dom": "^5.12.0",
-    "@testing-library/react": "^11.2.6",
-    "@testing-library/user-event": "^12.8.3",
     "antd": "^4.18.0",
-    "aws-amplify": "^5.3.26",
-    "graphql-ttl-transformer": "^2.0.1",
-    "hermes-engine": "0.11.0",
+    "aws-amplify": "^6.17.0",
     "moment": "^2.29.1",
-    "postcss-flexbugs-fixes": "^5.0.2",
+    "node-fetch": "^3.2.3",
     "react": "^17.0.2",
     "react-csv": "^2.2.2",
     "react-dom": "^17.0.2",
-    "react-router-dom": "^5.2.0",
-    "react-scripts": "^5.0.1",
-    "sass": "^1.45.1",
-    "web-vitals": "^1.1.1"
+    "react-router-dom": "^5.2.0"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
-  "optionalDependencies": {
-    "fsevents": "~2.3.2"
+  "devDependencies": {
+    "@aws-amplify/backend": "^1.18.0",
+    "@aws-amplify/backend-cli": "^1.8.0",
+    "@aws-amplify/backend-data": "^1.6.2",
+    "@types/aws-lambda": "^8.10.92",
+    "@types/node": "*",
+    "@vitejs/plugin-react": "^4.3.0",
+    "aws-cdk": "^2",
+    "aws-cdk-lib": "^2",
+    "ci-info": "^4.3.1",
+    "constructs": "^10.0.0",
+    "esbuild": "^0.27.0",
+    "eslint": "^8.57.0",
+    "eslint-plugin-react": "^7.34.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "tsx": "^4.20.6",
+    "vite": "^5.4.0"
   },
   "description": "Temporary Elevated Access Management is an automated, time-based approval workflow for granting and revoking elevated user permissions on AWS",
   "main": "index.js",
@@ -61,13 +53,5 @@
     "url": "codecommit::us-east-1://pim@sso-pim"
   },
   "author": "taiwo awoyinfa",
-  "license": "ISC",
-  "devDependencies": {
-    "@svgr/webpack": "^7.0.0",
-    "json-loader": "^0.5.7"
-  },
-  "overrides": {
-    "@svgr/webpack": "^7.0.0",
-    "semver": "^7.5.3"
-  }
+  "license": "ISC"
 }

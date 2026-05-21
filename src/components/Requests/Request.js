@@ -33,8 +33,10 @@ import {
   REQUEST_FLOW_OPTIONS
 } from "../Shared/eligibilityModes";
 import { useHistory } from "react-router-dom";
-import { API, graphqlOperation } from "aws-amplify";
+import { generateClient } from "aws-amplify/api";
 import { onPublishPolicy } from "../../graphql/subscriptions";
+
+const client = generateClient();
 import params from "../../parameters.json";
 
 function CopyableContact({ value }) {
@@ -211,9 +213,9 @@ function Request(props) {
   };
 
   function publishEvent() {
-    const subscription = API.graphql(graphqlOperation(onPublishPolicy)).subscribe({
-      next: (result) => {
-        const policy = result.value.data.onPublishPolicy.policy;
+    const subscription = client.graphql({ query: onPublishPolicy }).subscribe({
+      next: ({ data }) => {
+        const policy = data.onPublishPolicy.policy;
         if (!policy || policy.length === 0) {
           setNoEligibility(true);
           setInitialLoading(false);

@@ -25,9 +25,9 @@ fi
 
 green='\033[0;32m'
 clear='\033[0m'
-cognitoUserpoolId=`aws cognito-idp list-user-pools --region $REGION --max-results 10 --output json | jq -r '.UserPools[] | select(.Name | contains("team06dbb7fc")) | .Id'`
+cognitoUserpoolId=`aws cognito-idp list-user-pools --region $REGION --max-results 10 --output json | jq -r '.UserPools[] | select(.Name | contains("teamAuth")) | .Id' | head -1`
 cognitouserpoolhostedUIdomain=`aws cognito-idp describe-user-pool --region $REGION --user-pool-id $cognitoUserpoolId --output json | jq -r '.UserPool.Domain'`
-cognitoClientWebClientID=`aws cognito-idp list-user-pool-clients --region $REGION --user-pool-id $cognitoUserpoolId --output json | jq -r '.UserPoolClients[] | select(.ClientName | contains("clientWeb")) | .ClientId'`
+cognitoClientWebClientID=`aws cognito-idp list-user-pool-clients --region $REGION --user-pool-id $cognitoUserpoolId --output json | jq -r '.UserPoolClients[] | select(.ClientName | contains("clientWeb")) | .ClientId' | head -1`
 cognitoHostedUIdomain=$cognitouserpoolhostedUIdomain.auth.$REGION.amazoncognito.com
 
 amplifyAppId=`aws amplify list-apps --region $REGION --output json | jq -r '.apps[] | select(.name=="TEAM-IDC-APP") | .appId'`
@@ -43,7 +43,7 @@ if [ -n "$amplifyCustomDomain" ]; then
 fi
 
 echo $amplifyDomain
-applicationStartURL="https://$cognitoHostedUIdomain/authorize?client_id=$cognitoClientWebClientID&response_type=code&scope=aws.cognito.signin.user.admin+email+openid+phone+profile&redirect_uri=https://$amplifyDomain/&idp_identifier=team"
+applicationStartURL="https://$amplifyDomain/?auto_login=true"
 applicationACSURL="https://$cognitoHostedUIdomain/saml2/idpresponse"
 applicationSAMLAudience="urn:amazon:cognito:sp:$cognitoUserpoolId"
 

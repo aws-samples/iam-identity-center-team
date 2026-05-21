@@ -26,8 +26,10 @@ import {
 } from "@awsui/components-react";
 import { useCollection } from "@awsui/collection-hooks";
 import Ous from "../Shared/Ous";
-import { API, graphqlOperation } from "aws-amplify";
+import { generateClient } from "aws-amplify/api";
 import { onPublishOUs, onPublishPermissions } from "../../graphql/subscriptions";
+
+const client = generateClient();
 import {
   fetchAccounts,
   fetchOUs,
@@ -484,12 +486,12 @@ function Policies(props) {
   function getOUs() {
     setOUStatus("loading");
     fetchOUs().then(() => {
-      const subscription = API.graphql(
-        graphqlOperation(onPublishOUs)
-      ).subscribe({
-        next: (result) => {
-          const data = result.value.data.onPublishOUs.ous;
-          setOUs(JSON.parse(data));
+      const subscription = client.graphql({
+        query: onPublishOUs
+      }).subscribe({
+        next: ({ data }) => {
+          const ousData = data.onPublishOUs.ous;
+          setOUs(JSON.parse(ousData));
           setOUStatus("finished");
           subscription.unsubscribe();
         },
@@ -507,13 +509,13 @@ function Policies(props) {
 
   function getPermissions() {
     setPermissionStatus("loading");
-    fetchPermissions().then((data) => {
-      const subscription = API.graphql(
-        graphqlOperation(onPublishPermissions)
-      ).subscribe({
-        next: (result) => {
-          if (result.value.data.onPublishPermissions.id === data.id) {
-            setPermissions(result.value.data.onPublishPermissions.permissions);
+    fetchPermissions().then((fetchedData) => {
+      const subscription = client.graphql({
+        query: onPublishPermissions
+      }).subscribe({
+        next: ({ data }) => {
+          if (data.onPublishPermissions.id === fetchedData.id) {
+            setPermissions(data.onPublishPermissions.permissions);
             setPermissionStatus("finished");
             subscription.unsubscribe();
           }

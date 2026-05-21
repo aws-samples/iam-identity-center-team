@@ -1,7 +1,0 @@
-{
-    "Version": 5,
-    "ElasticsearchWarning": true,
-    "transformers": [
-        "graphql-ttl-transformer"
-    ]
-}

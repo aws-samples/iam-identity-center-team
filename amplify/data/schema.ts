@@ -1,0 +1,468 @@
+import { appIdLower, branchName } from '../config';
+
+export const schema = /* GraphQL */ `
+type requests
+  @model(subscriptions: { level: off })
+  @auth(
+    rules: [
+      { allow: groups, groups: ["Auditors"], operations: [read] }
+      { allow: owner, operations: [create, read] }
+      { allow: owner, ownerField: "approver_ids", operations: [read] }
+      { allow: private, provider: iam, operations: [read, update] }
+    ]
+  ) {
+  id: ID!
+  email: String
+    @index(
+      name: "byEmailAndStatus"
+      sortKeyFields: ["status"]
+      queryField: "requestByEmailAndStatus"
+    )
+  @auth(
+    rules: [
+      { allow: groups, groups: ["Auditors"], operations: [read] }
+      { allow: owner, operations: [read]}
+      { allow: owner, ownerField: "approver_ids", operations: [read] }
+      { allow: private, provider: iam, operations: [read, update] }
+    ]
+  )
+  accountId: String!
+  accountName: String!
+  role: String!
+  roleId: String!
+  startTime: AWSDateTime!
+  duration: String!
+  justification: String
+  status: String
+  @auth(
+    rules: [
+      { allow: groups, groups: ["Auditors"], operations: [read] }
+      { allow: owner, operations: [create, read, update] }
+      { allow: owner, ownerField: "approver_ids", operations: [update, read] }
+      { allow: private, provider: iam, operations: [read, update] }
+    ]
+  )
+  comment: String
+  @auth(
+    rules: [
+      { allow: groups, groups: ["Auditors"], operations: [read] }
+      { allow: owner, operations: [read] }
+      { allow: owner, ownerField: "approver_ids", operations: [update, read] }
+      { allow: private, provider: iam, operations: [read, update] }
+    ]
+  )
+  username: String
+  approver: String
+  @auth(
+    rules: [
+      { allow: groups, groups: ["Auditors"], operations: [read] }
+      { allow: owner, operations: [read]}
+      { allow: owner, ownerField: "approver_ids", operations: [read] }
+      { allow: private, provider: iam, operations: [read, update] }
+    ]
+  )
+  approverId: String
+    @index(
+      name: "byApproverAndStatus"
+      sortKeyFields: ["status"]
+      queryField: "requestByApproverAndStatus"
+    )
+  @auth(
+    rules: [
+      { allow: groups, groups: ["Auditors"], operations: [read] }
+      { allow: owner, operations: [read]}
+      { allow: owner, ownerField: "approver_ids", operations: [update,read] }
+      { allow: private, provider: iam, operations: [read, update] }
+    ]
+  )
+  approvers: [String]
+  @auth(
+    rules: [
+      { allow: groups, groups: ["Auditors"], operations: [read] }
+      { allow: owner, operations: [read]}
+      { allow: owner, ownerField: "approver_ids", operations: [read] }
+      { allow: private, provider: iam, operations: [read, update] }
+    ]
+  )
+  approver_ids: [String]
+  @auth(
+    rules: [
+      { allow: groups, groups: ["Auditors"], operations: [read] }
+      { allow: owner, operations: [read]}
+      { allow: owner, ownerField: "approver_ids", operations: [read] }
+      { allow: private, provider: iam, operations: [read, update] }
+    ]
+  )
+  revoker: String
+  revokerId: String
+  @auth(
+    rules: [
+      { allow: groups, groups: ["Auditors"], operations: [read] }
+      { allow: owner, operations: [read, update]}
+      { allow: owner, ownerField: "approver_ids", operations: [update,read] }
+      { allow: private, provider: iam, operations: [read, update] }
+    ]
+  )
+  endTime: AWSDateTime
+  ticketNo: String
+  revokeComment: String
+  @auth(
+    rules: [
+      { allow: groups, groups: ["Auditors"], operations: [read] }
+      { allow: owner, operations: [update,read]}
+      { allow: owner, ownerField: "approver_ids", operations: [update,read] }
+      { allow: private, provider: iam, operations: [read,update] }
+    ]
+  )
+  session_duration: String
+  policyId: String
+}
+type sessions
+  @model(subscriptions: { level: off })
+  @auth(
+    rules: [
+      { allow: groups, groups: ["Auditors"]}
+      { allow: owner }
+      { allow: owner, ownerField: "username"}
+      { allow: owner, ownerField: "approver_ids"}
+      { allow: private, provider: iam, operations: [read, update] }
+    ]
+  ) {
+  id: String!
+  startTime: String
+  endTime: String
+  username: String
+  accountId: String
+  role: String
+  approver_ids: [String]
+  queryId: String
+  expireAt: AWSTimestamp
+}
+type Approvers
+  @model
+  @auth(
+    rules: [
+      { allow: groups, groups: ["Admin"] }
+      { allow: groups, groupClaim: "scope", groups: ["api/admin"] }
+      { allow: private, operations: [read] }
+      { allow: private, provider: iam, operations: [read, update] }
+    ]
+  ) {
+  id: ID
+  name: String
+  type: String
+  approvers: [String]
+  groupIds: [String]
+  ticketNo: String
+  modifiedBy: String
+}
+type Settings
+  @model
+  @auth(
+    rules: [
+      { allow: groups, groups: ["Admin"] }
+      { allow: groups, groupClaim: "scope", groups: ["api/admin"] }
+      { allow: private, operations: [read] }
+      { allow: private, provider: iam, operations: [read] }
+    ]
+  ) {
+  id: String
+  duration: String
+  expiry: String
+  comments: Boolean
+  ticketNo: Boolean
+  approval: Boolean
+  modifiedBy: String
+  sesNotificationsEnabled: Boolean
+  snsNotificationsEnabled: Boolean
+  slackNotificationsEnabled: Boolean
+  slackAuditNotificationsChannel: String
+  sesSourceEmail: String
+  sesSourceArn: String
+  slackToken: String
+  teamAdminGroup: String
+  teamAuditorGroup: String
+  allowLegacyEligibility: Boolean
+  useOUCache: Boolean
+  supportContacts: [SupportContact]
+}
+type SupportContact @aws_iam @aws_cognito_user_pools {
+  key: String
+  value: String
+}
+input SupportContactInput {
+  key: String
+  value: String
+}
+type data @aws_iam @aws_cognito_user_pools {
+  name: String
+  id: String
+}
+input DataInput {
+  name: String
+  id: String
+}
+type Eligibility
+  @model
+  @auth(
+    rules: [
+      { allow: groups, groups: ["Admin"] }
+      { allow: groups, groupClaim: "scope", groups: ["api/admin"] }
+      { allow: private, operations: [read] }
+      { allow: private, provider: iam, operations: [read, update] }
+    ]
+  ) {
+  id: ID
+  name: String
+  type: String
+  accounts: [data]
+  ous: [data]
+  policyIds: [String]
+  permissions: [data]
+  ticketNo: String
+  approvalRequired: Boolean
+  duration: String
+  modifiedBy: String
+}
+type Policies
+  @model
+  @auth(
+    rules: [
+      { allow: groups, groups: ["Admin"] }
+      { allow: groups, groupClaim: "scope", groups: ["api/admin"] }
+      { allow: private, operations: [read] }
+      { allow: private, provider: iam, operations: [read, update] }
+    ]
+  ) {
+  id: ID!
+  accounts: [data]
+  ous: [data]
+  permissions: [data]
+  approvalRequired: Boolean
+  approverGroupIds: [data]
+  duration: String
+  modifiedBy: String
+}
+type OUAccountsCache
+  @model(subscriptions: null, queries: null, mutations: null)
+  @auth(
+    rules: [
+      { allow: private, provider: iam, operations: [create, read, update, delete] }
+    ]
+  ) {
+  ou_id: ID! @primaryKey
+  accounts: AWSJSON
+  cached_at: AWSTimestamp
+  ttl: AWSTimestamp
+  status: String
+}
+type Accounts @aws_iam @aws_cognito_user_pools {
+  name: String!
+  id: String!
+}
+type OUAccounts @aws_iam @aws_cognito_user_pools {
+  ouId: String!
+  accounts: [Accounts]
+  cached: Boolean
+}
+type OUAccountsBatch @aws_iam @aws_cognito_user_pools {
+  results: [OUAccounts]
+}
+type InvalidateCacheResult @aws_cognito_user_pools {
+  invalidated: [String]
+  failed: [String]
+  message: String
+}
+type PolicyWithResolvedAccounts @aws_iam @aws_cognito_user_pools {
+  id: ID!
+  accounts: [data]
+  resolvedAccounts: [data]
+  ous: [data]
+  permissions: [data]
+  approvalRequired: Boolean
+  approverGroupIds: [data]
+  duration: String
+  modifiedBy: String
+}
+type RequestValidationResult @aws_iam @aws_cognito_user_pools {
+  valid: Boolean!
+  reason: String
+}
+type Entitlement @aws_iam @aws_cognito_user_pools {
+  accounts: [data]
+  permissions: [data]
+  approvalRequired: Boolean
+  duration: String
+  policyIds: [String]
+  approverGroupIds: [data]
+}
+
+input EntitlementInput {
+  accounts: [DataInput]
+  permissions: [DataInput]
+  approvalRequired: Boolean
+  duration: String
+  policyIds: [String]
+  approverGroupIds: [DataInput]
+}
+
+type IdCGroups @aws_cognito_user_pools {
+  GroupId: String!
+  DisplayName: String!
+}
+type Users @aws_cognito_user_pools {
+  UserName: String!
+  UserId: String!
+}
+type Logs @aws_cognito_user_pools {
+  eventName: String
+  eventSource: String
+  eventID: String
+  eventTime: String
+}
+type OU @aws_cognito_user_pools {
+  Id: String!
+}
+type Groups @aws_cognito_user_pools {
+  groups: [String]
+  userId: String
+  groupIds:[String]
+}
+type Members @aws_cognito_user_pools {
+  members: [String]
+}
+type Permissions @aws_iam @aws_cognito_user_pools {
+  Name: String!
+  Arn: String!
+  Duration: String
+}
+type MgmtPs @aws_cognito_user_pools {
+  permissions: [String]
+}
+
+type Policy @aws_iam @aws_cognito_user_pools {
+  id: String!
+  policy: [Entitlement]
+  username: String!
+}
+
+type OUs @aws_iam @aws_cognito_user_pools {
+  ous: AWSJSON
+}
+
+input PolicyInput {
+  id: String!
+  policy: [EntitlementInput]
+  username: String!
+}
+
+input OUsInput {
+  ous: AWSJSON
+}
+
+type Permission @aws_iam @aws_cognito_user_pools {
+  id: String!
+  permissions: [Permissions]
+}
+
+input PermissionInput {
+  id: String!
+  permissions: [PermissionsInput]
+}
+
+input PermissionsInput {
+  Name: String!
+  Arn: String!
+  Duration: String
+}
+
+type Mutation {
+  publishPolicy(result: PolicyInput): Policy
+  @auth(rules: [{ allow: private, provider: iam} { allow: private }])
+  publishOUs(result: OUsInput): OUs
+  @auth(rules: [{ allow: private, provider: iam} { allow: private }])
+  publishPermissions(result: PermissionInput): Permission
+  @auth(rules: [{ allow: private, provider: iam} { allow: private }])
+  invalidateOUCache(ouIds: [String]!): InvalidateCacheResult
+  @function(name: "teaminvalidateOUCache-${appIdLower}-${branchName}")
+  @auth(rules: [{ allow: groups, groups: ["Admin"] }])
+  validateRequest(accountId: String!, roleId: String!, userId: String!, groupIds: [String]!, policyId: String): RequestValidationResult
+  @function(name: "teamvalidateRequest-${appIdLower}-${branchName}")
+  @auth(rules: [{ allow: private }])
+}
+
+type Subscription {
+  onUpdateRequests: requests
+    @aws_subscribe(mutations: ["updateRequests"])
+    @auth(rules: [{ allow: private }])
+  onCreateRequests: requests
+    @aws_subscribe(mutations: ["createRequests"])
+    @auth(rules: [{ allow: private }])
+  onUpdateSessions(id: String): sessions
+    @aws_subscribe(mutations: ["updateSessions"])
+    @auth(rules: [{ allow: private }])
+  onPublishPolicy: Policy
+    @aws_subscribe(mutations: ["publishPolicy"])
+    @auth(rules: [{ allow: private }])
+  onPublishOUs: OUs
+    @aws_subscribe(mutations: ["publishOUs"])
+    @auth(rules: [{ allow: private }])
+  onPublishPermissions: Permission
+    @aws_subscribe(mutations: ["publishPermissions"])
+    @auth(rules: [{ allow: private }])
+}
+type Query {
+  getAccounts: [Accounts]
+    @function(name: "teamgetAccounts-${appIdLower}-${branchName}")
+    @auth(rules: [{ allow: private }])
+  getOUs: String
+    @function(name: "teamgetOUs-${appIdLower}-${branchName}")
+    @auth(rules: [{ allow: private }])
+  getOU(id: String): OU
+    @function(name: "teamgetOU-${appIdLower}-${branchName}")
+    @auth(rules: [{ allow: private }])
+  getPermissions: Permission
+    @function(name: "teamgetPermissions-${appIdLower}-${branchName}")
+    @auth(rules: [{ allow: private }])
+  getMgmtPermissions: MgmtPs
+    @function(name: "teamgetMgmtAccountDetails-${appIdLower}-${branchName}")
+    @auth(rules: [{ allow: private }])
+  getIdCGroups: [IdCGroups]
+    @function(name: "teamgetIdCGroups-${appIdLower}-${branchName}")
+    @auth(rules: [{ allow: private }])
+  getUsers: [Users]
+    @function(name: "teamgetUsers-${appIdLower}-${branchName}")
+    @auth(rules: [{ allow: private }])
+  getLogs(
+    queryId: String
+  ): [Logs]
+    @function(name: "teamqueryLogs-${appIdLower}-${branchName}")
+    @auth(rules: [{ allow: private }])
+  getUserPolicy(
+    userId: String
+    groupIds: [String]
+  ): Policy
+    @function(name: "teamgetUserPolicy-${appIdLower}-${branchName}")
+    @auth(
+    rules: [
+      { allow: private, provider: iam}
+      { allow: private }
+      ])
+  listGroups(
+    groupIds: [String]
+  ): Members
+    @function(name: "teamListGroups-${appIdLower}-${branchName}")
+    @auth(rules: [{ allow: private }])
+  validateRequest(accountId: String!, roleId: String!, userId: String!, groupIds: [String]!, policyId: String): RequestValidationResult
+  @function(name: "teamvalidateRequest-${appIdLower}-${branchName}")
+  @auth(rules: [{ allow: private }])
+  getOUAccounts(
+    ouIds: [String]!
+  ): OUAccountsBatch
+    @function(name: "teamgetOUAccounts-${appIdLower}-${branchName}")
+    @auth(rules: [{ allow: private, provider: iam} { allow: private }])
+  listPoliciesWithAccounts: [PolicyWithResolvedAccounts]
+    @function(name: "teamListPoliciesWithAccounts-${appIdLower}-${branchName}")
+    @auth(rules: [{ allow: private }])
+}
+`;

@@ -7,7 +7,7 @@ import React, { useState } from "react";
 import Alert from "@awsui/components-react/alert";
 import "../../index.css";
 import params from "../../parameters.json";
-import { Auth } from "aws-amplify";
+import { signOut } from "aws-amplify/auth";
 import TopNavigation from "@awsui/components-react/top-navigation";
 import { useHistory } from "react-router-dom";
 
@@ -15,9 +15,9 @@ function Header(props) {
   const history = useHistory();
   const [visible, setVisible] = useState(false);
 
-  async function signOut() {
+  async function handleSignOut() {
     try {
-      await Auth.signOut();
+      await signOut();
     } catch (error) {
       console.log("error signing out");
     }
@@ -78,7 +78,7 @@ function Header(props) {
             iconName: "user-profile",
             onItemClick: ({ detail }) => {
               if (detail.id === "signout") {
-                signOut().then(() => history.push("/"));
+                handleSignOut().then(() => history.push("/"));
               }
             },
             items: [

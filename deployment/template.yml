@@ -113,17 +113,13 @@ Resources:
           phases:
             preBuild:
               commands:
-                - '# 14.0.0 Enforces SSL on S3 deployment bucket'
-                - npm i -g @aws-amplify/cli@14.0.0
                 - '# Update deployment parameters with helper script'
                 - node parameters.js
             build:
               commands:
-                - npm i -S graphql-ttl-transformer
-                - '# Execute Amplify CLI with the helper script'
-                - pip3 install --user pipenv==2023.6.12
-                - export PATH=$HOME/.local/bin:$PATH
-                - amplifyPush --simple --allow-destructive-graphql-schema-update
+                - '# Install dependencies and deploy with Amplify Gen 2'
+                - npm ci --cache .npm --prefer-offline
+                - npx ampx pipeline-deploy --branch $AWS_BRANCH --app-id $AWS_APP_ID
         frontend:
           phases:
             preBuild:
@@ -133,7 +129,7 @@ Resources:
               commands:
                 - npm run build
           artifacts:
-            baseDirectory: build
+            baseDirectory: dist
             files:
               - '**/*'
           cache:

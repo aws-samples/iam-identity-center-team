@@ -1,9 +1,0 @@
-[
-  {
-    "Action": [
-      "cloudtrail:DescribeQuery",
-      "cloudtrail:StartQuery",
-      "cloudtrail:GetQueryResults"],
-    "Resource": ["*"]
-  }
-]

@@ -160,6 +160,13 @@ ul {
   background: #fff;
   position: relative;
 }
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: #fff;
+}
 .site-layout .site-layout-background {
   background: #fff;
 }

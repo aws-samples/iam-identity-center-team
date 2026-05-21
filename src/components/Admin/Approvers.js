@@ -25,8 +25,10 @@ import {
 } from "@awsui/components-react";
 import { useCollection } from "@awsui/collection-hooks";
 import Ous from "../Shared/Ous";
-import { API, graphqlOperation } from "aws-amplify";
+import { generateClient } from "aws-amplify/api";
 import { onPublishOUs } from "../../graphql/subscriptions";
+
+const client = generateClient();
 import {
   getAllApprovers,
   fetchAccounts,
@@ -406,12 +408,12 @@ function Approvers(props) {
   function getOUs() {
     setOUStatus("loading");
     fetchOUs().then(() =>{
-      const subscription = API.graphql(
-        graphqlOperation(onPublishOUs)
-      ).subscribe({
-        next: (result) => {
-          const data = result.value.data.onPublishOUs.ous
-          setOUs(JSON.parse(data));
+      const subscription = client.graphql({
+        query: onPublishOUs
+      }).subscribe({
+        next: ({ data }) => {
+          const ousData = data.onPublishOUs.ous;
+          setOUs(JSON.parse(ousData));
           setOUStatus("finished");
           subscription.unsubscribe();
         },

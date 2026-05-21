@@ -23,9 +23,6 @@ import Eligible from "../Admin/Eligible";
 import Policies from "../Admin/Policies";
 import Active from "../Sessions/Active";
 import Audit from "../Sessions/Audit";
-import { Amplify } from "aws-amplify";
-import awsExports from "../../aws-exports";
-Amplify.configure(awsExports);
 
 function Nav(props) {
   const [notifications, setNotifications] = useState([]);
@@ -36,20 +33,19 @@ function Nav(props) {
 
   async function fetchUser() {
     try {
-      setUser(props.user.attributes.email);
-      setGroup(
-        props.groups
-      )
+      setUser(props.email);
+      setGroup(props.groups);
       setCognitoGroups(props.cognitoGroups);
     } catch (err) {
-      console.log("error fetching user data");
+      console.log("error fetching user data:", err);
     }
   }
 
   useEffect(() => {
-    fetchUser();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (props.email) {
+      fetchUser();
+    }
+  }, [props.email, props.groups, props.cognitoGroups]);
 
   return (
     <div>

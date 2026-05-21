@@ -8,7 +8,7 @@ import "../../index.css";
 import "antd/dist/antd.css";
 import { Menu, Dropdown, Typography } from "antd";
 import { DownOutlined } from "@ant-design/icons";
-import { Auth } from "aws-amplify";
+import { signOut } from "aws-amplify/auth";
 import { useHistory } from "react-router-dom";
 
 const { Text } = Typography;
@@ -23,7 +23,7 @@ function Logout(props) {
           target="_blank"
           rel="noopener noreferrer"
           onClick={() => {
-            signOut().then(() => history.push("/"));
+            handleSignOut().then(() => history.push("/"));
           }}
         >
           Logout
@@ -42,9 +42,9 @@ function Logout(props) {
     </Menu>
   );
 
-  async function signOut() {
+  async function handleSignOut() {
     try {
-      await Auth.signOut();
+      await signOut();
     } catch (error) {
       console.log("error signing out");
     }
