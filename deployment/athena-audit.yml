@@ -26,10 +26,6 @@ Parameters:
     AllowedPattern: "o-[a-z0-9]{10,32}"
     ConstraintDescription: Must be a valid AWS Organization ID
 
-  AccountIds:
-    Type: String
-    Description: Comma-separated list of AWS account IDs for partition projection
-
   WorkgroupName:
     Type: String
     Description: Name for the Athena workgroup
@@ -72,7 +68,7 @@ Resources:
   CrossAccountRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub "team-athena-cross-account-${AWS::StackName}"
+      RoleName: team-audit-cross-account-athena-role
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -217,13 +213,12 @@ Resources:
       DatabaseName: !Ref DatabaseName
       TableInput:
         Name: !Ref TableName
-        Description: CloudTrail logs with partition projection
+        Description: Organization CloudTrail logs with partition projection (account_id injected)
         TableType: EXTERNAL_TABLE
         Parameters:
           EXTERNAL: "TRUE"
           projection.enabled: "true"
-          projection.account_id.type: "enum"
-          projection.account_id.values: !Ref AccountIds
+          projection.account_id.type: "injected"
           projection.region.type: "enum"
           projection.region.values: "us-east-1,us-east-2,us-west-1,us-west-2,eu-west-1,eu-west-2,eu-west-3,eu-central-1,eu-north-1,ap-southeast-1,ap-southeast-2,ap-northeast-1,ap-northeast-2,ap-south-1,sa-east-1,ca-central-1"
           projection.year.type: "integer"

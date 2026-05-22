@@ -40,13 +40,10 @@ Parameters:
     Type: Number
     Description: Cache TTL in seconds for OU accounts cache
     Default: 604800
-  AthenaAuditLogs:
+  AthenaLoggingAccountId:
     Type: String
-    Description: Enable Athena as the audit backend (mutually exclusive with CloudTrail Lake)
-    AllowedValues:
-      - 'enabled'
-      - 'disabled'
-    Default: 'disabled'
+    Description: Logging account ID (used to derive default Athena role ARN and results bucket)
+    Default: ''
   AthenaRoleArn:
     Type: String
     Description: Cross-account IAM role ARN in the Log Archive account for Athena access
@@ -209,8 +206,8 @@ Resources:
           Value: !Ref customAmplifyDomain
         - Name: CACHE_TTL
           Value: !Ref cacheTTL
-        - Name: ATHENA_AUDIT_LOGS
-          Value: !Ref AthenaAuditLogs
+        - Name: ATHENA_LOGGING_ACCOUNT_ID
+          Value: !Ref AthenaLoggingAccountId
         - Name: ATHENA_ROLE_ARN
           Value: !Ref AthenaRoleArn
         - Name: ATHENA_WORKGROUP

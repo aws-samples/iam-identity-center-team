@@ -6,7 +6,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const { AWS_APP_ID, AWS_BRANCH, SSO_LOGIN, TEAM_ADMIN_GROUP, TEAM_AUDITOR_GROUP, TAGS, CLOUDTRAIL_AUDIT_LOGS, TEAM_ACCOUNT, AMPLIFY_CUSTOM_DOMAIN, ATHENA_AUDIT_LOGS, ATHENA_ROLE_ARN, ATHENA_WORKGROUP, ATHENA_DATABASE, ATHENA_TABLE, ATHENA_RESULTS_BUCKET, ATHENA_CLOUDTRAIL_BUCKET, ATHENA_CLOUDTRAIL_PREFIX, ATHENA_KMS_KEY_ARN } = process.env;
+const { AWS_APP_ID, AWS_BRANCH, SSO_LOGIN, TEAM_ADMIN_GROUP, TEAM_AUDITOR_GROUP, TAGS, CLOUDTRAIL_AUDIT_LOGS, TEAM_ACCOUNT, AMPLIFY_CUSTOM_DOMAIN, ATHENA_ROLE_ARN, ATHENA_WORKGROUP, ATHENA_DATABASE, ATHENA_TABLE, ATHENA_RESULTS_BUCKET, ATHENA_CLOUDTRAIL_BUCKET, ATHENA_CLOUDTRAIL_PREFIX, ATHENA_KMS_KEY_ARN, ATHENA_LOGGING_ACCOUNT_ID } = process.env;
 
 async function update_auth_parameters() {
   console.log(`updating amplify config for branch "${AWS_BRANCH}"...`);
@@ -125,24 +125,12 @@ async function update_cloudtrail_parameters() {
 
   const cloudtrailParametersJson = require(cloudtrailParametersJsonPath);
 
-  cloudtrailParametersJson.CloudTrailAuditLogs = CLOUDTRAIL_AUDIT_LOGS;
-  
-  fs.writeFileSync(
-    cloudtrailParametersJsonPath,
-    JSON.stringify(cloudtrailParametersJson, null, 4)
-  );
-}
-
-async function update_cloudtrail_parameters() {
-  console.log(`updating amplify/backend/custom/cloudtrailLake/parameters.json"...`);
-
-  const cloudtrailParametersJsonPath = path.resolve(
-    `./amplify/backend/custom/cloudtrailLake/parameters.json`
-  );
-
-  const cloudtrailParametersJson = require(cloudtrailParametersJsonPath);
-
-  cloudtrailParametersJson.CloudTrailAuditLogs = CLOUDTRAIL_AUDIT_LOGS;
+  // When Athena is enabled (ATHENA_CLOUDTRAIL_BUCKET is set), skip CloudTrail Lake EDS creation
+  if (ATHENA_CLOUDTRAIL_BUCKET) {
+    cloudtrailParametersJson.CloudTrailAuditLogs = 'athena_skip';
+  } else {
+    cloudtrailParametersJson.CloudTrailAuditLogs = CLOUDTRAIL_AUDIT_LOGS;
+  }
   
   fs.writeFileSync(
     cloudtrailParametersJsonPath,
@@ -153,8 +141,15 @@ async function update_cloudtrail_parameters() {
 async function update_athena_parameters() {
   console.log(`updating Athena parameters for teamgetLogs and teamqueryLogs"...`);
 
-  // Determine audit mode
-  const auditMode = ATHENA_AUDIT_LOGS === 'enabled' ? 'athena' : 'cloudtrail_lake';
+  // Athena mode is enabled when ATHENA_CLOUDTRAIL_BUCKET is set
+  const athenaEnabled = !!ATHENA_CLOUDTRAIL_BUCKET;
+  const auditMode = athenaEnabled ? 'athena' : 'cloudtrail_lake';
+
+  // Compute defaults from Log Archive account ID and region
+  const logArchiveAccountId = ATHENA_LOGGING_ACCOUNT_ID || '';
+  const region = process.env.AWS_REGION || process.env._BUILD_REGION || '';
+  const defaultRoleArn = logArchiveAccountId ? `arn:aws:iam::${logArchiveAccountId}:role/team-audit-cross-account-athena-role` : '';
+  const defaultResultsBucket = logArchiveAccountId && region ? `team-athena-results-${logArchiveAccountId}-${region}` : '';
 
   // Write to teamgetLogs parameters
   const getLogsParamsPath = path.resolve(
@@ -162,11 +157,11 @@ async function update_athena_parameters() {
   );
   const getLogsParams = require(getLogsParamsPath);
   getLogsParams.AuditMode = auditMode;
-  getLogsParams.AthenaRoleArn = ATHENA_ROLE_ARN || '';
+  getLogsParams.AthenaRoleArn = ATHENA_ROLE_ARN || defaultRoleArn;
   getLogsParams.AthenaWorkgroup = ATHENA_WORKGROUP || 'team-audit';
   getLogsParams.AthenaDatabase = ATHENA_DATABASE || 'team_cloudtrail_db';
   getLogsParams.AthenaTable = ATHENA_TABLE || 'cloudtrail_logs';
-  getLogsParams.AthenaResultsBucket = ATHENA_RESULTS_BUCKET || '';
+  getLogsParams.AthenaResultsBucket = ATHENA_RESULTS_BUCKET || defaultResultsBucket;
   getLogsParams.AthenaCloudTrailBucket = ATHENA_CLOUDTRAIL_BUCKET || '';
   getLogsParams.AthenaCloudTrailPrefix = ATHENA_CLOUDTRAIL_PREFIX || '';
   getLogsParams.AthenaKmsKeyArn = ATHENA_KMS_KEY_ARN || '';
@@ -178,10 +173,10 @@ async function update_athena_parameters() {
   );
   const queryLogsParams = require(queryLogsParamsPath);
   queryLogsParams.AuditMode = auditMode;
-  queryLogsParams.AthenaRoleArn = ATHENA_ROLE_ARN || '';
+  queryLogsParams.AthenaRoleArn = ATHENA_ROLE_ARN || defaultRoleArn;
   queryLogsParams.AthenaDatabase = ATHENA_DATABASE || 'team_cloudtrail_db';
   queryLogsParams.AthenaTable = ATHENA_TABLE || 'cloudtrail_logs';
-  queryLogsParams.AthenaResultsBucket = ATHENA_RESULTS_BUCKET || '';
+  queryLogsParams.AthenaResultsBucket = ATHENA_RESULTS_BUCKET || defaultResultsBucket;
   fs.writeFileSync(queryLogsParamsPath, JSON.stringify(queryLogsParams, null, 4));
 }
 

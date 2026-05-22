@@ -71,7 +71,7 @@ export const buildPartitionFilter = (start, end, accountId) => {
     current.setDate(current.getDate() + 1);
   }
   const dateFilter = filters.length > 0 ? `(${filters.join(' OR ')})` : '1=1';
-  return `account_id='${accountId}' AND ${dateFilter}`;
+  return dateFilter;
 };
 
 export const buildAthenaQuery = (event) => {
