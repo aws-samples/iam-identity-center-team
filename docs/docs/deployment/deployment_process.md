@@ -151,6 +151,44 @@ Go to Amplify console: **AWS Amplify -> All apps -> TEAM-IDC-APP -> Hosting envi
 ### 🚀 Next Step: [Configure TEAM Application]({% link docs/deployment/configuration/index.md %})
 {: .no_toc}
 
+## Deploy Athena Audit Stack (alternative to CloudTrail Lake)
+
+The `deployment/athena-audit.yml` template provisions the required resources in the **Log Archive account** (the account hosting the Organization Trail S3 bucket). It creates a cross-account IAM role, and optionally the Athena workgroup, results bucket, database, and table if they do not already exist.
+
+### Deployment steps
+
+1. **Deploy the Athena stack** in the Log Archive account:
+
+```sh
+aws cloudformation deploy \
+  --template-file deployment/athena-audit.yml \
+  --stack-name team-athena-audit \
+  --capabilities CAPABILITY_NAMED_IAM \
+  --parameter-overrides \
+    TeamAccountId=<TEAM_ACCOUNT_ID> \
+    CloudTrailBucket=<CLOUDTRAIL_BUCKET_NAME> \
+    OrganizationId=<ORG_ID> \
+    AccountIds=<COMMA_SEPARATED_ACCOUNT_IDS> \
+  --profile <LOG_ARCHIVE_PROFILE>
+```
+
+   If your trail uses an S3 prefix (e.g. the org ID for Control Tower), add `CloudTrailPrefix=<PREFIX>`. If CloudTrail logs are KMS-encrypted, add `KmsKeyArn=<KEY_ARN>`. To skip resource creation when the workgroup, bucket, database, and table already exist, set `CreateResources=false` and provide `ExistingResultsBucket=<BUCKET_NAME>`.
+
+2. **Update `parameters.sh`** with the minimum required Athena parameters:
+
+```sh
+ATHENA_AUDIT_LOGS=enabled
+ATHENA_ROLE_ARN=<CrossAccountRoleArn from stack output>
+ATHENA_RESULTS_BUCKET=<ResultsBucketName from stack output>
+ATHENA_CLOUDTRAIL_BUCKET=<CloudTrail bucket name>
+```
+
+   If the Athena resources already existed with custom names, also set `ATHENA_WORKGROUP`, `ATHENA_DATABASE`, and `ATHENA_TABLE` to match. Add `ATHENA_CLOUDTRAIL_PREFIX` if your trail uses a prefix, and `ATHENA_KMS_KEY_ARN` if logs are encrypted.
+
+3. **Follow the standard deployment steps** above (run `./deploy.sh`).
+
+---
+
 ## Deploying TEAM into management account
 > We strongly recommend and encourage deploying TEAM into a **delegated admin account** (**not management account**) as per [AWS best practice](https://docs.aws.amazon.com/organizations/latest/userguide/orgs_best-practices_mgmt-acct.html#best-practices_mgmt-use). If you have a valid use case for deploying in the management account, please proceed with caution and consider the necessity of stringent management account access controls.
 {: .warning}
