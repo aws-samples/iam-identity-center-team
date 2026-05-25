@@ -8,29 +8,18 @@ import os
 import time
 import boto3
 from botocore.exceptions import ClientError
-from decimal import Decimal
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from team_cache import OUCache
 
 dynamodb = boto3.resource("dynamodb")
 policies_table = dynamodb.Table(os.environ["POLICIES_TABLE_NAME"])
-cache_table = dynamodb.Table(os.environ["CACHE_TABLE_NAME"])
 settings_table = dynamodb.Table(os.environ["SETTINGS_TABLE_NAME"])
 org_client = boto3.client("organizations")
 CACHE_TTL = int(os.environ.get("CACHE_TTL", "604800"))
 ACCOUNT_ID = os.environ.get("ACCOUNT_ID", "")
+cache_table_name = os.environ.get("CACHE_TABLE_NAME")
 
-
-def get_mgmt_account_id():
-    """Get the management account ID from Organizations"""
-    try:
-        response = org_client.describe_organization()
-        return response["Organization"]["MasterAccountId"]
-    except ClientError as e:
-        print(f"Error getting management account: {e}")
-        return None
-
-
-mgmt_account_id = get_mgmt_account_id()
+ou_cache = OUCache(dynamodb, cache_table_name, CACHE_TTL, ACCOUNT_ID, org_client)
 
 
 def get_settings():
@@ -41,98 +30,6 @@ def get_settings():
     except ClientError as e:
         print(f"Error getting settings: {e}")
         return {}
-
-
-def list_accounts_for_ou(ou_id):
-    """List accounts for an OU from Organizations API"""
-    deployed_in_mgmt = ACCOUNT_ID == mgmt_account_id
-    accounts = []
-
-    try:
-        paginator = org_client.get_paginator("list_accounts_for_parent")
-        for page in paginator.paginate(ParentId=ou_id):
-            for acct in page["Accounts"]:
-                if not deployed_in_mgmt and acct["Id"] == mgmt_account_id:
-                    continue
-                accounts.append({"name": acct["Name"], "id": acct["Id"]})
-        return accounts
-    except ClientError as e:
-        error_code = e.response.get("Error", {}).get("Code", "")
-        if error_code in ["ParentNotFoundException", "OrganizationalUnitNotFoundException", "TargetNotFoundException"]:
-            print(f"OU {ou_id} not found (deleted or moved)")
-        else:
-            print(f"Error listing accounts for OU {ou_id}: {e}")
-        return []
-
-
-def get_cached_accounts(ou_id):
-    """Get cached accounts for an OU from DynamoDB"""
-    try:
-        response = cache_table.get_item(Key={"ou_id": ou_id})
-        if "Item" in response:
-            item = response["Item"]
-            if item.get("status") == "ready":
-                accounts_data = item.get("accounts")
-                if isinstance(accounts_data, str):
-                    return json.loads(accounts_data)
-                return accounts_data if accounts_data else []
-        return None
-    except ClientError as e:
-        print(f"Error reading cache: {e}")
-        return None
-
-
-def populate_cache(ou_id):
-    """Populate cache for an OU"""
-    current_time = int(time.time())
-    ttl = current_time + CACHE_TTL
-
-    try:
-        cache_table.update_item(
-            Key={"ou_id": ou_id},
-            UpdateExpression="SET #status = :populating, cached_at = :time",
-            ConditionExpression="attribute_not_exists(ou_id) OR #status <> :populating",
-            ExpressionAttributeNames={"#status": "status"},
-            ExpressionAttributeValues={
-                ":populating": "populating",
-                ":time": Decimal(str(current_time))
-            },
-            ReturnValues="ALL_NEW"
-        )
-    except ClientError as e:
-        if e.response["Error"]["Code"] == "ConditionalCheckFailedException":
-            time.sleep(0.5)
-            cached = get_cached_accounts(ou_id)
-            return cached if cached is not None else []
-        raise
-
-    try:
-        accounts = list_accounts_for_ou(ou_id)
-        cache_table.put_item(
-            Item={
-                "ou_id": ou_id,
-                "accounts": json.dumps(accounts),
-                "cached_at": Decimal(str(current_time)),
-                "ttl": Decimal(str(ttl)),
-                "status": "ready"
-            }
-        )
-        return accounts
-    except Exception as e:
-        print(f"Error populating cache for OU {ou_id}: {e}")
-        try:
-            cache_table.delete_item(Key={"ou_id": ou_id})
-        except Exception as cleanup_error:
-            print(f"Error cleaning up stuck cache: {cleanup_error}")
-        return []
-
-
-def get_accounts_for_ou(ou_id):
-    """Get accounts for an OU, using cache if available"""
-    cached = get_cached_accounts(ou_id)
-    if cached is not None:
-        return cached
-    return populate_cache(ou_id)
 
 
 def scan_segment(segment, total_segments):
@@ -180,8 +77,18 @@ def handler(event, context):
 
     # Get settings to check if cache is enabled
     settings = get_settings()
-    use_ou_cache = settings.get("useOUCache", False)
-    print(f"Using OU cache: {use_ou_cache}")
+    print(f"Settings loaded: {settings}")
+
+    # Handle both boolean and string values for useOUCache
+    raw_value = settings.get("useOUCache", False)
+    if isinstance(raw_value, bool):
+        use_ou_cache = raw_value
+    elif isinstance(raw_value, str):
+        use_ou_cache = raw_value.lower() in ("true", "1", "yes")
+    else:
+        use_ou_cache = bool(raw_value)
+
+    print(f"Using OU cache: {use_ou_cache} (raw value: {raw_value}, type: {type(raw_value).__name__})")
 
     # 1. Get all policies
     policies = get_all_policies()
@@ -198,7 +105,7 @@ def handler(event, context):
 
     # 3. Resolve all OUs to accounts (parallel)
     # Use cache or direct API based on settings
-    resolve_fn = get_accounts_for_ou if use_ou_cache else list_accounts_for_ou
+    resolve_fn = ou_cache.get_accounts if use_ou_cache else ou_cache.list_accounts_for_ou
     ou_accounts_map = {}
     with ThreadPoolExecutor(max_workers=5) as executor:
         future_to_ou = {executor.submit(resolve_fn, ou_id): ou_id for ou_id in all_ou_ids}
@@ -206,7 +113,6 @@ def handler(event, context):
             ou_id = future_to_ou[future]
             result = future.result()
             ou_accounts_map[ou_id] = result if result else []
-            print(f"OU {ou_id}: {len(ou_accounts_map[ou_id])} accounts")
 
     # 4. Build response with resolved accounts
     result = []

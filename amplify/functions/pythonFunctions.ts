@@ -20,6 +20,7 @@ import { createTeamgetUsers } from './teamgetUsers/resource';
 import { createTeaminvalidateOUCache } from './teaminvalidateOUCache/resource';
 import { createTeamvalidateRequest } from './teamvalidateRequest/resource';
 import { createTeamListPoliciesWithAccounts } from './teamListPoliciesWithAccounts/resource';
+import { createTeamPrewarmOUCache } from './teamPrewarmOUCache/resource';
 import { createSharedPythonLayer } from './teamapplicationboto3layer/resource';
 
 export interface PythonFunctionsProps {
@@ -40,6 +41,7 @@ export interface PythonFunctionsProps {
     teamAdminGroup?: string;
     teamAuditorGroup?: string;
     cacheTtl?: number;
+    prewarmIntervalDays?: number;
 }
 
 export interface PythonFunctionsOutput {
@@ -60,6 +62,7 @@ export interface PythonFunctionsOutput {
     teaminvalidateOUCache: lambda.Function;
     teamvalidateRequest: lambda.Function;
     teamListPoliciesWithAccounts: lambda.Function;
+    teamPrewarmOUCache: lambda.Function;
     sharedPythonLayer: lambda.LayerVersion;
 }
 
@@ -91,6 +94,8 @@ export function createPythonFunctions(props: PythonFunctionsProps): PythonFuncti
         eligibilityTableName: props.tableNames.Eligibility,
         policiesTableName: props.tableNames.Policies,
         settingsTableName: props.tableNames.Settings,
+        cacheTableName: props.tableNames.OUAccountsCache,
+        cacheTtl: props.cacheTtl,
         graphqlApiEndpoint: props.graphqlApiEndpoint,
         graphqlApiId: props.graphqlApiId,
         sharedPythonLayer,
@@ -103,6 +108,7 @@ export function createPythonFunctions(props: PythonFunctionsProps): PythonFuncti
         env,
         cacheTableName: props.tableNames.OUAccountsCache,
         cacheTtl: props.cacheTtl,
+        sharedPythonLayer,
     });
     const teamgetOUs = createTeamgetOUs({ stack, env });
     const teamgetPermissions = createTeamgetPermissions({ stack, env });
@@ -112,6 +118,7 @@ export function createPythonFunctions(props: PythonFunctionsProps): PythonFuncti
         stack,
         env,
         cacheTableName: props.tableNames.OUAccountsCache,
+        sharedPythonLayer,
     });
     const teamvalidateRequest = createTeamvalidateRequest({
         stack,
@@ -126,6 +133,16 @@ export function createPythonFunctions(props: PythonFunctionsProps): PythonFuncti
         cacheTableName: props.tableNames.OUAccountsCache,
         settingsTableName: props.tableNames.Settings,
         cacheTtl: props.cacheTtl,
+        sharedPythonLayer,
+    });
+    const teamPrewarmOUCache = createTeamPrewarmOUCache({
+        stack,
+        env,
+        policiesTableName: props.tableNames.Policies,
+        cacheTableName: props.tableNames.OUAccountsCache,
+        cacheTtl: props.cacheTtl,
+        prewarmIntervalDays: props.prewarmIntervalDays ?? 1,
+        sharedPythonLayer,
     });
 
     // Wire teamgetUserPolicy to invoke teamgetEntitlement
@@ -157,6 +174,7 @@ export function createPythonFunctions(props: PythonFunctionsProps): PythonFuncti
         teaminvalidateOUCache,
         teamvalidateRequest,
         teamListPoliciesWithAccounts,
+        teamPrewarmOUCache,
         sharedPythonLayer,
     };
 }

@@ -13,10 +13,11 @@ export interface TeamgetOUAccountsProps {
     env: string;
     cacheTableName: string;
     cacheTtl?: number;
+    sharedPythonLayer: lambda.ILayerVersion;
 }
 
 export function createTeamgetOUAccounts(props: TeamgetOUAccountsProps): lambda.Function {
-    const { stack, env, cacheTableName } = props;
+    const { stack, env, cacheTableName, sharedPythonLayer } = props;
     const cacheTtl = props.cacheTtl ?? 604800;
 
     const fn = new lambda.Function(stack, 'TeamgetOUAccounts', {
@@ -27,6 +28,7 @@ export function createTeamgetOUAccounts(props: TeamgetOUAccountsProps): lambda.F
         code: lambda.Code.fromAsset(path.join(__dirname)),
         timeout: Duration.seconds(30),
         memorySize: 128,
+        layers: [sharedPythonLayer],
         environment: {
             ENV: env,
             REGION: stack.region,
@@ -44,7 +46,7 @@ export function createTeamgetOUAccounts(props: TeamgetOUAccountsProps): lambda.F
 
     fn.addToRolePolicy(new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
-        actions: ['dynamodb:GetItem', 'dynamodb:PutItem', 'dynamodb:UpdateItem'],
+        actions: ['dynamodb:GetItem', 'dynamodb:PutItem', 'dynamodb:UpdateItem', 'dynamodb:DeleteItem'],
         resources: [
             stack.formatArn({ service: 'dynamodb', resource: 'table', resourceName: cacheTableName }),
         ],

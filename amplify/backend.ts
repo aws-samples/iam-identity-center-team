@@ -30,7 +30,7 @@ import { createTeamDeleteApproverGroups } from './functions/teamDeleteApproverGr
 import { createTeamDeletePolicies } from './functions/teamDeletePolicies/resource';
 
 // Shared configuration
-import { branchName, settingsTableSsmPath, appUrl } from './config';
+import { branchName, settingsTableSsmPath, appUrl, cacheTtl, prewarmIntervalDays } from './config';
 
 // Define backend with Amplify Gen 2 resources
 const backend = defineBackend({
@@ -46,9 +46,6 @@ export type Backend = typeof backend;
 // Get the data stack for Python functions (used as @function resolvers)
 // This avoids circular dependency: data -> custom -> data
 const dataStack = backend.data.stack;
-
-// Cache TTL from environment (default 7 days = 604800 seconds)
-const cacheTtl = parseInt(process.env.CACHE_TTL ?? '604800', 10);
 
 // Get dynamic table names from Amplify-generated tables
 const tableNames = {
@@ -121,6 +118,7 @@ const pythonFunctions = createPythonFunctions({
     teamAdminGroup: process.env.TEAM_ADMIN_GROUP,
     teamAuditorGroup: process.env.TEAM_AUDITOR_GROUP,
     cacheTtl,
+    prewarmIntervalDays,
 });
 
 // 7. Create teamRouter in data stack

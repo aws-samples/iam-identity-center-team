@@ -10,14 +10,20 @@ from botocore.exceptions import ClientError
 import boto3
 import requests
 from requests_aws_sign import AWSV4Sign
+from team_cache import OUCache
 
 eligibility_table_name = os.getenv("POLICY_TABLE_NAME")  # Legacy name for Eligibility table
 policies_table_name = os.getenv("POLICIES_TABLE_NAME")
 settings_table_name = os.getenv("SETTINGS_TABLE_NAME")
+cache_table_name = os.getenv("CACHE_TABLE_NAME")
 dynamodb = boto3.resource("dynamodb")
 settings_table = dynamodb.Table(settings_table_name)
+org_client = boto3.client("organizations")
 
 ACCOUNT_ID = os.environ.get("ACCOUNT_ID", "")
+CACHE_TTL = int(os.environ.get("CACHE_TTL", "604800"))
+
+ou_cache = OUCache(dynamodb, cache_table_name, CACHE_TTL, ACCOUNT_ID, org_client)
 
 
 def get_mgmt_account_id():
@@ -323,14 +329,30 @@ def handler(event, context):
         for ou in policy.get("ous", []):
             all_ou_ids.add(ou["id"])
 
+    print(f"Found {len(all_ou_ids)} unique OUs to resolve: {list(all_ou_ids)}")
+
     # Get feature flag setting
     settings = get_settings()
-    use_ou_cache = settings.get("useOUCache", False)  # Default to False (direct API)
-    print(f"Using OU cache: {use_ou_cache}")
+
+    # Handle both boolean and string values for useOUCache
+    raw_value = settings.get("useOUCache", False)
+    if isinstance(raw_value, bool):
+        use_ou_cache = raw_value
+    elif isinstance(raw_value, str):
+        use_ou_cache = raw_value.lower() in ("true", "1", "yes")
+    else:
+        use_ou_cache = bool(raw_value)
+
+    print(f"Using OU cache: {use_ou_cache} (raw value: {raw_value}, type: {type(raw_value).__name__})")
 
     # Resolve all OUs at once (parallel)
     if use_ou_cache:
-        ou_accounts_map = get_ou_accounts(list(all_ou_ids))
+        ou_accounts_map = {}
+        with ThreadPoolExecutor(max_workers=5) as executor:
+            future_to_ou = {executor.submit(ou_cache.get_accounts, ou_id): ou_id for ou_id in all_ou_ids}
+            for future in as_completed(future_to_ou):
+                ou_id = future_to_ou[future]
+                ou_accounts_map[ou_id] = future.result()
     else:
         ou_accounts_map = resolve_all_ous_to_accounts(all_ou_ids)
 

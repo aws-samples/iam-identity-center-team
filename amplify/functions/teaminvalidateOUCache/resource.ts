@@ -12,10 +12,11 @@ export interface TeaminvalidateOUCacheProps {
     stack: Stack;
     env: string;
     cacheTableName: string;
+    sharedPythonLayer: lambda.ILayerVersion;
 }
 
 export function createTeaminvalidateOUCache(props: TeaminvalidateOUCacheProps): lambda.Function {
-    const { stack, env, cacheTableName } = props;
+    const { stack, env, cacheTableName, sharedPythonLayer } = props;
 
     const fn = new lambda.Function(stack, 'TeaminvalidateOUCache', {
         functionName: `teaminvalidateOUCache-${appIdLower}-${env}`,
@@ -25,6 +26,7 @@ export function createTeaminvalidateOUCache(props: TeaminvalidateOUCacheProps): 
         code: lambda.Code.fromAsset(path.join(__dirname)),
         timeout: Duration.seconds(30),
         memorySize: 128,
+        layers: [sharedPythonLayer],
         environment: {
             ENV: env,
             REGION: stack.region,

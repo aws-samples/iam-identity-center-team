@@ -15,10 +15,11 @@ export interface TeamListPoliciesWithAccountsProps {
     cacheTableName: string;
     settingsTableName: string;
     cacheTtl?: number;
+    sharedPythonLayer: lambda.ILayerVersion;
 }
 
 export function createTeamListPoliciesWithAccounts(props: TeamListPoliciesWithAccountsProps): lambda.Function {
-    const { stack, env, policiesTableName, cacheTableName, settingsTableName } = props;
+    const { stack, env, policiesTableName, cacheTableName, settingsTableName, sharedPythonLayer } = props;
     const cacheTtl = props.cacheTtl ?? 604800;
 
     const fn = new lambda.Function(stack, 'TeamListPoliciesWithAccounts', {
@@ -29,6 +30,7 @@ export function createTeamListPoliciesWithAccounts(props: TeamListPoliciesWithAc
         code: lambda.Code.fromAsset(path.join(__dirname)),
         timeout: Duration.seconds(60),
         memorySize: 128,
+        layers: [sharedPythonLayer],
         environment: {
             ENV: env,
             REGION: stack.region,

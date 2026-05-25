@@ -31,7 +31,7 @@ export function createSharedPythonLayer(props: SharedPythonLayerProps): lambda.L
                 image: DockerImage.fromRegistry('public.ecr.aws/sam/build-python3.10:latest-arm64'),
                 command: [
                     'bash', '-c',
-                    'pip install -r requirements.txt -t /asset-output/python && cp -r . /asset-output/',
+                    'pip install -r requirements.txt -t /asset-output/python && cp *.py /asset-output/python/ 2>/dev/null || true',
                 ],
                 outputType: BundlingOutput.AUTO_DISCOVER,
                 local: {
@@ -42,8 +42,14 @@ export function createSharedPythonLayer(props: SharedPythonLayerProps): lambda.L
                             return false;
                         }
                         const pythonDir = path.join(outputDir, 'python');
+                        const sourceDir = path.join(__dirname, 'lib/python');
                         fs.mkdirSync(pythonDir, { recursive: true });
-                        execSync(`pip install -r "${path.join(__dirname, 'lib/python', 'requirements.txt')}" --target "${pythonDir}"`);
+                        execSync(`pip install -r "${path.join(sourceDir, 'requirements.txt')}" --target "${pythonDir}"`);
+                        // Copy custom Python modules to layer
+                        const pyFiles = fs.readdirSync(sourceDir).filter(f => f.endsWith('.py'));
+                        for (const pyFile of pyFiles) {
+                            fs.copyFileSync(path.join(sourceDir, pyFile), path.join(pythonDir, pyFile));
+                        }
                         return true;
                     },
                 },
