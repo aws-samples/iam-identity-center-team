@@ -60,6 +60,12 @@ const assumeCrossAccountRole = async () => {
   return response.Credentials;
 };
 
+// Escape single quotes for SQL string literals
+const escapeSql = (value) => value.replace(/'/g, "''");
+
+// Escape LIKE pattern special characters and single quotes
+const escapeLike = (value) => value.replace(/'/g, "''").replace(/%/g, '\\%').replace(/_/g, '\\_');
+
 export const buildPartitionFilter = (start, end, accountId) => {
   const filters = [];
   const current = new Date(start);
@@ -71,7 +77,7 @@ export const buildPartitionFilter = (start, end, accountId) => {
     current.setDate(current.getDate() + 1);
   }
   const dateFilter = filters.length > 0 ? `(${filters.join(' OR ')})` : '1=1';
-  return `account_id = '${accountId}' AND ${dateFilter}`;
+  return `account_id = '${escapeSql(accountId)}' AND ${dateFilter}`;
 };
 
 export const buildAthenaQuery = (event) => {
@@ -88,10 +94,10 @@ export const buildAthenaQuery = (event) => {
   return `SELECT eventID, eventName, eventSource, eventTime
     FROM "${ATHENA_DATABASE}"."${ATHENA_TABLE}"
     WHERE ${partitionFilter}
-      AND eventTime > '${startTime}'
-      AND eventTime < '${endTime}'
-      AND lower(useridentity.principalId) LIKE '%:${username}%'
-      AND useridentity.sessionContext.sessionIssuer.arn LIKE '%${role}%'`;
+      AND eventTime > '${escapeSql(startTime)}'
+      AND eventTime < '${escapeSql(endTime)}'
+      AND lower(useridentity.principalId) LIKE '%:${escapeLike(username)}%'
+      AND useridentity.sessionContext.sessionIssuer.arn LIKE '%${escapeLike(role)}%'`;
 };
 
 const startAthenaQuery = async (event) => {
