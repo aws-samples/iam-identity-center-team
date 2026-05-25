@@ -124,4 +124,13 @@ ul.menu-list button:focus {
   }
 }
 
+/* Critical styles for initial login page render */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: #fff;
+}
+
 /*# sourceMappingURL=table-select-filter.index.css.map*/

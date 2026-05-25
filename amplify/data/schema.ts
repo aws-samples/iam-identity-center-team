@@ -288,6 +288,21 @@ type RequestValidationResult @aws_iam @aws_cognito_user_pools {
   valid: Boolean!
   reason: String
 }
+type DeleteApproverGroupsWithCheckResult @aws_cognito_user_pools {
+  deleted: [String]
+  failed: [FailedDelete]
+  message: String
+}
+type DeletePoliciesWithCheckResult @aws_cognito_user_pools {
+  deleted: [String]
+  failed: [FailedDelete]
+  message: String
+}
+type FailedDelete @aws_cognito_user_pools {
+  id: String!
+  reason: String!
+  usedIn: [String]
+}
 type Entitlement @aws_iam @aws_cognito_user_pools {
   accounts: [data]
   permissions: [data]
@@ -389,6 +404,12 @@ type Mutation {
   validateRequest(accountId: String!, roleId: String!, userId: String!, groupIds: [String]!, policyId: String): RequestValidationResult
   @function(name: "teamvalidateRequest-${appIdLower}-${branchName}")
   @auth(rules: [{ allow: private }])
+  deleteApproverGroupsWithCheck(ids: [ID!]!): DeleteApproverGroupsWithCheckResult
+  @function(name: "teamDeleteApproverGroups-${appIdLower}-${branchName}")
+  @auth(rules: [{ allow: groups, groups: ["Admin"] }])
+  deletePoliciesWithCheck(ids: [ID!]!): DeletePoliciesWithCheckResult
+  @function(name: "teamDeletePolicies-${appIdLower}-${branchName}")
+  @auth(rules: [{ allow: groups, groups: ["Admin"] }])
 }
 
 type Subscription {

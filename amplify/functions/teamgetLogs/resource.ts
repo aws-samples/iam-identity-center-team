@@ -66,4 +66,17 @@ export function applyEscapeHatches(backend: Backend, eventDataStoreArn?: string)
       })
     );
   }
+
+  // CloudTrail Lake query permissions
+  backend.teamgetLogs.resources.lambda.addToRolePolicy(
+    new aws_iam.PolicyStatement({
+      effect: aws_iam.Effect.ALLOW,
+      actions: [
+        'cloudtrail:DescribeQuery',
+        'cloudtrail:StartQuery',
+        'cloudtrail:GetQueryResults',
+      ],
+      resources: ['*'],
+    })
+  );
 }

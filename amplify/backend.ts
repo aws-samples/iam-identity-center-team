@@ -26,9 +26,11 @@ import { createTeamNotifications } from './functions/teamNotifications/resource'
 import { createPythonFunctions } from './functions/pythonFunctions';
 import { createTeamRouter } from './functions/teamRouter/resource';
 import { createTeamPreTokenGeneration } from './functions/teamPreTokenGeneration/resource';
+import { createTeamDeleteApproverGroups } from './functions/teamDeleteApproverGroups/resource';
+import { createTeamDeletePolicies } from './functions/teamDeletePolicies/resource';
 
 // Shared configuration
-import { branchName, settingsTableSsmPath } from './config';
+import { branchName, settingsTableSsmPath, appUrl } from './config';
 
 // Define backend with Amplify Gen 2 resources
 const backend = defineBackend({
@@ -129,7 +131,7 @@ const teamRouter = createTeamRouter({
     graphqlApiId: backend.data.apiId,
     userPoolId: backend.auth.resources.userPool.userPoolId,
     snsTopicArn: snsTopic.topicArn,
-    ssoLoginUrl: process.env.SSO_LOGIN ?? '',
+    ssoLoginUrl: appUrl,
     teamStatusArn: backend.teamStatus.resources.lambda.functionArn,
     teamNotificationsArn: teamNotifications.functionArn,
     stepFunctions,
@@ -138,11 +140,28 @@ const teamRouter = createTeamRouter({
     requestsTable: backend.data.resources.tables['requests'],
 });
 
-// 8. Create CloudTrail Lake Event Data Store (in data stack - same as log functions)
+// 8. Create batch delete validation Lambdas (validates before delete)
+const teamDeleteApproverGroups = createTeamDeleteApproverGroups({
+    stack: dataStack,
+    env: branchName,
+    policiesTableName: tableNames.Policies,
+    approversTableName: tableNames.Approvers,
+    sharedPythonLayer: pythonFunctions.sharedPythonLayer,
+});
+
+const teamDeletePolicies = createTeamDeletePolicies({
+    stack: dataStack,
+    env: branchName,
+    eligibilityTableName: tableNames.Eligibility,
+    policiesTableName: tableNames.Policies,
+    sharedPythonLayer: pythonFunctions.sharedPythonLayer,
+});
+
+// 9. Create CloudTrail Lake Event Data Store (in data stack - same as log functions)
 const cloudTrailAuditLogs = process.env.CLOUDTRAIL_AUDIT_LOGS ?? 'read_write';
 const eventDataStoreArn = cloudTrailLake(dataStack, cloudTrailAuditLogs as any);
 
-// 9. Create AppSync CloudWatch Log Role
+// 10. Create AppSync CloudWatch Log Role
 createCwLogRole(dataStack, branchName);
 
 // Apply escape hatches for Amplify resources

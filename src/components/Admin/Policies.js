@@ -37,10 +37,9 @@ import {
   getAllPolicies,
   addPolicyTemplate,
   editPolicyTemplate,
-  delPolicyTemplate,
   getSetting,
   getAllApprovers,
-  getPolicyUsage
+  deletePoliciesBatch
 } from "../Shared/RequestService";
 import "../../index.css";
 
@@ -355,38 +354,40 @@ function Policies(props) {
 
   async function handleDelete() {
     setConfirmLoading(true);
-    for (const item of selectedItems) {
-      // Check if policy is used in any eligibility
-      const usedInEligibilities = await getPolicyUsage(item.id);
-      if (usedInEligibilities.length > 0) {
-        setConfirmLoading(false);
-        setDeleteVisible(false);
-        props.addNotification([
-          {
-            type: "error",
-            content: `Cannot delete policy "${item.id}" - it is used in ${usedInEligibilities.length} eligibility/eligibilities. Remove it from eligibilities first.`,
-            dismissible: true,
-            onDismiss: () => props.addNotification([]),
-          },
-        ]);
-        return;
-      }
-      const data = {
-        id: item.id,
-      };
-      await delPolicyTemplate(data);
-    }
+    const ids = selectedItems.map(item => item.id);
+    const result = await deletePoliciesBatch(ids);
+
     views();
     setConfirmLoading(false);
     setDeleteVisible(false);
-    props.addNotification([
-      {
-        type: "success",
-        content: "Policy deleted successfully",
-        dismissible: true,
-        onDismiss: () => props.addNotification([]),
-      },
-    ]);
+
+    if (result.failed && result.failed.length > 0) {
+      const failedMessages = result.failed.map(f =>
+        f.usedIn?.length > 0
+          ? `${f.id}: Used in: ${f.usedIn.join(', ')}`
+          : `${f.id}: ${f.reason}`
+      ).join('\n');
+      const deletedPart = result.deleted?.length > 0
+        ? `Deleted: ${result.deleted.join(', ')}\n`
+        : '';
+      props.addNotification([
+        {
+          type: result.deleted?.length > 0 ? "warning" : "error",
+          content: `${deletedPart}Failed:\n${failedMessages}`,
+          dismissible: true,
+          onDismiss: () => props.addNotification([]),
+        },
+      ]);
+    } else {
+      props.addNotification([
+        {
+          type: "success",
+          content: `Deleted: ${result.deleted?.join(', ') || 'none'}`,
+          dismissible: true,
+          onDismiss: () => props.addNotification([]),
+        },
+      ]);
+    }
   }
 
   function handleConfirmEdit() {

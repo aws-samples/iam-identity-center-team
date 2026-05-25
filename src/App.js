@@ -5,11 +5,10 @@
 import React, { useEffect, useState } from "react";
 import { signInWithRedirect, fetchAuthSession } from "aws-amplify/auth";
 import { useAuthenticator } from "@aws-amplify/ui-react";
-import { Spin, Layout } from "antd";
+import { Layout } from "antd";
 import Nav from "./components/Navigation/Nav";
-import home from "./media/Home.svg";
 import "./index.css";
-import { Button } from "@awsui/components-react";
+import { Button, Spinner } from "@awsui/components-react";
 
 const { Header, Content } = Layout;
 
@@ -25,7 +24,7 @@ function Home() {
         >
           Federated Sign In
         </Button>
-        <img src={home} alt="Homepage" className="home" />
+        <img src="/Home.svg" alt="Homepage" className="home" />
       </Content>
     </Layout>
   );
@@ -38,12 +37,26 @@ function App() {
   const [userId, setUserId] = useState(null);
   const [groupIds, setGroupIds] = useState(null);
   const [email, setEmail] = useState(null);
+  const [isReady, setIsReady] = useState(false);
+
+  // Wait for CSS to be applied before showing content (two frames for safety)
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setIsReady(true);
+      });
+    });
+  }, []);
 
   useEffect(() => {
     // Handle auto-login from Access Portal (only if not already authenticated)
     if (sessionStorage.getItem('auto-login-pending') === 'true' && authStatus !== "authenticated") {
-      sessionStorage.removeItem('auto-login-pending');
+      // Don't remove flag until redirect completes - keeps spinner showing
       signInWithRedirect({ provider: { custom: 'IDC' } });
+    }
+    // Clear flag only when authenticated
+    if (authStatus === "authenticated") {
+      sessionStorage.removeItem('auto-login-pending');
     }
   }, [authStatus]);
 
@@ -77,11 +90,11 @@ function App() {
     }
   }
 
-  // Show loading spinner while Amplify is configuring (OAuth in progress)
-  if (authStatus === "configuring") {
+  // Show loading spinner while Amplify is configuring or CSS not ready
+  if (authStatus === "configuring" || !isReady) {
     return (
       <div className="loading-container">
-        <Spin size="large" />
+        <Spinner size="large" />
       </div>
     );
   }
@@ -96,7 +109,7 @@ function App() {
     console.log("Waiting for groups, current value:", groups);
     return (
       <div className="loading-container">
-        <Spin size="large" />
+        <Spinner size="large" />
       </div>
     );
   }

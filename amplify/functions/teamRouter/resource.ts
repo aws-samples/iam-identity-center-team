@@ -99,7 +99,7 @@ export function createTeamRouter(props: TeamRouterProps): lambda.Function {
 
     fn.addToRolePolicy(new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
-        actions: ['dynamodb:GetItem'],
+        actions: ['dynamodb:GetItem', 'dynamodb:BatchGetItem'],
         resources: [
             stack.formatArn({ service: 'dynamodb', resource: 'table', resourceName: props.tableNames.Eligibility }),
             stack.formatArn({ service: 'dynamodb', resource: 'table', resourceName: props.tableNames.Settings }),

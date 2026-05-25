@@ -576,6 +576,60 @@ export async function getPolicyUsage(policyId) {
   return usedIn;
 }
 
+// Batch delete approver groups with backend validation
+export async function deleteApproverGroupsBatch(ids) {
+  try {
+    const mutation = `
+      mutation DeleteApproverGroupsWithCheck($ids: [ID!]!) {
+        deleteApproverGroupsWithCheck(ids: $ids) {
+          deleted
+          failed {
+            id
+            reason
+            usedIn
+          }
+          message
+        }
+      }
+    `;
+    const result = await client.graphql({
+      query: mutation,
+      variables: { ids }
+    });
+    return result.data.deleteApproverGroupsWithCheck;
+  } catch (err) {
+    console.log("error deleting approver groups:", err);
+    return { deleted: [], failed: [], message: err.message || "Error deleting approver groups" };
+  }
+}
+
+// Batch delete policies with backend validation
+export async function deletePoliciesBatch(ids) {
+  try {
+    const mutation = `
+      mutation DeletePoliciesWithCheck($ids: [ID!]!) {
+        deletePoliciesWithCheck(ids: $ids) {
+          deleted
+          failed {
+            id
+            reason
+            usedIn
+          }
+          message
+        }
+      }
+    `;
+    const result = await client.graphql({
+      query: mutation,
+      variables: { ids }
+    });
+    return result.data.deletePoliciesWithCheck;
+  } catch (err) {
+    console.log("error deleting policies:", err);
+    return { deleted: [], failed: [], message: err.message || "Error deleting policies" };
+  }
+}
+
 export async function invalidateOUCache(ouIds) {
   try {
     const mutation = `

@@ -5,11 +5,35 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TEAM | Temporary Elevated Access Management</title>
   <link rel="shortcut icon" href="/logo.png" type="image/x-icon" />
+  <link rel="preload" href="/Home.svg" as="image" type="image/svg+xml" />
+  <style>
+    .initial-loader {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: #fff;
+    }
+    .initial-spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid #e9ebed;
+      border-top: 3px solid #0972d3;
+      border-radius: 50%;
+      animation: initial-spin 0.7s linear infinite;
+    }
+    @keyframes initial-spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
   <link href="/index.css" rel="stylesheet" />
 </head>
 <body>
   <noscript>You need to enable JavaScript to run this app.</noscript>
-  <div id="root"></div>
+  <div id="root">
+    <div class="initial-loader"><div class="initial-spinner"></div></div>
+  </div>
   <script type="module" src="/src/index.js"></script>
 </body>
 </html>
