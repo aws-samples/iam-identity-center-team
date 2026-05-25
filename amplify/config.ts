@@ -8,8 +8,11 @@ if (!appId) {
 export const appIdLower = appId.toLowerCase();
 export const branchName = process.env.AWS_BRANCH ?? 'sandbox';
 
-// App URL for email links (constructed from Amplify app ID and branch)
-export const appUrl = `https://${branchName}.${appIdLower}.amplifyapp.com`;
+// App URL for email links
+// Uses custom domain if set, otherwise falls back to default Amplify URL
+const customDomain = process.env.AMPLIFY_CUSTOM_DOMAIN;
+const defaultAppUrl = `https://${branchName}.${appIdLower}.amplifyapp.com`;
+export const appUrl = customDomain ? `https://${customDomain}` : defaultAppUrl;
 
 // SSM parameter path for Settings table name (used by preToken Lambda)
 export const settingsTableSsmPath = `/team/${appIdLower}/${branchName}/settings-table-name`;
