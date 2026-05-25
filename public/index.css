@@ -125,6 +125,7 @@ ul.menu-list button:focus {
 }
 
 /* Critical styles for initial login page render */
+.initial-loader,
 .loading-container {
   display: flex;
   justify-content: center;
@@ -132,5 +133,15 @@ ul.menu-list button:focus {
   min-height: 100vh;
   background: #fff;
 }
-
-/*# sourceMappingURL=table-select-filter.index.css.map*/
+.initial-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #e9ebed;
+  border-top: 3px solid #0972d3;
+  border-radius: 50%;
+  animation: initial-spin 0.7s linear infinite;
+}
+@keyframes initial-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
