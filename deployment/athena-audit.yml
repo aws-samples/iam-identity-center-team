@@ -87,7 +87,7 @@ Resources:
             Action: "sts:AssumeRole"
             Condition:
               ArnLike:
-                "aws:PrincipalArn": !Sub "arn:aws:iam::${TeamAccountId}:role/teamapplicationLambdaRole*"
+                "aws:PrincipalArn": !Sub "arn:aws:iam::${TeamAccountId}:role/team*applicationLambdaRole*"
       Policies:
         - PolicyName: AthenaQueryExecution
           PolicyDocument:
