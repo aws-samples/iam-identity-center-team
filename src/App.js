@@ -20,7 +20,9 @@ function Home() {
         <Button
           className="homebutton"
           variant="primary"
-          onClick={() => signInWithRedirect({ provider: { custom: 'IDC' } })}
+          onClick={async () => {
+            await signInWithRedirect({ provider: { custom: 'IDC' } });
+          }}
         >
           Federated Sign In
         </Button>
