@@ -692,11 +692,23 @@ function Request(props) {
                   loadingText="Loading policies"
                   filteringType="auto"
                   empty="No eligible policies found"
-                  options={policies.map((policy) => ({
-                    label: policy.id,
-                    value: policy.id,
-                    description: `Accounts: ${policy.accounts?.length || 0}, Permissions: ${policy.permissions?.length || 0}`,
-                  }))}
+                  options={policies.map((policy) => {
+                    const sortedAccounts = [...(policy.accounts || [])].sort((a, b) => {
+                      const aIsProd = /prod/i.test(a.name);
+                      const bIsProd = /prod/i.test(b.name);
+                      return (bIsProd - aIsProd) || a.name.localeCompare(b.name);
+                    });
+                    const accountNames = sortedAccounts.slice(0, 5).map(a => a.name).join(", ") || "None";
+                    const permNames = (policy.permissions || []).slice(0, 5).map(p => p.name).join(", ") || "None";
+                    const moreAccounts = (policy.accounts?.length || 0) > 5 ? ` +${policy.accounts.length - 5} more` : "";
+                    const morePerms = (policy.permissions?.length || 0) > 5 ? ` +${policy.permissions.length - 5} more` : "";
+
+                    return {
+                      label: policy.id,
+                      value: policy.id,
+                      description: `Accounts: ${accountNames}${moreAccounts} | Permissions: ${permNames}${morePerms}`,
+                    };
+                  })}
                   selectedOption={selectedPolicy}
                   onChange={({ detail }) => handlePolicySelect(detail.selectedOption)}
                   selectedAriaLabel="selected"
