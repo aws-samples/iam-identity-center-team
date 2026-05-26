@@ -42,19 +42,30 @@ export function createTeamListPoliciesWithAccounts(props: TeamListPoliciesWithAc
         },
     });
 
+    // Policies table - only scan
     fn.addToRolePolicy(new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
-        actions: [
-            'dynamodb:Scan',
-            'dynamodb:GetItem',
-            'dynamodb:PutItem',
-            'dynamodb:UpdateItem',
-            'dynamodb:DeleteItem',
-        ],
+        actions: ['dynamodb:Scan'],
         resources: [
             stack.formatArn({ service: 'dynamodb', resource: 'table', resourceName: policiesTableName }),
-            stack.formatArn({ service: 'dynamodb', resource: 'table', resourceName: cacheTableName }),
+        ],
+    }));
+
+    // Settings table - only read
+    fn.addToRolePolicy(new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ['dynamodb:GetItem'],
+        resources: [
             stack.formatArn({ service: 'dynamodb', resource: 'table', resourceName: settingsTableName }),
+        ],
+    }));
+
+    // Cache table - full CRUD for OUCache
+    fn.addToRolePolicy(new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ['dynamodb:GetItem', 'dynamodb:PutItem', 'dynamodb:UpdateItem', 'dynamodb:DeleteItem'],
+        resources: [
+            stack.formatArn({ service: 'dynamodb', resource: 'table', resourceName: cacheTableName }),
         ],
     }));
 

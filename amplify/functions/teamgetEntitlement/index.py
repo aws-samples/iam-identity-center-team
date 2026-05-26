@@ -333,17 +333,8 @@ def handler(event, context):
 
     # Get feature flag setting
     settings = get_settings()
-
-    # Handle both boolean and string values for useOUCache
-    raw_value = settings.get("useOUCache", False)
-    if isinstance(raw_value, bool):
-        use_ou_cache = raw_value
-    elif isinstance(raw_value, str):
-        use_ou_cache = raw_value.lower() in ("true", "1", "yes")
-    else:
-        use_ou_cache = bool(raw_value)
-
-    print(f"Using OU cache: {use_ou_cache} (raw value: {raw_value}, type: {type(raw_value).__name__})")
+    use_ou_cache = settings.get("useOUCache", False)
+    print(f"Using OU cache: {use_ou_cache}")
 
     # Resolve all OUs at once (parallel)
     if use_ou_cache:
@@ -371,5 +362,4 @@ def handler(event, context):
 
     result = {"id": event["id"], "policy": eligibility, "username": username}
     print(result)
-
     return publishPolicy(result)

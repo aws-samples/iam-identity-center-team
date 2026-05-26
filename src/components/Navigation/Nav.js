@@ -37,7 +37,7 @@ function Nav(props) {
       setGroup(props.groups);
       setCognitoGroups(props.cognitoGroups);
     } catch (err) {
-      console.log("error fetching user data:", err);
+      console.error("Error fetching user data:", err);
     }
   }
 

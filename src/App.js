@@ -69,26 +69,20 @@ function App() {
   }, [authStatus]);
 
   async function loadUserData() {
-    console.log("loadUserData() called, authStatus:", authStatus);
     try {
       const session = await fetchAuthSession();
-      console.log("fetchAuthSession:", session);
       const payload = session.tokens?.idToken?.payload;
-      console.log("payload:", payload);
 
       if (payload) {
-        console.log("Setting user data from payload...");
         const groupsValue = (payload.groups || "").split(",");
-        console.log("groups value:", groupsValue);
         setcognitoGroups(payload["cognito:groups"]);
         setUserId(payload.userId);
         setGroupIds((payload.groupIds || "").split(","));
         setGroups(groupsValue);
         setEmail(payload.email || payload["cognito:username"]?.replace("idc_", ""));
-        console.log("User data set complete");
       }
     } catch (error) {
-      console.log("Error loading user data:", error);
+      console.error("Error loading user data:", error);
     }
   }
 
@@ -108,14 +102,12 @@ function App() {
 
   // Authenticated but data not loaded yet
   if (!groups) {
-    console.log("Waiting for groups, current value:", groups);
     return (
       <div className="loading-container">
         <Spinner size="large" />
       </div>
     );
   }
-  console.log("Rendering Nav with groups:", groups);
 
   // Authenticated and data loaded
   return (

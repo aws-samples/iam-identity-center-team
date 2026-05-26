@@ -77,22 +77,11 @@ def handler(event, context):
 
     # Get settings to check if cache is enabled
     settings = get_settings()
-    print(f"Settings loaded: {settings}")
 
-    # Handle both boolean and string values for useOUCache
-    raw_value = settings.get("useOUCache", False)
-    if isinstance(raw_value, bool):
-        use_ou_cache = raw_value
-    elif isinstance(raw_value, str):
-        use_ou_cache = raw_value.lower() in ("true", "1", "yes")
-    else:
-        use_ou_cache = bool(raw_value)
-
-    print(f"Using OU cache: {use_ou_cache} (raw value: {raw_value}, type: {type(raw_value).__name__})")
+    use_ou_cache = settings.get("useOUCache", False)
 
     # 1. Get all policies
     policies = get_all_policies()
-    print(f"Found {len(policies)} policies")
 
     # 2. Collect all unique OU IDs
     all_ou_ids = set()
@@ -146,5 +135,4 @@ def handler(event, context):
             "modifiedBy": policy.get("modifiedBy")
         })
 
-    print(f"Returning {len(result)} policies with resolved accounts")
     return result
