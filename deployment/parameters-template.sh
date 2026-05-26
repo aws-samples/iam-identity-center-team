@@ -24,7 +24,15 @@ CLOUDTRAIL_AUDIT_LOGS=arn:aws:cloudtrail:us-east-1:123456789101:eventdatastore/e
 SECRET_NAME=TEAM-IDC-APP
 CACHE_TTL=604800
 
-# Uncomment the next line only if you have a custom domain
-# UI_DOMAIN=portal.teamtest.online
+# OU Cache pre-warm interval in days (default: 1 for testing, use 6 for production)
+PREWARM_INTERVAL_DAYS=1
+
+# Frontend: Access Portal URL for "IAM Identity Center" button
+SSO_LOGIN=$IDC_LOGIN_URL
+
+# Custom domain for TEAM app (used in email notification links)
+# Uncomment and set if you have a custom domain configured in Amplify
+# export UI_DOMAIN=portal.teamtest.online
+# export AMPLIFY_CUSTOM_DOMAIN=$UI_DOMAIN
 
 

@@ -45,6 +45,7 @@ if [ -z "$SECRET_NAME" ]; then
           teamAccount="$TEAM_ACCOUNT" \
           cacheTTL=$CACHE_TTL \
           customAmplifyDomain="$UI_DOMAIN" \
+          PrewarmIntervalDays="$PREWARM_INTERVAL_DAYS" \
         --tags $TAGS \
         --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
     else

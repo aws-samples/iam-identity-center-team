@@ -40,6 +40,10 @@ Parameters:
     Type: Number
     Description: Cache TTL in seconds for OU accounts cache
     Default: 604800
+  PrewarmIntervalDays:
+    Type: Number
+    Description: Prewarm interval in days for OU accounts cache
+    Default: 6
 
 Conditions:
   IsEmptyCloudTrailAuditLogs: !Equals [!Ref CloudTrailAuditLogs, ""]
@@ -168,6 +172,8 @@ Resources:
           Value: !Ref cacheTTL
         - Name: _CUSTOM_IMAGE
           Value: amplify:al2023
+        - Name: PREWARM_INTERVAL_DAYS
+          Value: !Ref PrewarmIntervalDays
       Tags:
         - Key: Branch
           Value: main
