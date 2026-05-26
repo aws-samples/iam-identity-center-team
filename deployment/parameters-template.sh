@@ -25,7 +25,7 @@ SECRET_NAME=TEAM-IDC-APP
 CACHE_TTL=604800
 
 # OU Cache pre-warm interval in days (default: 1 for testing, use 6 for production)
-PREWARM_INTERVAL_DAYS=1
+PREWARM_INTERVAL_DAYS=6
 
 # Frontend: Access Portal URL for "IAM Identity Center" button
 SSO_LOGIN=$IDC_LOGIN_URL
