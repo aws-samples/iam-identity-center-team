@@ -21,17 +21,25 @@ ACCOUNT_ID = os.environ.get("ACCOUNT_ID", "")
 
 
 def get_mgmt_account_id():
-    """Get the management account ID from Organizations"""
+    """Get the management account ID from Organizations. Fails fast if unavailable."""
     org_client = boto3.client("organizations")
     try:
         response = org_client.describe_organization()
         return response["Organization"]["MasterAccountId"]
     except ClientError as e:
-        print(f"Error getting management account ID: {e}")
-        return None
+        raise RuntimeError(f"Cannot retrieve management account ID: {e}") from e
 
 
-mgmt_account_id = None
+# Lazy init - not called at module level to avoid cold start failures
+_mgmt_account_id = None
+
+
+def ensure_mgmt_account_id():
+    """Lazy init for mgmt_account_id. Retries on each invocation if previously failed."""
+    global _mgmt_account_id
+    if _mgmt_account_id is None:
+        _mgmt_account_id = get_mgmt_account_id()
+    return _mgmt_account_id
 
 
 def batch_get_with_backoff(table_name, keys, batch_size=100, max_no_progress=5, max_time_per_batch=10):
@@ -216,6 +224,7 @@ def get_ou_accounts(ou_ids):
 
 
 def list_account_for_ou(ou_id):
+    mgmt_account_id = ensure_mgmt_account_id()
     deployed_in_mgmt = True if ACCOUNT_ID == mgmt_account_id else False
     accounts = []
     client = boto3.client("organizations")
@@ -251,19 +260,16 @@ def get_policies(policy_ids):
 
 def resolve_all_ous_to_accounts(ou_ids):
     """Resolve all unique OUs to accounts map using parallel execution."""
-    global mgmt_account_id
     if not ou_ids:
         return {}
 
-    # Initialize mgmt_account_id before parallel execution
-    if mgmt_account_id is None:
-        mgmt_account_id = get_mgmt_account_id()
+    # Ensure mgmt_account_id is initialized before parallel execution
+    ensure_mgmt_account_id()
 
     # Use ThreadPoolExecutor for parallel OU resolution
     # max_workers=5 balances parallelism with AWS API rate limits
     ou_accounts_map = {}
     with ThreadPoolExecutor(max_workers=5) as executor:
-        # Create list of (ou_id, future) pairs
         future_to_ou = {executor.submit(list_account_for_ou, ou_id): ou_id for ou_id in ou_ids}
         for future in as_completed(future_to_ou):
             ou_id = future_to_ou[future]
