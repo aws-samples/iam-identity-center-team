@@ -76,10 +76,26 @@ Parameters:
     Type: String
     Description: Optional KMS key ARN for encrypted CloudTrail logs
     Default: ''
+  BedrockAuditEnabled:
+    Type: String
+    Description: Enable Bedrock AI audit feature
+    AllowedValues:
+      - 'true'
+      - 'false'
+    Default: 'true'
+  BedrockModelId:
+    Type: String
+    Description: Amazon Bedrock model identifier for AI analysis
+    Default: 'anthropic.claude-3-haiku-20240307-v1:0'
+  BedrockRegion:
+    Type: String
+    Description: AWS region for Bedrock API calls (defaults to deployment region if empty)
+    Default: ''
 
 Conditions:
   IsEmptyCloudTrailAuditLogs: !Equals [!Ref CloudTrailAuditLogs, ""]
   UseExternalRepo: !Equals [!Ref customRepository, 'Yes']
+  IsBedrockEnabled: !Equals [!Ref BedrockAuditEnabled, 'true']
 
 Resources:
   TriggerAmplifyBuild:
@@ -224,6 +240,12 @@ Resources:
           Value: !Ref AthenaCloudTrailPrefix
         - Name: ATHENA_KMS_KEY_ARN
           Value: !Ref AthenaKmsKeyArn
+        - Name: BEDROCK_AUDIT_ENABLED
+          Value: !Ref BedrockAuditEnabled
+        - Name: BEDROCK_MODEL_ID
+          Value: !Ref BedrockModelId
+        - Name: BEDROCK_REGION
+          Value: !Ref BedrockRegion
         - Name: _CUSTOM_IMAGE
           Value: amplify:al2023
       Tags:

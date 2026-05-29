@@ -24,6 +24,9 @@ if [ -n "$ATHENA_CLOUDTRAIL_BUCKET" ]; then
   ATHENA_PARAMS="AthenaLoggingAccountId=${ATHENA_LOGGING_ACCOUNT_ID:-} AthenaRoleArn=${ATHENA_ROLE_ARN:-} AthenaWorkgroup=${ATHENA_WORKGROUP:-team-audit} AthenaDatabase=${ATHENA_DATABASE:-team_cloudtrail_db} AthenaTable=${ATHENA_TABLE:-cloudtrail_logs} AthenaResultsBucket=${ATHENA_RESULTS_BUCKET:-} AthenaCloudTrailBucket=$ATHENA_CLOUDTRAIL_BUCKET AthenaCloudTrailPrefix=${ATHENA_CLOUDTRAIL_PREFIX:-} AthenaKmsKeyArn=${ATHENA_KMS_KEY_ARN:-}"
 fi
 
+# Build Bedrock parameter overrides
+BEDROCK_PARAMS="BedrockAuditEnabled=${BEDROCK_AUDIT_ENABLED:-true} BedrockModelId=${BEDROCK_MODEL_ID:-anthropic.claude-3-haiku-20240307-v1:0} BedrockRegion=${BEDROCK_REGION:-}"
+
 if [ -z "$TEAM_ACCOUNT" ]; then 
   export AWS_PROFILE=$ORG_MASTER_PROFILE
 else 
@@ -53,7 +56,7 @@ if [ -z "$SECRET_NAME" ]; then
           cacheTTL=$CACHE_TTL \
           customAmplifyDomain="$UI_DOMAIN" \
         --tags $TAGS \
-        $ATHENA_PARAMS \
+        $ATHENA_PARAMS $BEDROCK_PARAMS \
         --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
     else
       aws cloudformation deploy --region $REGION --template-file template.yml \
@@ -67,7 +70,7 @@ if [ -z "$SECRET_NAME" ]; then
           teamAccount="$TEAM_ACCOUNT" \
           cacheTTL=$CACHE_TTL \
         --tags $TAGS \
-        $ATHENA_PARAMS \
+        $ATHENA_PARAMS $BEDROCK_PARAMS \
         --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
     fi
   else
@@ -83,7 +86,7 @@ if [ -z "$SECRET_NAME" ]; then
           tags="$TAGS" \
           customAmplifyDomain="$UI_DOMAIN" \
           cacheTTL=$CACHE_TTL \
-        $ATHENA_PARAMS \
+        $ATHENA_PARAMS $BEDROCK_PARAMS \
         --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
     else
       aws cloudformation deploy --region $REGION --template-file template.yml \
@@ -95,7 +98,7 @@ if [ -z "$SECRET_NAME" ]; then
           teamAuditGroup="$TEAM_AUDITOR_GROUP" \
           teamAccount="$TEAM_ACCOUNT" \
           cacheTTL=$CACHE_TTL \
-        $ATHENA_PARAMS \
+        $ATHENA_PARAMS $BEDROCK_PARAMS \
         --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
     fi
   fi
@@ -117,7 +120,7 @@ else
           customRepository="Yes" \
           customRepositorySecretName="$SECRET_NAME" \
         --tags $TAGS \
-        $ATHENA_PARAMS \
+        $ATHENA_PARAMS $BEDROCK_PARAMS \
         --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
     else
       aws cloudformation deploy --region $REGION --template-file template.yml \
@@ -133,7 +136,7 @@ else
           customRepository="Yes" \
           customRepositorySecretName="$SECRET_NAME" \
         --tags $TAGS \
-        $ATHENA_PARAMS \
+        $ATHENA_PARAMS $BEDROCK_PARAMS \
         --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
     fi
   else
@@ -151,7 +154,7 @@ else
           cacheTTL=$CACHE_TTL \
           customRepository="Yes" \
           customRepositorySecretName="$SECRET_NAME" \
-        $ATHENA_PARAMS \
+        $ATHENA_PARAMS $BEDROCK_PARAMS \
         --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
     else
       aws cloudformation deploy --region $REGION --template-file template.yml \
@@ -165,7 +168,7 @@ else
           cacheTTL=$CACHE_TTL \
           customRepository="Yes" \
           customRepositorySecretName="$SECRET_NAME" \
-        $ATHENA_PARAMS \
+        $ATHENA_PARAMS $BEDROCK_PARAMS \
         --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
     fi
   fi
