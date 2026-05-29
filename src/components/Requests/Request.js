@@ -11,6 +11,7 @@ import Header from "@awsui/components-react/header";
 import SpaceBetween from "@awsui/components-react/space-between";
 import Button from "@awsui/components-react/button";
 import Textarea from "@awsui/components-react/textarea";
+import Alert from "@awsui/components-react/alert";
 import moment from "moment";
 import { DatePicker } from "antd";
 import "../../index.css";
@@ -28,6 +29,7 @@ import {
 import { useHistory } from "react-router-dom";
 import { API, graphqlOperation } from "aws-amplify";
 import { onPublishPolicy } from "../../graphql/subscriptions";
+import { checkJustification } from "../../graphql/queries";
 import params from "../../parameters.json";
 
 function Request(props) {
@@ -66,6 +68,9 @@ function Request(props) {
   const [maxDuration, setMaxDuration] = useState(9);
   const [ticketRequired, setTicketRequired] = useState(true);
   const [approvalRequired, setApprovalRequired] = useState(true);
+
+  const [justificationSuggestion, setJustificationSuggestion] = useState(null);
+  const [bedrockJustificationCheckEnabled, setBedrockJustificationCheckEnabled] = useState(false);
 
   const history = useHistory();
 
@@ -153,6 +158,9 @@ function Request(props) {
         setMaxDuration(parseInt(data.duration));
         setTicketRequired(data.ticketNo);
         setApprovalRequired(data.approval);
+        if (data.bedrockJustificationCheckEnabled != null) {
+          setBedrockJustificationCheckEnabled(data.bedrockJustificationCheckEnabled);
+        }
       }
     });
   }
@@ -161,6 +169,40 @@ function Request(props) {
     getMgmtAccountPs().then((data) => {
       setMgmtPs(data);
     });
+  }
+
+  async function performJustificationCheck(justificationText) {
+    // Only invoke when bedrockJustificationCheckEnabled is true AND bedrockAuditEnabled is true AND Athena mode is active
+    if (!bedrockJustificationCheckEnabled || params.bedrockAuditEnabled !== true || params.auditMode !== 'athena') {
+      return;
+    }
+    // Don't check empty justifications
+    if (!justificationText || !justificationText.trim()) {
+      setJustificationSuggestion(null);
+      return;
+    }
+    // Need account and role to be selected
+    if (!account.label || !role.label) {
+      return;
+    }
+    try {
+      const result = await API.graphql(
+        graphqlOperation(checkJustification, {
+          justification: justificationText,
+          accountName: account.label,
+          role: role.label,
+        })
+      );
+      const data = result.data.checkJustification;
+      if (data && data.adequate === false && data.suggestion) {
+        setJustificationSuggestion(data.suggestion);
+      } else {
+        setJustificationSuggestion(null);
+      }
+    } catch (err) {
+      // On any check failure, silently skip (no error shown to user)
+      setJustificationSuggestion(null);
+    }
   }
 
   useEffect(() => {
@@ -301,6 +343,8 @@ function Request(props) {
   async function handleSubmit(event) {
     event.preventDefault();
     setSubmitLoading(true);
+    // Trigger justification check on submit (non-blocking, advisory only)
+    performJustificationCheck(justification);
     const isValid = await validate();
     if (!isValid) {
       const shouldSendRequest =
@@ -530,10 +574,18 @@ function Request(props) {
                   setJustificationError();
                   setJustification(detail.value);
                 }}
+                onBlur={() => {
+                  performJustificationCheck(justification);
+                }}
                 value={justification}
                 ariaRequired
                 placeholder="Business Justification for requesting elevated access"
               />
+              {justificationSuggestion && (
+                <Alert type="warning" statusIconAriaLabel="Warning">
+                  {justificationSuggestion}
+                </Alert>
+              )}
             </FormField>
           </SpaceBetween>
         </Container>

@@ -279,6 +279,9 @@ export const getSettings = /* GraphQL */ `
       teamAdminGroup
       teamAuditorGroup
       useOUCache
+      bedrockAutoAnalysisEnabled
+      bedrockJustificationCheckEnabled
+      bedrockAutoAnalysisDelay
       createdAt
       updatedAt
       __typename
@@ -553,6 +556,61 @@ export const validateRequest = /* GraphQL */ `
       createdAt
       updatedAt
       owner
+      __typename
+    }
+  }
+`;
+export const analysisReportBySessionId = /* GraphQL */ `
+  query AnalysisReportBySessionId(
+    $sessionId: String!
+    $sortDirection: ModelSortDirection
+    $filter: ModelAnalysisReportFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    analysisReportBySessionId(
+      sessionId: $sessionId
+      sortDirection: $sortDirection
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+        sessionId
+        status
+        hasSecurityFindings
+        hasCoherenceFindings
+        __typename
+      }
+      nextToken
+      __typename
+    }
+  }
+`;
+export const checkJustification = /* GraphQL */ `
+  query CheckJustification($justification: String!, $accountName: String!, $role: String!) {
+    checkJustification(justification: $justification, accountName: $accountName, role: $role) {
+      adequate
+      suggestion
+      __typename
+    }
+  }
+`;
+export const analyzeSession = /* GraphQL */ `
+  query AnalyzeSession($sessionId: String!, $requestId: String!) {
+    analyzeSession(sessionId: $sessionId, requestId: $requestId) {
+      id
+      sessionId
+      requestId
+      analyzedAt
+      status
+      summary
+      coherenceCheck
+      securityReview
+      hasSecurityFindings
+      hasCoherenceFindings
+      error
       __typename
     }
   }

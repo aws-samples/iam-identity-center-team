@@ -16,15 +16,20 @@ import {
   ColumnLayout,
   ExpandableSection,
   Select,
+  Tabs,
 } from "@awsui/components-react";
 import { useCollection } from "@awsui/collection-hooks";
 import { Divider } from "antd";
-import { sessions } from "../Shared/RequestService";
+import { sessions, getSetting } from "../Shared/RequestService";
 import { API, graphqlOperation } from "aws-amplify";
+import { analysisReportBySessionId } from "../../graphql/queries";
 import { onUpdateRequests } from "../../graphql/subscriptions";
 import Status from "../Shared/Status";
 import "../../index.css";
 import Logs from "../Sessions/Logs";
+import params from "../../parameters.json";
+import AIAnalysisTab from "./AIAnalysisTab";
+import SessionAnalysisIcon from "./SessionAnalysisIcon";
 
 function convertAwsDateTime(awsDateTime) {
   // Parse AWS datetime string into a Date object
@@ -169,6 +174,8 @@ const defaultStatus = {
 
 function AuditSessions(props) {
   const [allItems, setAllItems] = useState([]);
+  const [analysisReports, setAnalysisReports] = useState({});
+  const [autoAnalysisEnabled, setAutoAnalysisEnabled] = useState(false);
   const [preferences, setPreferences] = useState({
     pageSize: 10,
     visibleContent: [
@@ -185,6 +192,9 @@ function AuditSessions(props) {
 
   const [selectedOption, setSelectedOption] = useState(defaultStatus);
   const selectStatusOptions = prepareSelectOptions("status", defaultStatus);
+
+  // Determine if AI Analysis tab should be visible
+  const isAIAnalysisEnabled = params.bedrockAuditEnabled === true && params.auditMode === 'athena';
 
   function prepareSelectOptions(field, defaultOption) {
     const optionSet = [];
@@ -260,11 +270,15 @@ function AuditSessions(props) {
   const [visible, setVisible] = useState(false);
   const [refreshLoading, setRefreshLoading] = useState(false);
   const [viewLogs, setViewLogs] = useState(false);
+  const [activeTabId, setActiveTabId] = useState("session-logs");
 
   useEffect(() => {
     views();
     props.addNotification([]);
     approveEvent();
+    if (isAIAnalysisEnabled) {
+      fetchAutoAnalysisSetting();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -277,7 +291,42 @@ function AuditSessions(props) {
       setAllItems(items);
       setTableLoading(false);
       setRefreshLoading(false);
+      if (isAIAnalysisEnabled) {
+        fetchAnalysisReports(items);
+      }
     });
+  }
+
+  function fetchAutoAnalysisSetting() {
+    getSetting("settings").then((data) => {
+      setAutoAnalysisEnabled(data?.bedrockAutoAnalysisEnabled ?? false);
+    });
+  }
+
+  async function fetchAnalysisReports(sessionItems) {
+    const reports = {};
+    try {
+      const reportPromises = sessionItems.map(async (item) => {
+        try {
+          const result = await API.graphql(
+            graphqlOperation(analysisReportBySessionId, {
+              sessionId: item.id,
+              limit: 1,
+            })
+          );
+          const reportItems = result.data.analysisReportBySessionId.items;
+          if (reportItems && reportItems.length > 0) {
+            reports[item.id] = reportItems[0];
+          }
+        } catch (err) {
+          // Silently skip - no icon will be shown for this session
+        }
+      });
+      await Promise.all(reportPromises);
+    } catch (err) {
+      console.log("error fetching analysis reports");
+    }
+    setAnalysisReports(reports);
   }
 
   function approveEvent() {
@@ -298,6 +347,7 @@ function AuditSessions(props) {
   function handleSelect() {
     setVisible(true);
     setViewLogs(true);
+    setActiveTabId("session-logs");
   }
 
   const ValueWithLabel = ({ label, children }) => (
@@ -366,7 +416,24 @@ function AuditSessions(props) {
             />
           </div>
         }
-        columnDefinitions={COLUMN_DEFINITIONS}
+        columnDefinitions={
+          isAIAnalysisEnabled
+            ? [
+                ...COLUMN_DEFINITIONS,
+                {
+                  id: "aiAnalysis",
+                  header: "AI",
+                  cell: (item) => (
+                    <SessionAnalysisIcon
+                      report={analysisReports[item.id] || null}
+                      autoAnalysisEnabled={autoAnalysisEnabled}
+                    />
+                  ),
+                  width: 50,
+                },
+              ]
+            : COLUMN_DEFINITIONS
+        }
         visibleColumns={preferences.visibleContent}
         pagination={<Pagination {...paginationProps} />}
         preferences={
@@ -476,13 +543,36 @@ function AuditSessions(props) {
                   )}
                 </div>
               </ColumnLayout>
-              <ExpandableSection
-                variant="footer"
-                header="Session Logs"
-                className="expanded"
-              >
-                <div>{viewLogs && <Logs item={selectedItems[0]} />}</div>
-              </ExpandableSection>
+              {isAIAnalysisEnabled ? (
+                <Tabs
+                  activeTabId={activeTabId}
+                  onChange={({ detail }) => setActiveTabId(detail.activeTabId)}
+                  tabs={[
+                    {
+                      label: "Session Logs",
+                      id: "session-logs",
+                      content: (
+                        <div>{viewLogs && <Logs item={selectedItems[0]} />}</div>
+                      ),
+                    },
+                    {
+                      label: "AI Analysis",
+                      id: "ai-analysis",
+                      content: activeTabId === "ai-analysis" ? (
+                        <AIAnalysisTab item={selectedItems[0]} />
+                      ) : null,
+                    },
+                  ]}
+                />
+              ) : (
+                <ExpandableSection
+                  variant="footer"
+                  header="Session Logs"
+                  className="expanded"
+                >
+                  <div>{viewLogs && <Logs item={selectedItems[0]} />}</div>
+                </ExpandableSection>
+              )}
             </SpaceBetween>
           </Modal>
         ) : null}

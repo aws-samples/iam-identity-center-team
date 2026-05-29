@@ -252,6 +252,9 @@ export const createSettings = /* GraphQL */ `
       teamAdminGroup
       teamAuditorGroup
       useOUCache
+      bedrockAutoAnalysisEnabled
+      bedrockJustificationCheckEnabled
+      bedrockAutoAnalysisDelay
       createdAt
       updatedAt
       __typename
@@ -281,6 +284,9 @@ export const updateSettings = /* GraphQL */ `
       teamAdminGroup
       teamAuditorGroup
       useOUCache
+      bedrockAutoAnalysisEnabled
+      bedrockJustificationCheckEnabled
+      bedrockAutoAnalysisDelay
       createdAt
       updatedAt
       __typename

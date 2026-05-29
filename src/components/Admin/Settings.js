@@ -58,6 +58,13 @@ function Settings(props) {
   const [teamAdminGroup, setTeamAdminGroup] = useState("");
   const [teamAuditorGroup, setTeamAuditorGroup] = useState("");
   const [useOUCache, setUseOUCache] = useState(null);
+  const [bedrockAutoAnalysisEnabled, setBedrockAutoAnalysisEnabled] = useState(null);
+  const [bedrockJustificationCheckEnabled, setBedrockJustificationCheckEnabled] = useState(null);
+  const [bedrockAutoAnalysisDelay, setBedrockAutoAnalysisDelay] = useState(null);
+  const [bedrockAutoAnalysisDelayError, setBedrockAutoAnalysisDelayError] = useState("");
+
+  // Determine if Bedrock AI section should be visible
+  const isBedrockSectionVisible = params.bedrockAuditEnabled === true && params.auditMode === 'athena';
 
   function getGroups() {
     setGroupStatus("loading");
@@ -160,6 +167,18 @@ function Settings(props) {
         error = true;
       }
     }
+    if (
+      isBedrockSectionVisible &&
+      bedrockAutoAnalysisEnabled &&
+      (
+        !bedrockAutoAnalysisDelay ||
+        isNaN(bedrockAutoAnalysisDelay) ||
+        Number(bedrockAutoAnalysisDelay) < 5
+      )
+    ) {
+      setBedrockAutoAnalysisDelayError(`Enter a valid delay of at least 5 minutes`);
+      error = true;
+    }
     return error;
   }
 
@@ -183,6 +202,9 @@ function Settings(props) {
       setTeamAdminGroup(item.teamAdminGroup ?? params.teamAdminGroup);
       setTeamAuditorGroup(item.teamAuditorGroup ?? params.teamAuditorGroup);
       setUseOUCache(item.useOUCache !== undefined ? item.useOUCache : false);
+      setBedrockAutoAnalysisEnabled(item.bedrockAutoAnalysisEnabled ?? false);
+      setBedrockJustificationCheckEnabled(item.bedrockJustificationCheckEnabled ?? false);
+      setBedrockAutoAnalysisDelay(item.bedrockAutoAnalysisDelay ?? 15);
     }
     setVisible(false);
   }
@@ -206,6 +228,11 @@ function Settings(props) {
         teamAdminGroup,
         teamAuditorGroup,
         useOUCache,
+        ...(isBedrockSectionVisible && {
+          bedrockAutoAnalysisEnabled,
+          bedrockJustificationCheckEnabled,
+          bedrockAutoAnalysisDelay: bedrockAutoAnalysisDelay ? Number(bedrockAutoAnalysisDelay) : 15,
+        }),
       };
       const action = item === null ? createSetting : updateSetting;
       action(data).then(() => {
@@ -240,6 +267,9 @@ function Settings(props) {
       setTeamAdminGroup(data?.teamAdminGroup ?? params.teamAdminGroup);
       setTeamAuditorGroup(data?.teamAuditorGroup ?? params.teamAuditorGroup);
       setUseOUCache(data?.useOUCache !== undefined ? data.useOUCache : false);
+      setBedrockAutoAnalysisEnabled(data?.bedrockAutoAnalysisEnabled ?? false);
+      setBedrockJustificationCheckEnabled(data?.bedrockJustificationCheckEnabled ?? false);
+      setBedrockAutoAnalysisDelay(data?.bedrockAutoAnalysisDelay ?? 15);
     });
   }
 
@@ -499,6 +529,58 @@ function Settings(props) {
               </div>}
             </SpaceBetween>
           </ColumnLayout>
+          {isBedrockSectionVisible && (
+            <>
+              <Divider style={{ marginBottom: "7px", marginTop: "14px" }} />
+              <SpaceBetween size="l">
+                <div>
+                  <Box variant="h3">Bedrock AI Audit</Box>
+                  <Box variant="small">
+                    AI-powered session analysis and justification quality check settings
+                  </Box>
+                  <Divider style={{ marginBottom: "7px", marginTop: "7px" }} />
+                </div>
+                <ColumnLayout columns={3} variant="text-grid">
+                  <div>
+                    <Box variant="awsui-key-label">Auto-analysis</Box>
+                    {bedrockAutoAnalysisEnabled !== null ? (
+                      <div>
+                        <StatusIndicator
+                          type={bedrockAutoAnalysisEnabled === true ? "success" : "stopped"}
+                        >
+                          {bedrockAutoAnalysisEnabled === true ? "Enabled" : "Disabled"}
+                        </StatusIndicator>
+                      </div>
+                    ) : (
+                      <Spinner />
+                    )}
+                  </div>
+                  <div>
+                    <Box variant="awsui-key-label">Justification quality check</Box>
+                    {bedrockJustificationCheckEnabled !== null ? (
+                      <div>
+                        <StatusIndicator
+                          type={bedrockJustificationCheckEnabled === true ? "success" : "stopped"}
+                        >
+                          {bedrockJustificationCheckEnabled === true ? "Enabled" : "Disabled"}
+                        </StatusIndicator>
+                      </div>
+                    ) : (
+                      <Spinner />
+                    )}
+                  </div>
+                  <div>
+                    <Box variant="awsui-key-label">Auto-analysis delay</Box>
+                    {bedrockAutoAnalysisDelay !== null ? (
+                      <div>{bedrockAutoAnalysisDelay} minutes</div>
+                    ) : (
+                      <Spinner />
+                    )}
+                  </div>
+                </ColumnLayout>
+              </SpaceBetween>
+            </>
+          )}
         </Container>
         <Modal
           onDismiss={() => handleDismiss()}
@@ -798,6 +880,56 @@ function Settings(props) {
                     </Input>
                   </FormField>
                 </div>
+              )}
+              {isBedrockSectionVisible && (
+                <>
+                  <div>
+                    <Box variant="h3">Bedrock AI Audit</Box>
+                    <Box variant="small">
+                      AI-powered session analysis and justification quality check settings
+                    </Box>
+                    <Divider style={{ marginBottom: "1px", marginTop: "7px" }} />
+                  </div>
+                  <FormField
+                    label="Auto-analysis"
+                    stretch
+                    description="Automatically analyze sessions with AI when they end or are revoked"
+                  >
+                    <Toggle
+                      onChange={({ detail }) => setBedrockAutoAnalysisEnabled(detail.checked)}
+                      checked={bedrockAutoAnalysisEnabled}
+                    >
+                      {bedrockAutoAnalysisEnabled ? "Enabled" : "Disabled"}
+                    </Toggle>
+                  </FormField>
+                  <FormField
+                    label="Justification quality check"
+                    stretch
+                    description="Evaluate justification quality via AI when creating access requests (advisory only, never blocks submission)"
+                  >
+                    <Toggle
+                      onChange={({ detail }) => setBedrockJustificationCheckEnabled(detail.checked)}
+                      checked={bedrockJustificationCheckEnabled}
+                    >
+                      {bedrockJustificationCheckEnabled ? "Enabled" : "Disabled"}
+                    </Toggle>
+                  </FormField>
+                  <FormField
+                    label="Auto-analysis delay"
+                    stretch
+                    description="Minutes to wait after session ends before triggering AI analysis (minimum 5 minutes, to allow CloudTrail event collection)"
+                    errorText={bedrockAutoAnalysisDelayError}
+                  >
+                    <Input
+                      value={bedrockAutoAnalysisDelay}
+                      onChange={(event) => {
+                        setBedrockAutoAnalysisDelayError("");
+                        setBedrockAutoAnalysisDelay(event.detail.value);
+                      }}
+                      type="number"
+                    />
+                  </FormField>
+                </>
               )}
             </SpaceBetween>
           </Form>
