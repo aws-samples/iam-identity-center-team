@@ -240,7 +240,7 @@ async function update_bedrock_parameters() {
 
   // Write to src/parameters.json for frontend
   const reactParametersJsonPath = path.resolve(`./src/parameters.json`);
-  const reactParametersJson = require(reactParametersJsonPath);
+  const reactParametersJson = JSON.parse(fs.readFileSync(reactParametersJsonPath, 'utf8'));
   reactParametersJson.bedrockAuditEnabled = bedrockEnabled;
   fs.writeFileSync(
     reactParametersJsonPath,

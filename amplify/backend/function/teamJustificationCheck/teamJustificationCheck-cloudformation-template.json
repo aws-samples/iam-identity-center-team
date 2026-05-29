@@ -28,7 +28,7 @@
     },
     "BedrockAuditEnabled": {
       "Type": "String",
-      "Default": "true",
+      "Default": "false",
       "AllowedValues": ["true", "false"],
       "Description": "Whether Bedrock AI audit feature is enabled"
     }

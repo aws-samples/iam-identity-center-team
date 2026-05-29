@@ -69,7 +69,7 @@ function Settings(props) {
   function getGroups() {
     setGroupStatus("loading");
     fetchIdCGroups().then((data) => {
-      setGroups(data);
+      setGroups(data || []);
       setGroupStatus("finished");
     });
   }

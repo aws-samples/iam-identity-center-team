@@ -78,6 +78,16 @@
       "AllowedValues": ["true", "false"],
       "Description": "Whether Bedrock AI audit feature is enabled"
     },
+    "BedrockModelId": {
+      "Type": "String",
+      "Default": "anthropic.claude-3-haiku-20240307-v1:0",
+      "Description": "Amazon Bedrock model identifier"
+    },
+    "BedrockRegion": {
+      "Type": "String",
+      "Default": "",
+      "Description": "AWS region for Bedrock API calls"
+    },
     "functionteamBedrockAnalyzerArn": {
       "Type": "String",
       "Default": "",

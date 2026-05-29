@@ -82,7 +82,7 @@ Parameters:
     AllowedValues:
       - 'true'
       - 'false'
-    Default: 'true'
+    Default: 'false'
   BedrockModelId:
     Type: String
     Description: Amazon Bedrock model identifier for AI analysis
