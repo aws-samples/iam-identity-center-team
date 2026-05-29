@@ -374,6 +374,13 @@
           ],
           "category": "custom",
           "resourceName": "cloudtrailLake"
+        },
+        {
+          "attributes": [
+            "Arn"
+          ],
+          "category": "function",
+          "resourceName": "teamBedrockAnalyzer"
         }
       ],
       "providerPlugin": "awscloudformation",

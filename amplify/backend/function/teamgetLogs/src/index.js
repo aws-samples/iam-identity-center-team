@@ -8,6 +8,9 @@
 	API_AWSPIM_GRAPHQLAPIIDOUTPUT
 	ENV
 	REGION
+	BEDROCK_AUDIT_ENABLED
+	BEDROCK_ANALYZER_FUNCTION_ARN
+	BEDROCK_SCHEDULER_ROLE_ARN
 Amplify Params - DO NOT EDIT */
 import crypto from '@aws-crypto/sha256-js';
 import { defaultProvider } from '@aws-sdk/credential-provider-node';
@@ -28,6 +31,11 @@ import {
   GetQueryExecutionCommand,
 } from "@aws-sdk/client-athena";
 
+import {
+  SchedulerClient,
+  CreateScheduleCommand,
+} from "@aws-sdk/client-scheduler";
+
 const { Sha256 } = crypto;
 const REGION = process.env.REGION;
 const EventDataStore = (process.env.EVENT_DATA_STORE).split("/").pop();
@@ -40,6 +48,12 @@ const ATHENA_WORKGROUP = process.env.ATHENA_WORKGROUP || 'team-audit';
 const ATHENA_DATABASE = process.env.ATHENA_DATABASE;
 const ATHENA_TABLE = process.env.ATHENA_TABLE;
 const ATHENA_RESULTS_BUCKET = process.env.ATHENA_RESULTS_BUCKET;
+
+// Bedrock auto-analysis configuration
+const BEDROCK_AUDIT_ENABLED = process.env.BEDROCK_AUDIT_ENABLED === 'true';
+const BEDROCK_ANALYZER_FUNCTION_ARN = process.env.BEDROCK_ANALYZER_FUNCTION_ARN || '';
+const BEDROCK_SCHEDULER_ROLE_ARN = process.env.BEDROCK_SCHEDULER_ROLE_ARN || '';
+const ENV = process.env.ENV;
 
 // const {
 //   CloudTrailClient,
@@ -252,11 +266,173 @@ const start_query = async (event) => {
   }
 };
 
+/**
+ * Clamp the auto-analysis delay to a minimum of 5 minutes.
+ * Exported for property-based testing (Property 2).
+ *
+ * @param {number} delay - The configured delay in minutes
+ * @returns {number} The effective delay, clamped to minimum 5 minutes
+ */
+export const clampDelay = (delay) => Math.max(5, delay);
+
+/**
+ * Query the Settings model via GraphQL to get Bedrock auto-analysis configuration.
+ * Returns the first settings record found.
+ *
+ * @returns {Object|null} Settings object with bedrockAutoAnalysisEnabled, bedrockAutoAnalysisDelay, or null if unavailable
+ */
+const getBedrockSettings = async () => {
+  const settingsQuery = /* GraphQL */ `
+    query ListSettings {
+      listSettings(limit: 1) {
+        items {
+          id
+          bedrockAutoAnalysisEnabled
+          bedrockAutoAnalysisDelay
+        }
+      }
+    }
+  `;
+
+  const endpoint = new URL(GRAPHQL_ENDPOINT);
+
+  const signer = new SignatureV4({
+    credentials: defaultProvider(),
+    region: REGION,
+    service: 'appsync',
+    sha256: Sha256,
+  });
+
+  const requestToBeSigned = new HttpRequest({
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      host: endpoint.host,
+    },
+    hostname: endpoint.host,
+    body: JSON.stringify({ query: settingsQuery }),
+    path: endpoint.pathname,
+  });
+
+  const signed = await signer.sign(requestToBeSigned);
+  const request = new Request(endpoint, signed);
+
+  const response = await fetch(request);
+  const body = await response.json();
+
+  if (body.errors || !body.data?.listSettings?.items?.length) {
+    return null;
+  }
+
+  return body.data.listSettings.items[0];
+};
+
+/**
+ * Schedule auto-analysis for a session via EventBridge Scheduler.
+ * Creates a one-time schedule that invokes the teamBedrockAnalyzer Lambda
+ * after the configured delay.
+ *
+ * @param {string} sessionId - The session ID to analyze
+ * @param {string} requestId - The associated request ID
+ * @param {number} delayMinutes - The delay in minutes (already clamped)
+ */
+const scheduleAutoAnalysis = async (sessionId, requestId, delayMinutes) => {
+  const schedulerClient = new SchedulerClient({ region: REGION });
+
+  // Calculate the schedule time (now + delay)
+  const scheduleTime = new Date(Date.now() + delayMinutes * 60 * 1000);
+  const scheduleExpression = `at(${scheduleTime.toISOString().replace(/\.\d{3}Z$/, '')})`;
+
+  // Create a unique schedule name using sessionId and timestamp
+  const scheduleName = `team-auto-analysis-${sessionId}-${Date.now()}`;
+
+  const command = new CreateScheduleCommand({
+    Name: scheduleName,
+    ScheduleExpression: scheduleExpression,
+    ScheduleExpressionTimezone: 'UTC',
+    FlexibleTimeWindow: { Mode: 'OFF' },
+    Target: {
+      Arn: BEDROCK_ANALYZER_FUNCTION_ARN,
+      RoleArn: BEDROCK_SCHEDULER_ROLE_ARN,
+      Input: JSON.stringify({
+        sessionId,
+        requestId,
+        source: 'auto-analysis',
+      }),
+    },
+    ActionAfterCompletion: 'DELETE',
+  });
+
+  await schedulerClient.send(command);
+  console.log(`Scheduled auto-analysis for session ${sessionId} at ${scheduleTime.toISOString()} (delay: ${delayMinutes} min), schedule: ${scheduleName}`);
+};
+
+/**
+ * Attempt to schedule Bedrock auto-analysis for a session that has ended or been revoked.
+ * Checks if the feature is enabled at both infrastructure and settings level.
+ * On any failure, logs the error but does NOT fail the session flow.
+ *
+ * @param {Object} data - The DynamoDB stream NewImage data
+ */
+const tryScheduleAutoAnalysis = async (data) => {
+  try {
+    // Check infrastructure-level feature toggle
+    if (!BEDROCK_AUDIT_ENABLED) {
+      return;
+    }
+
+    // Check if this is an Athena mode deployment (Bedrock AI requires Athena mode)
+    if (AUDIT_MODE !== 'athena') {
+      return;
+    }
+
+    // Check session status - only trigger for "ended" or "revoked"
+    const status = data["status"]?.["S"];
+    if (status !== 'ended' && status !== 'revoked') {
+      return;
+    }
+
+    // Check if we have the required ARNs configured
+    if (!BEDROCK_ANALYZER_FUNCTION_ARN || !BEDROCK_SCHEDULER_ROLE_ARN) {
+      console.warn('Bedrock auto-analysis: missing BEDROCK_ANALYZER_FUNCTION_ARN or BEDROCK_SCHEDULER_ROLE_ARN');
+      return;
+    }
+
+    // Query settings to check if auto-analysis is enabled
+    const settings = await getBedrockSettings();
+    if (!settings || !settings.bedrockAutoAnalysisEnabled) {
+      return;
+    }
+
+    // Get the delay and clamp to minimum 5 minutes
+    const configuredDelay = settings.bedrockAutoAnalysisDelay || 15;
+    const effectiveDelay = clampDelay(configuredDelay);
+
+    // Get sessionId and requestId from the stream event
+    const sessionId = data["id"]?.["S"];
+    const requestId = data["requestId"]?.["S"] || data["id"]?.["S"];
+
+    if (!sessionId) {
+      console.warn('Bedrock auto-analysis: missing sessionId in stream event');
+      return;
+    }
+
+    // Schedule the auto-analysis
+    await scheduleAutoAnalysis(sessionId, requestId, effectiveDelay);
+  } catch (error) {
+    // On scheduling failure, log error but don't fail the session flow
+    console.error('Bedrock auto-analysis scheduling failed (non-blocking):', error);
+  }
+};
+
 export const handler = async (event) => {
   let data = event["Records"].pop()
   data = data["dynamodb"]["NewImage"]
   const id = data["id"]["S"]
   console.log("Event", data);
+
+  // Attempt to schedule Bedrock auto-analysis (non-blocking)
+  await tryScheduleAutoAnalysis(data);
 
   if (AUDIT_MODE === 'athena') {
     try {

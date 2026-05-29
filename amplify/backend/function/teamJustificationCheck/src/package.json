@@ -1,0 +1,18 @@
+{
+  "name": "teamjustificationcheck",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Lambda function for AI-powered justification quality check",
+  "main": "index.js",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.92"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "dependencies": {
+    "@aws-sdk/client-bedrock-runtime": "^3.777.0"
+  }
+}

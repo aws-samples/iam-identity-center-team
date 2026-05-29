@@ -71,6 +71,17 @@
       "Type": "String",
       "Default": "",
       "Description": "KMS key ARN for Athena encryption"
+    },
+    "BedrockAuditEnabled": {
+      "Type": "String",
+      "Default": "false",
+      "AllowedValues": ["true", "false"],
+      "Description": "Whether Bedrock AI audit feature is enabled"
+    },
+    "functionteamBedrockAnalyzerArn": {
+      "Type": "String",
+      "Default": "",
+      "Description": "ARN of the teamBedrockAnalyzer Lambda function (from Amplify dependency)"
     }
   },
   "Conditions": {
@@ -88,6 +99,14 @@
           "Ref": "AuditMode"
         },
         "athena"
+      ]
+    },
+    "IsBedrockEnabled": {
+      "Fn::Equals": [
+        {
+          "Ref": "BedrockAuditEnabled"
+        },
+        "true"
       ]
     }
   },
@@ -177,6 +196,24 @@
             },
             "ATHENA_KMS_KEY_ARN": {
               "Ref": "AthenaKmsKeyArn"
+            },
+            "BEDROCK_AUDIT_ENABLED": {
+              "Ref": "BedrockAuditEnabled"
+            },
+            "BEDROCK_ANALYZER_FUNCTION_ARN": {
+              "Ref": "functionteamBedrockAnalyzerArn"
+            },
+            "BEDROCK_SCHEDULER_ROLE_ARN": {
+              "Fn::If": [
+                "IsBedrockEnabled",
+                {
+                  "Fn::GetAtt": [
+                    "BedrockAutoAnalysisSchedulerRole",
+                    "Arn"
+                  ]
+                },
+                ""
+              ]
             }
           }
         },
@@ -479,6 +516,109 @@
                   "Ref": "AthenaRoleArn"
                 }
               ]
+            }
+          ]
+        }
+      }
+    },
+    "BedrockAutoAnalysisSchedulerRole": {
+      "Type": "AWS::IAM::Role",
+      "Condition": "IsBedrockEnabled",
+      "Properties": {
+        "RoleName": {
+          "Fn::If": [
+            "ShouldNotCreateEnvResources",
+            "teamBedrockAutoAnalysisSchedulerRole",
+            {
+              "Fn::Join": [
+                "",
+                [
+                  "teamBedrockAutoAnalysisSchedulerRole",
+                  "-",
+                  {
+                    "Ref": "env"
+                  }
+                ]
+              ]
+            }
+          ]
+        },
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "scheduler.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "InvokeBedrockAnalyzerLambda",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": "lambda:InvokeFunction",
+                  "Resource": {
+                    "Ref": "functionteamBedrockAnalyzerArn"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "BedrockSchedulerPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Condition": "IsBedrockEnabled",
+      "DependsOn": [
+        "LambdaExecutionRole"
+      ],
+      "Properties": {
+        "PolicyName": "bedrock-scheduler-policy",
+        "Roles": [
+          {
+            "Ref": "LambdaExecutionRole"
+          }
+        ],
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "scheduler:CreateSchedule"
+              ],
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:scheduler:${AWS::Region}:${AWS::AccountId}:schedule/default/team-auto-analysis-*"
+                }
+              ]
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "iam:PassRole"
+              ],
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "BedrockAutoAnalysisSchedulerRole",
+                    "Arn"
+                  ]
+                }
+              ],
+              "Condition": {
+                "StringEquals": {
+                  "iam:PassedToService": "scheduler.amazonaws.com"
+                }
+              }
             }
           ]
         }
