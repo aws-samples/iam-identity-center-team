@@ -19,6 +19,14 @@
     "functionteamapplicationboto3layerArn": {
       "Type": "String",
       "Default": "functionteamapplicationboto3layerArn"
+    },
+    "idcRegion": {
+      "Type": "String",
+      "Default": ""
+    },
+    "identityStoreId": {
+      "Type": "String",
+      "Default": ""
     }
   },
   "Conditions": {
@@ -76,6 +84,12 @@
             },
             "REGION": {
               "Ref": "AWS::Region"
+            },
+            "IDC_REGION": {
+              "Ref": "idcRegion"
+            },
+            "IDENTITY_STORE_ID": {
+              "Ref": "identityStoreId"
             }
           }
         },

@@ -7,6 +7,8 @@ from botocore.exceptions import ClientError
 import boto3
 import json
 
+idc_region = os.getenv('IDC_REGION', os.environ.get('REGION'))
+
 team_admin_group = os.getenv("TEAM_ADMIN_GROUP")
 team_auditor_group = os.getenv("TEAM_AUDITOR_GROUP")
 settings_table_name = os.getenv("SETTINGS_TABLE_NAME")
@@ -33,7 +35,10 @@ def get_team_groups():
 
 
 def get_identity_store_id():
-    client = boto3.client('sso-admin')
+    identity_store_id = os.getenv('IDENTITY_STORE_ID')
+    if identity_store_id:
+        return identity_store_id
+    client = boto3.client('sso-admin', region_name=idc_region)
     try:
         response = client.list_instances()
         return response['Instances'][0]['IdentityStoreId']
@@ -45,25 +50,31 @@ sso_instance = get_identity_store_id()
 
 
 def get_user(username):
+    client = boto3.client('identitystore', region_name=idc_region)
+    # Try by userName first
     try:
-        client = boto3.client('identitystore')
         response = client.get_user_id(
             IdentityStoreId=sso_instance,
-            AlternateIdentifier={
-                'UniqueAttribute': {
-                    'AttributePath': 'userName',
-                    'AttributeValue': username
-                },
-            }
+            AlternateIdentifier={'UniqueAttribute': {'AttributePath': 'userName', 'AttributeValue': username}}
         )
         return response['UserId']
-    except ClientError as e:
-        print(e.response['Error']['Message'])
+    except Exception as e:
+        print(f"userName lookup failed: {e}")
+    # Fallback: try by email
+    try:
+        response = client.get_user_id(
+            IdentityStoreId=sso_instance,
+            AlternateIdentifier={'UniqueAttribute': {'AttributePath': 'emails.value', 'AttributeValue': username}}
+        )
+        return response['UserId']
+    except Exception as e:
+        print(f"email lookup failed: {e}")
+    return None
 
 
 def get_group(group):
     try:
-        client = boto3.client('identitystore')
+        client = boto3.client('identitystore', region_name=idc_region)
         response = client.get_group_id(
             IdentityStoreId=sso_instance,
             AlternateIdentifier={
@@ -81,7 +92,7 @@ def get_group(group):
 
 def list_idc_group_membership(userId):
     try:
-        client = boto3.client('identitystore')
+        client = boto3.client('identitystore', region_name=idc_region)
         p = client.get_paginator('list_group_memberships_for_member')
         paginator = p.paginate(IdentityStoreId=sso_instance,
             MemberId={

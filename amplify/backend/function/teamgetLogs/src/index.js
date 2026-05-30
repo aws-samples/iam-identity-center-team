@@ -136,7 +136,7 @@ const get_query_status = async (queryId) => {
 const start_query = async (event) => {
   const startTime = event["startTime"]["S"];
   const endTime = event["endTime"]["S"];
-  const  username = event["username"]["S"].replace('idc_', '');
+  const  username = event["username"]["S"].replace(/^[^_]*_/, '');
   const accountId = event["accountId"]["S"];
   const role = event["role"]["S"];
   try {

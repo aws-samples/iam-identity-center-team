@@ -10,6 +10,8 @@ from botocore.exceptions import ClientError
 from requests_aws_sign import AWSV4Sign
 import asyncio
 from botocore.config import Config
+
+idc_region = os.getenv('IDC_REGION', os.environ.get('REGION'))
     
 policy_table_name = os.getenv("POLICY_TABLE_NAME")
 settings_table_name = os.getenv("SETTINGS_TABLE_NAME")
@@ -30,6 +32,7 @@ notification_topic_arn = os.getenv("NOTIFICATION_TOPIC_ARN")
 sso_login_url = os.getenv("SSO_LOGIN_URL")
 fn_teamstatus_arn = os.getenv("FN_TEAMSTATUS_ARN")
 fn_teamnotifications_arn = os.getenv("FN_TEAMNOTIFICATIONS_ARN")
+fn_teamidcproxy_arn = os.getenv("FN_TEAMIDCPROXY_ARN")
 team_config = {
     "sso_login_url": sso_login_url,
     "requests_table": requests_table_name,
@@ -37,6 +40,7 @@ team_config = {
     "grant_sm": grant,
     "fn_teamstatus_arn": fn_teamstatus_arn,
     "fn_teamnotifications_arn": fn_teamnotifications_arn,
+    "idcProxyArn": fn_teamidcproxy_arn,
 }
 
 
@@ -102,7 +106,7 @@ def getEntitlements(userId, groupIds):
 
 def list_idc_group_membership(userId):
     try:
-        client = boto3.client('identitystore')
+        client = boto3.client('identitystore', region_name=idc_region)
         p = client.get_paginator('list_group_memberships_for_member')
         paginator = p.paginate(IdentityStoreId=sso_instance['IdentityStoreId'],
             MemberId={
@@ -185,7 +189,11 @@ def updateRequest(input):
 
 
 def list_existing_sso_instances():
-    client = boto3.client('sso-admin')
+    instance_arn = os.getenv('INSTANCE_ARN')
+    identity_store_id = os.getenv('IDENTITY_STORE_ID')
+    if instance_arn and identity_store_id:
+        return {'InstanceArn': instance_arn, 'IdentityStoreId': identity_store_id}
+    client = boto3.client('sso-admin', region_name=idc_region)
     try:
         response = client.list_instances()
         return response['Instances'][0]
@@ -194,23 +202,26 @@ def list_existing_sso_instances():
 
 
 def get_user(username):
+    client = boto3.client('identitystore', region_name=idc_region)
+    # Try by userName first
     try:
-        client = boto3.client('identitystore')
         response = client.get_user_id(
             IdentityStoreId=sso_instance['IdentityStoreId'],
-            AlternateIdentifier={
-                'UniqueAttribute': {
-                    'AttributePath': 'userName',
-                    'AttributeValue': username
-                },
-            }
+            AlternateIdentifier={'UniqueAttribute': {'AttributePath': 'userName', 'AttributeValue': username}}
         )
-        if response['UserId']:
-            return response['UserId']
-        else:
-            return
-    except ClientError as e:
-        print(e.response['Error']['Message'])
+        return response['UserId']
+    except Exception:
+        pass
+    # Fallback: try by email
+    try:
+        response = client.get_user_id(
+            IdentityStoreId=sso_instance['IdentityStoreId'],
+            AlternateIdentifier={'UniqueAttribute': {'AttributePath': 'emails.value', 'AttributeValue': username}}
+        )
+        return response['UserId']
+    except Exception as e:
+        print(f"get_user failed for {username}: {e}")
+    return None
 
 
 def invoke_approval_sm(request, sm_arn, notification_config, team_config):
@@ -382,7 +393,7 @@ def get_ou(id):
         print(e.response['Error']['Message'])
 
 async def getPsDuration(ps):
-    client = boto3.client('sso-admin')
+    client = boto3.client('sso-admin', region_name=idc_region)
     response = client.describe_permission_set(
     InstanceArn=sso_instance['InstanceArn'],
     PermissionSetArn=ps
@@ -412,7 +423,7 @@ def get_approver_group_ids(accountId):
     return approvers
 
 def get_approvers(userId):
-    client = boto3.client('identitystore')
+    client = boto3.client('identitystore', region_name=idc_region)
     response = client.describe_user(
         IdentityStoreId=sso_instance['IdentityStoreId'],
         UserId=userId
@@ -426,7 +437,7 @@ def get_approvers(userId):
 
 def list_group_membership(groupId):
     try:
-        client = boto3.client('identitystore')
+        client = boto3.client('identitystore', region_name=idc_region)
         p = client.get_paginator('list_group_memberships')
         paginator = p.paginate(IdentityStoreId=sso_instance['IdentityStoreId'],
         GroupId=groupId,
@@ -520,7 +531,7 @@ def handler(event, context):
                     }
             return updateRequest(input)
         print("Received event: %s" % json.dumps(request))
-        userId = get_user((data["username"]["S"])[4:])
+        userId = get_user(data["username"]["S"].split("_", 1)[1])
         request["userId"] = userId
         eligible = get_eligibility(request, userId)
         if eligible:

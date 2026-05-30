@@ -29,6 +29,14 @@
     },
     "teamAuditorGroup": {
       "Type": "String"
+    },
+    "idcRegion": {
+      "Type": "String",
+      "Default": ""
+    },
+    "identityStoreId": {
+      "Type": "String",
+      "Default": ""
     }
   },
   "Conditions": {
@@ -103,6 +111,12 @@
             },
             "TEAM_AUDITOR_GROUP": {
               "Ref": "teamAuditorGroup"
+            },
+            "IDC_REGION": {
+              "Ref": "idcRegion"
+            },
+            "IDENTITY_STORE_ID": {
+              "Ref": "identityStoreId"
             }
           }
         },

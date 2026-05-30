@@ -17,6 +17,18 @@ set -xe
 
 . "./parameters.sh"
 
+# Build optional cross-region IDC parameter overrides
+IDC_PARAMS=""
+if [[ ! -z "$IDC_REGION" ]]; then
+  IDC_PARAMS="$IDC_PARAMS idcRegion=$IDC_REGION"
+fi
+if [[ ! -z "$INSTANCE_ARN" ]]; then
+  IDC_PARAMS="$IDC_PARAMS instanceArn=$INSTANCE_ARN"
+fi
+if [[ ! -z "$IDENTITY_STORE_ID" ]]; then
+  IDC_PARAMS="$IDC_PARAMS identityStoreId=$IDENTITY_STORE_ID"
+fi
+
 if [ -z "$TEAM_ACCOUNT" ]; then 
   export AWS_PROFILE=$ORG_MASTER_PROFILE
 else 
@@ -42,6 +54,7 @@ if [ -z "$SECRET_NAME" ]; then
           teamAccount="$TEAM_ACCOUNT" \
           cacheTTL=$CACHE_TTL \
           customAmplifyDomain="$UI_DOMAIN" \
+          $IDC_PARAMS \
         --tags $TAGS \
         --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
     else
@@ -55,6 +68,7 @@ if [ -z "$SECRET_NAME" ]; then
           tags="$TAGS" \
           teamAccount="$TEAM_ACCOUNT" \
           cacheTTL=$CACHE_TTL \
+          $IDC_PARAMS \
         --tags $TAGS \
         --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
     fi
@@ -71,6 +85,7 @@ if [ -z "$SECRET_NAME" ]; then
           cacheTTL=$CACHE_TTL \
           tags="$TAGS" \
           customAmplifyDomain="$UI_DOMAIN" \
+          $IDC_PARAMS \
         --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
     else
       aws cloudformation deploy --region $REGION --template-file template.yml \
@@ -82,6 +97,7 @@ if [ -z "$SECRET_NAME" ]; then
           teamAuditGroup="$TEAM_AUDITOR_GROUP" \
           teamAccount="$TEAM_ACCOUNT" \
           cacheTTL=$CACHE_TTL \
+          $IDC_PARAMS \
         --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
     fi
   fi
@@ -104,6 +120,7 @@ else
           cacheTTL=$CACHE_TTL \
           customRepository="Yes" \
           customRepositorySecretName="$SECRET_NAME" \
+          $IDC_PARAMS \
         --tags $TAGS \
         --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
     else
@@ -119,6 +136,7 @@ else
           cacheTTL=$CACHE_TTL \
           customRepository="Yes" \
           customRepositorySecretName="$SECRET_NAME" \
+          $IDC_PARAMS \
         --tags $TAGS \
         --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
     fi
@@ -137,6 +155,7 @@ else
           tags="$TAGS" \
           customAmplifyDomain="$UI_DOMAIN" \
           cacheTTL=$CACHE_TTL \
+          $IDC_PARAMS \
         --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
     else
       aws cloudformation deploy --region $REGION --template-file template.yml \
@@ -150,6 +169,7 @@ else
           customRepositorySecretName="$SECRET_NAME" \
           teamAccount="$TEAM_ACCOUNT" \
           cacheTTL=$CACHE_TTL \
+          $IDC_PARAMS \
         --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
     fi
   fi

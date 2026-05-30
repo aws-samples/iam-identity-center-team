@@ -59,9 +59,25 @@
       "Type": "String",
       "Default": "functionteamNotificationsArn"
     },
+    "functionteamIdcProxyArn": {
+      "Type": "String",
+      "Default": "functionteamIdcProxyArn"
+    },
     "customsnsNotificationTopicArn": {
       "Type": "String",
       "Default": "customsnsNotificationTopicArn"
+    },
+    "idcRegion": {
+      "Type": "String",
+      "Default": ""
+    },
+    "instanceArn": {
+      "Type": "String",
+      "Default": ""
+    },
+    "identityStoreId": {
+      "Type": "String",
+      "Default": ""
     }
   },
   "Conditions": {
@@ -175,6 +191,18 @@
             },
             "FN_TEAMNOTIFICATIONS_ARN": {
               "Ref": "functionteamNotificationsArn"
+            },
+            "FN_TEAMIDCPROXY_ARN": {
+              "Ref": "functionteamIdcProxyArn"
+            },
+            "IDC_REGION": {
+              "Ref": "idcRegion"
+            },
+            "INSTANCE_ARN": {
+              "Ref": "instanceArn"
+            },
+            "IDENTITY_STORE_ID": {
+              "Ref": "identityStoreId"
             }
           }
         },

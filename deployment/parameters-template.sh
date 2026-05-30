@@ -27,4 +27,9 @@ CACHE_TTL=604800
 # Uncomment the next line only if you have a custom domain
 # UI_DOMAIN=portal.teamtest.online
 
+# Uncomment the following lines only if IAM Identity Center is in a different region than TEAM
+# IDC_REGION=ap-southeast-3
+# INSTANCE_ARN=arn:aws:sso:::instance/ssoins-xxxxxxxxxxxxxxxx
+# IDENTITY_STORE_ID=d-xxxxxxxxxx
+
 

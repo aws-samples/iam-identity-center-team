@@ -23,6 +23,14 @@
     "apiteamGraphQLAPIEndpointOutput": {
       "Type": "String",
       "Default": "apiteamGraphQLAPIEndpointOutput"
+    },
+    "idcRegion": {
+      "Type": "String",
+      "Default": ""
+    },
+    "identityStoreId": {
+      "Type": "String",
+      "Default": ""
     }
   },
   "Conditions": {
@@ -86,6 +94,12 @@
             },
             "API_TEAM_GRAPHQLAPIENDPOINTOUTPUT": {
               "Ref": "apiteamGraphQLAPIEndpointOutput"
+            },
+            "IDC_REGION": {
+              "Ref": "idcRegion"
+            },
+            "IDENTITY_STORE_ID": {
+              "Ref": "identityStoreId"
             }
           }
         },
