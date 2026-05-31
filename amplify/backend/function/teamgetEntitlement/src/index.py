@@ -162,15 +162,19 @@ def list_account_for_ou(ou_id):
     Original implementation: Direct Organizations API call for OU accounts.
     Used when useOUCache feature flag is disabled.
     """
+    deployed_in_mgmt = True if ACCOUNT_ID == mgmt_account_id else False
     accounts = []
     client = boto3.client("organizations")
-
+    
     try:
         paginator = client.get_paginator("list_accounts_for_parent")
         page_iterator = paginator.paginate(ParentId=ou_id)
 
         for page in page_iterator:
             for acct in page["Accounts"]:
+                # Skip management account if not deployed in management account
+                if not deployed_in_mgmt and acct["Id"] == mgmt_account_id:
+                    continue
                 accounts.append({"name": acct["Name"], "id": acct["Id"]})
         
         print(f"OU {ou_id}: {len(accounts)} accounts (direct API)")
