@@ -1,7 +1,11 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
-  "Description": "{\"createdOn\":\"Linux\",\"createdBy\":\"Amplify\",\"createdWith\":\"9.2.1\",\"stackType\":\"function-Lambda\",\"metadata\":{}}",
+  "Description": "Lambda Function for invalidating OU cache",
   "Parameters": {
+    "CloudWatchRule": {
+      "Type": "String",
+      "Default": "NONE"
+    },
     "deploymentBucketName": {
       "Type": "String"
     },
@@ -12,12 +16,7 @@
       "Type": "String"
     },
     "apiteamGraphQLAPIIdOutput": {
-      "Type": "String",
-      "Default": "apiteamGraphQLAPIIdOutput"
-    },
-    "customsnsNotificationTopicArn": {
-      "Type": "String",
-      "Default": "customsnsNotificationTopicArn"
+      "Type": "String"
     }
   },
   "Conditions": {
@@ -49,16 +48,16 @@
             "Ref": "s3Key"
           }
         },
-        "Handler": "index.lambda_handler",
+        "Handler": "index.handler",
         "FunctionName": {
           "Fn::If": [
             "ShouldNotCreateEnvResources",
-            "teamNotifications",
+            "teaminvalidateOUCache",
             {
               "Fn::Join": [
                 "",
                 [
-                  "teamNotifications",
+                  "teaminvalidateOUCache",
                   "-",
                   {
                     "Ref": "env"
@@ -76,9 +75,9 @@
             "REGION": {
               "Ref": "AWS::Region"
             },
-            "SETTINGS_TABLE_NAME": {
+            "CACHE_TABLE_NAME": {
               "Fn::ImportValue": {
-                "Fn::Sub": "${apiteamGraphQLAPIIdOutput}:GetAtt:SettingsTable:Name"
+                "Fn::Sub": "${apiteamGraphQLAPIIdOutput}:GetAtt:OUAccountsCacheTable:Name"
               }
             }
           }
@@ -89,9 +88,8 @@
             "Arn"
           ]
         },
-        "Runtime": "python3.10",
-        "Layers": [],
-        "Timeout": 120
+        "Runtime": "python3.12",
+        "Timeout": 30
       }
     },
     "LambdaExecutionRole": {
@@ -100,12 +98,12 @@
         "RoleName": {
           "Fn::If": [
             "ShouldNotCreateEnvResources",
-            "teamLambdaRoledab1354c",
+            "teamLambdaRoleinvalidateOUCache",
             {
               "Fn::Join": [
                 "",
                 [
-                  "teamLambdaRoledab1354c",
+                  "teamLambdaRoleinvalidateOUCache",
                   "-",
                   {
                     "Ref": "env"
@@ -157,7 +155,7 @@
               ],
               "Resource": {
                 "Fn::Sub": [
-                  "arn:${AWS::Partition}:logs:${region}:${account}:log-group:/aws/lambda/${lambda}:log-stream:*",
+                  "arn:aws:logs:${region}:${account}:log-group:/aws/lambda/${lambda}:log-stream:*",
                   {
                     "region": {
                       "Ref": "AWS::Region"
@@ -171,32 +169,48 @@
                   }
                 ]
               }
-            },
+            }
+          ]
+        }
+      }
+    },
+    "DynamoDBPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "dynamodb-cache-policy",
+        "Roles": [
+          {
+            "Ref": "LambdaExecutionRole"
+          }
+        ],
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
             {
               "Effect": "Allow",
               "Action": [
-                "dynamodb:GetItem"
-              ],
-              "Resource": [
-                {
-                  "Fn::Sub": "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/Settings-*"
-                }
-              ]
-            },
-            {
-              "Effect": "Allow",
-              "Action": [
-                "ses:SendEmail"
-              ],
-              "Resource": "*"
-            },
-            {
-              "Effect": "Allow",
-              "Action": [
-                "sns:Publish"
+                "dynamodb:DeleteItem"
               ],
               "Resource": {
-                "Ref": "customsnsNotificationTopicArn"
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:dynamodb:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":table/",
+                    {
+                      "Fn::ImportValue": {
+                        "Fn::Sub": "${apiteamGraphQLAPIIdOutput}:GetAtt:OUAccountsCacheTable:Name"
+                      }
+                    }
+                  ]
+                ]
               }
             }
           ]

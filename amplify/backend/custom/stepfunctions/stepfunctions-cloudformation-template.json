@@ -11,6 +11,10 @@
     "functionteamNotificationsArn": {
       "Type": "String",
       "Description": "Input parameter describing Arn attribute for function/teamNotifications resource"
+    },
+    "customsnsNotificationTopicArn": {
+      "Type": "String",
+      "Description": "Input parameter describing NotificationTopicArn attribute for custom/sns resource"
     }
   },
   "Resources": {
@@ -785,7 +789,7 @@
               "Type": "Choice"
             },
             "Update Request Status": {
-              "Next": "Notify Requester Expired",
+              "Next": "Update Status Field",
               "Parameters": {
                 "FunctionName.$": "$.fn_teamstatus_arn",
                 "Payload.$": "$"
@@ -806,6 +810,12 @@
                 }
               ],
               "Type": "Task"
+            },
+            "Update Status Field": {
+              "Type": "Pass",
+              "Next": "Notify Requester Expired",
+              "Result": "expired",
+              "ResultPath": "$.status"
             },
             "Wait": {
               "Next": "DynamoDB GetStatus",
@@ -880,7 +890,7 @@
                   "Effect": "Allow",
                   "Action": "sns:Publish",
                   "Resource": {
-                    "Fn::ImportValue": "NotificationTopicArn"
+                    "Ref": "customsnsNotificationTopicArn"
                   }
                 },
                 {
@@ -968,7 +978,7 @@
                   "Effect": "Allow",
                   "Action": "sns:Publish",
                   "Resource": {
-                    "Fn::ImportValue": "NotificationTopicArn"
+                    "Ref": "customsnsNotificationTopicArn"
                   }
                 },
                 {
@@ -1151,7 +1161,7 @@
                   "Effect": "Allow",
                   "Action": "sns:Publish",
                   "Resource": {
-                    "Fn::ImportValue": "NotificationTopicArn"
+                    "Ref": "customsnsNotificationTopicArn"
                   }
                 },
                 {
@@ -1242,7 +1252,7 @@
                   "Effect": "Allow",
                   "Action": "sns:Publish",
                   "Resource": {
-                    "Fn::ImportValue": "NotificationTopicArn"
+                    "Ref": "customsnsNotificationTopicArn"
                   }
                 },
                 {

@@ -107,3 +107,40 @@ An administrator can configure global TEAM application settings, such as:
 <source src="https://d3f99z5n3ls8r1.cloudfront.net/videos/admin_guides/admin_settings.mov">
 </video>
 
+## OU account cache management
+
+Due to limits on AWS Organizations APIs TEAM caches the mapping of accounts to organizational units (OUs) to improve performance when loading the list of accounts that a user can request access for. This section explains how to manage the cache behavior and manually invalidate cache entries when needed.
+
+### Cache behavior feature flag
+
+Administrators can control whether TEAM uses cached OU account data or queries AWS Organizations API directly:
+
+1. Log into the application as TEAM admin.
+2. In the left-hand menu go to *Administration* &rarr; *Settings*.
+3. Choose **Edit** to modify settings.
+4. Scroll to the **OU account cache** toggle.
+5. Toggle the setting:
+   - **Enabled (cached)** - Uses cached OU account data for faster loading. Cache entries expire after 1 week by default (configurable via `CACHE_TTL` deployment parameter).
+   - **Disabled (direct API)** - Queries AWS Organizations API directly. May be slower and subject to API throttling in large organizations where eligibility is mapped to OUs.
+6. Choose **Submit** to save changes.
+
+> **Note:** The cache is disabled by default. 
+
+### Manual cache invalidation
+
+If the state of accounts changes within an existing OU (added or removed) the cache will need to first be invalidated otherwise it will show an innacurate list of accounts to users. TEAM provides a way to manually do this in the UI. 
+For organizations with frequent or automated account changes (creation, deletion, move between OUs) it's recommended to add a cache clearing component to your automation. 
+
+Instructions to invalidate an entry:
+
+1. Log into the application as TEAM admin.
+2. In the left-hand menu go to *Administration* &rarr; *Settings*.
+3. Scroll to the **OU Cache Management** section.
+4. Enter one or more OU IDs in the text box (one per line or comma-separated).
+   - OU IDs have the format: `ou-xxxx-xxxxxxxx`
+   - Example: `ou-1234-12345678`
+5. Choose **Invalidate Cache**.
+   > The cache will be repopulated automatically the next time those OUs are accessed.
+
+> **Tip:** You can find OU IDs in the AWS Organizations console or by using the AWS CLI command: `aws organizations list-organizational-units-for-parent --parent-id <root-or-parent-ou-id>`
+
