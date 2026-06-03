@@ -150,6 +150,7 @@ Resources:
   AthenaWorkgroup:
     Type: AWS::Athena::WorkGroup
     Condition: ShouldCreateResources
+    DeletionPolicy: Retain
     Properties:
       Name: !Ref WorkgroupName
       Description: TEAM audit query workgroup

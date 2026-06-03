@@ -18,7 +18,7 @@
     },
     "BedrockModelId": {
       "Type": "String",
-      "Default": "anthropic.claude-3-haiku-20240307-v1:0",
+      "Default": "anthropic.claude-haiku-4-5-20251001-v1:0",
       "Description": "Amazon Bedrock model identifier"
     },
     "BedrockRegion": {
@@ -211,7 +211,8 @@
             {
               "Effect": "Allow",
               "Action": [
-                "bedrock:InvokeModel"
+                "bedrock:InvokeModel",
+                "bedrock:Converse"
               ],
               "Resource": [
                 {
@@ -219,7 +220,8 @@
                 },
                 {
                   "Fn::Sub": "arn:aws:bedrock:${AWS::Region}:*:foundation-model/${BedrockModelId}"
-                }
+                },
+                "arn:aws:bedrock:*:*:inference-profile/*"
               ]
             }
           ]

@@ -6,21 +6,61 @@ import React, { useState, useEffect } from "react";
 import {
   Box,
   Button,
+  ColumnLayout,
+  ExpandableSection,
   SpaceBetween,
   StatusIndicator,
+  Table,
+  TextContent,
 } from "@awsui/components-react";
 import { API, graphqlOperation } from "aws-amplify";
-import { analyzeSession } from "../../graphql/queries";
+import { analyzeSession, analysisReportBySessionId } from "../../graphql/queries";
 
 function AIAnalysisTab({ item }) {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [report, setReport] = useState(null);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    triggerAnalysis();
+    fetchOrAnalyze();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [item.id]);
+
+  async function fetchExistingReport() {
+    try {
+      const response = await API.graphql(
+        graphqlOperation(analysisReportBySessionId, {
+          sessionId: item.id,
+          limit: 1,
+          sortDirection: "DESC",
+        })
+      );
+      const items = response.data.analysisReportBySessionId?.items || [];
+      if (items.length > 0 && items[0].status === "completed") {
+        return items[0];
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
+  async function fetchOrAnalyze() {
+    setLoading(true);
+    setError(null);
+    setReport(null);
+
+    // Check for existing report first
+    const existing = await fetchExistingReport();
+    if (existing) {
+      setReport(existing);
+      setLoading(false);
+      return;
+    }
+
+    // No cached report, trigger new analysis
+    await triggerAnalysis();
+  }
 
   async function triggerAnalysis() {
     setLoading(true);
@@ -76,14 +116,121 @@ function AIAnalysisTab({ item }) {
     return null;
   }
 
+  const summary = parseJSON(report.summary);
+  const coherenceCheck = parseJSON(report.coherenceCheck);
+  const securityReview = parseJSON(report.securityReview);
+
   return (
     <SpaceBetween size="l">
-      <Box variant="h4">AI Analysis Report</Box>
       <Box variant="small" color="text-body-secondary">
-        Analyzed at: {report.analyzedAt}
+        Analyzed at: {new Date(report.analyzedAt).toLocaleString()}
       </Box>
+
+      {/* Summary Section */}
+      {summary && (
+        <ExpandableSection headerText="Activity Summary" defaultExpanded>
+          <SpaceBetween size="m">
+            {summary.description && (
+              <TextContent><p>{summary.description}</p></TextContent>
+            )}
+            {summary.serviceBreakdown && summary.serviceBreakdown.length > 0 && (
+              <Table
+                columnDefinitions={[
+                  { id: "service", header: "Service", cell: (i) => i.service },
+                  { id: "count", header: "Events", cell: (i) => i.count },
+                  { id: "actions", header: "Actions", cell: (i) => (i.actions || []).join(", ") },
+                ]}
+                items={summary.serviceBreakdown}
+                variant="embedded"
+              />
+            )}
+          </SpaceBetween>
+        </ExpandableSection>
+      )}
+
+      {/* Coherence Check Section */}
+      {coherenceCheck && (
+        <ExpandableSection headerText="Coherence Check" defaultExpanded>
+          <SpaceBetween size="m">
+            <ColumnLayout columns={2}>
+              <div>
+                <Box variant="awsui-key-label">Status</Box>
+                <StatusIndicator type={getCoherenceStatusType(coherenceCheck.status)}>
+                  {formatCoherenceStatus(coherenceCheck.status)}
+                </StatusIndicator>
+              </div>
+            </ColumnLayout>
+            {coherenceCheck.reasoning && (
+              <TextContent><p>{coherenceCheck.reasoning}</p></TextContent>
+            )}
+            {coherenceCheck.findings && coherenceCheck.findings.length > 0 && (
+              <Table
+                columnDefinitions={[
+                  { id: "action", header: "Action", cell: (i) => i.action },
+                  { id: "explanation", header: "Explanation", cell: (i) => i.explanation },
+                ]}
+                items={coherenceCheck.findings}
+                variant="embedded"
+              />
+            )}
+          </SpaceBetween>
+        </ExpandableSection>
+      )}
+
+      {/* Security Review Section */}
+      {securityReview && securityReview.findings && securityReview.findings.length > 0 && (
+        <ExpandableSection headerText={`Security Findings (${securityReview.findings.length})`} defaultExpanded>
+          <Table
+            columnDefinitions={[
+              { id: "severity", header: "Severity", cell: (i) => (
+                <StatusIndicator type="error">{i.severity}</StatusIndicator>
+              )},
+              { id: "eventName", header: "Event", cell: (i) => i.eventName },
+              { id: "resource", header: "Resource", cell: (i) => i.resource },
+              { id: "description", header: "Description", cell: (i) => i.description },
+            ]}
+            items={securityReview.findings}
+            variant="embedded"
+          />
+        </ExpandableSection>
+      )}
+
+      {/* No security findings */}
+      {securityReview && (!securityReview.findings || securityReview.findings.length === 0) && (
+        <Box>
+          <StatusIndicator type="success">No security findings</StatusIndicator>
+        </Box>
+      )}
     </SpaceBetween>
   );
+}
+
+function parseJSON(value) {
+  if (!value) return null;
+  if (typeof value === "object") return value;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return null;
+  }
+}
+
+function getCoherenceStatusType(status) {
+  switch (status) {
+    case "consistent": return "success";
+    case "inconsistent": return "error";
+    case "insufficient_justification": return "warning";
+    default: return "info";
+  }
+}
+
+function formatCoherenceStatus(status) {
+  switch (status) {
+    case "consistent": return "Consistent with justification";
+    case "inconsistent": return "Inconsistent with justification";
+    case "insufficient_justification": return "Insufficient justification detail";
+    default: return status || "Unknown";
+  }
 }
 
 export default AIAnalysisTab;

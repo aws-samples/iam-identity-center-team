@@ -8,7 +8,7 @@
 	REGION
 Amplify Params - DO NOT EDIT */
 
-import { BedrockRuntimeClient, InvokeModelCommand } from "@aws-sdk/client-bedrock-runtime";
+import { BedrockRuntimeClient, ConverseCommand } from "@aws-sdk/client-bedrock-runtime";
 import { readFileSync } from "fs";
 import { resolve } from "path";
 
@@ -21,14 +21,31 @@ try {
   console.warn("Could not load parameters.json:", e.message);
 }
 
-const BEDROCK_MODEL_ID = parameters.BedrockModelId || "anthropic.claude-3-haiku-20240307-v1:0";
+const BASE_MODEL_ID = parameters.BedrockModelId || "anthropic.claude-haiku-4-5-20251001-v1:0";
 const BEDROCK_REGION = parameters.BedrockRegion || process.env.REGION || process.env.AWS_REGION;
+
+/**
+ * Resolve model ID: Amazon models don't need geo prefix, third-party models do.
+ */
+const resolveModelId = (baseModelId, region) => {
+  if (baseModelId.startsWith('amazon.')) return baseModelId;
+  const getGeoPrefix = (r) => {
+    if (!r) return 'us';
+    if (r.startsWith('eu-')) return 'eu';
+    if (r.startsWith('us-') || r.startsWith('ca-')) return 'us';
+    if (r.startsWith('ap-southeast-2') || r.startsWith('ap-southeast-4')) return 'au';
+    if (r.startsWith('ap-northeast-1') || r.startsWith('ap-northeast-3')) return 'jp';
+    return 'us';
+  };
+  return `${getGeoPrefix(region)}.${baseModelId}`;
+};
+
+const BEDROCK_MODEL_ID = resolveModelId(BASE_MODEL_ID, BEDROCK_REGION);
 
 const FAIL_OPEN_RESPONSE = { adequate: true, suggestion: null };
 
 /**
  * Builds the justification evaluation prompt.
- * Uses medium-low tolerance threshold to avoid productivity issues.
  */
 export const buildJustificationPrompt = (justification, accountName, role) => {
   return `You are evaluating the quality of a justification provided for an AWS elevated access request.
@@ -63,40 +80,29 @@ Return ONLY the JSON object, no additional text.`;
 };
 
 /**
- * Invokes Bedrock with the justification evaluation prompt.
+ * Invokes Bedrock using the Converse API (model-agnostic).
  */
 const invokeBedrockModel = async (prompt) => {
   const client = new BedrockRuntimeClient({ region: BEDROCK_REGION });
 
-  const body = JSON.stringify({
-    anthropic_version: "bedrock-2023-05-31",
-    max_tokens: 256,
-    messages: [
-      {
-        role: "user",
-        content: prompt,
-      },
-    ],
-  });
-
-  const command = new InvokeModelCommand({
+  const command = new ConverseCommand({
     modelId: BEDROCK_MODEL_ID,
-    contentType: "application/json",
-    accept: "application/json",
-    body,
+    messages: [{ role: 'user', content: [{ text: prompt }] }],
+    inferenceConfig: { maxTokens: 256 },
   });
 
   const response = await client.send(command);
-  const responseBody = JSON.parse(new TextDecoder().decode(response.body));
-  return responseBody.content[0].text;
+  const textContent = response.output?.message?.content
+    ?.filter(block => block.text)
+    ?.map(block => block.text)
+    ?.join('') || '';
+  return textContent;
 };
 
 /**
  * Parses the Bedrock response into the expected format.
- * Returns fail-open response if parsing fails.
  */
 export const parseResponse = (responseText) => {
-  // Extract JSON from the response (handle potential markdown code blocks)
   let jsonStr = responseText.trim();
   if (jsonStr.startsWith("```")) {
     jsonStr = jsonStr.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "");
@@ -116,7 +122,6 @@ export const parseResponse = (responseText) => {
 
 /**
  * Lambda handler for justification quality check.
- * Receives GraphQL arguments and returns evaluation result.
  * CRITICAL: On ANY failure, returns fail-open response (never blocks submission).
  */
 export const handler = async (event) => {
@@ -133,7 +138,6 @@ export const handler = async (event) => {
 
     return result;
   } catch (error) {
-    // Fail-open: on ANY error, return adequate=true so submission is never blocked
     console.error("Justification check failed (fail-open):", error.message);
     return FAIL_OPEN_RESPONSE;
   }

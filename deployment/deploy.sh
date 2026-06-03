@@ -25,7 +25,7 @@ if [ -n "$ATHENA_CLOUDTRAIL_BUCKET" ]; then
 fi
 
 # Build Bedrock parameter overrides
-BEDROCK_PARAMS="BedrockAuditEnabled=${BEDROCK_AUDIT_ENABLED:-false} BedrockModelId=${BEDROCK_MODEL_ID:-anthropic.claude-3-haiku-20240307-v1:0} BedrockRegion=${BEDROCK_REGION:-}"
+BEDROCK_PARAMS="BedrockAuditEnabled=${BEDROCK_AUDIT_ENABLED:-false} BedrockModelId=${BEDROCK_MODEL_ID:-anthropic.claude-haiku-4-5-20251001-v1:0} BedrockRegion=${BEDROCK_REGION:-}"
 
 if [ -z "$TEAM_ACCOUNT" ]; then 
   export AWS_PROFILE=$ORG_MASTER_PROFILE
@@ -36,10 +36,12 @@ fi
 cd ..
 
 if [ -z "$SECRET_NAME" ]; then
-  aws codecommit create-repository --region $REGION --repository-name team-idc-app --repository-description "Temporary Elevated Access Management (TEAM) Application"
-  git remote remove origin
-  git remote add origin codecommit::$REGION://team-idc-app
-  git push origin main
+  aws codecommit create-repository --region $REGION --repository-name team-idc-app --repository-description "Temporary Elevated Access Management (TEAM) Application" 2>/dev/null || true
+  git remote remove origin 2>/dev/null || true
+  git remote add origin codecommit::$REGION://team-idc-app 2>/dev/null || true
+  # TEMPORARY: push feature branch as main for testing (revert to "git push origin main" when done)
+  git push origin feat/bedrock-audit-ai:main
+  #git push origin main
 
   cd ./deployment
   if [[ ! -z "$TAGS" ]]; then

@@ -69,7 +69,6 @@ function Request(props) {
   const [ticketRequired, setTicketRequired] = useState(true);
   const [approvalRequired, setApprovalRequired] = useState(true);
 
-  const [justificationSuggestion, setJustificationSuggestion] = useState(null);
   const [bedrockJustificationCheckEnabled, setBedrockJustificationCheckEnabled] = useState(false);
 
   const history = useHistory();
@@ -174,16 +173,15 @@ function Request(props) {
   async function performJustificationCheck(justificationText) {
     // Only invoke when bedrockJustificationCheckEnabled is true AND bedrockAuditEnabled is true AND Athena mode is active
     if (!bedrockJustificationCheckEnabled || params.bedrockAuditEnabled !== true || params.auditMode !== 'athena') {
-      return;
+      return null;
     }
-    // Don't check empty justifications
+    // Don't check empty justifications (handled by standard validation)
     if (!justificationText || !justificationText.trim()) {
-      setJustificationSuggestion(null);
-      return;
+      return null;
     }
     // Need account and role to be selected
     if (!account.label || !role.label) {
-      return;
+      return null;
     }
     try {
       const result = await API.graphql(
@@ -195,13 +193,12 @@ function Request(props) {
       );
       const data = result.data.checkJustification;
       if (data && data.adequate === false && data.suggestion) {
-        setJustificationSuggestion(data.suggestion);
-      } else {
-        setJustificationSuggestion(null);
+        return data.suggestion;
       }
+      return null;
     } catch (err) {
-      // On any check failure, silently skip (no error shown to user)
-      setJustificationSuggestion(null);
+      // On any check failure, fail-open (don't block submission)
+      return null;
     }
   }
 
@@ -332,6 +329,13 @@ function Request(props) {
     if (!justification || !/[\p{L}\p{N}]/u.test(justification[0])) {
       setJustificationError("Enter valid business justification");
       error = true;
+    } else {
+      // Run AI justification quality check (blocking)
+      const suggestion = await performJustificationCheck(justification);
+      if (suggestion) {
+        setJustificationError(suggestion);
+        error = true;
+      }
     }
     if ((!ticketNo && ticketRequired) || !/^[a-zA-Z0-9]+$/.test(ticketNo[0])) {
       setTicketError("Enter valid change management ticket number");
@@ -343,8 +347,6 @@ function Request(props) {
   async function handleSubmit(event) {
     event.preventDefault();
     setSubmitLoading(true);
-    // Trigger justification check on submit (non-blocking, advisory only)
-    performJustificationCheck(justification);
     const isValid = await validate();
     if (!isValid) {
       const shouldSendRequest =
@@ -574,18 +576,10 @@ function Request(props) {
                   setJustificationError();
                   setJustification(detail.value);
                 }}
-                onBlur={() => {
-                  performJustificationCheck(justification);
-                }}
                 value={justification}
                 ariaRequired
                 placeholder="Business Justification for requesting elevated access"
               />
-              {justificationSuggestion && (
-                <Alert type="warning" statusIconAriaLabel="Warning">
-                  {justificationSuggestion}
-                </Alert>
-              )}
             </FormField>
           </SpaceBetween>
         </Container>

@@ -578,9 +578,15 @@ export const analysisReportBySessionId = /* GraphQL */ `
       items {
         id
         sessionId
+        requestId
+        analyzedAt
         status
+        summary
+        coherenceCheck
+        securityReview
         hasSecurityFindings
         hasCoherenceFindings
+        error
         __typename
       }
       nextToken

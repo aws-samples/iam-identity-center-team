@@ -75,7 +75,7 @@ const COLUMN_DEFINITIONS = [
     cell: (item) => (
       <TextContent>
         <ul>
-          {item.approvers.map((data) => (
+          {(item.approvers || []).map((data) => (
             <li>{data}</li>
           ))}
         </ul>
@@ -363,7 +363,7 @@ function Approvers(props) {
   function getAccounts() {
     setAccountStatus("loading");
     fetchAccounts().then((data) => {
-      setAccounts(data);
+      setAccounts(data || []);
       setAccountStatus("finished");
     });
   }
@@ -371,7 +371,7 @@ function Approvers(props) {
   function getGroups() {
     setApproverStatus("loading");
     fetchIdCGroups().then((data) => {
-      setApproverList(data);
+      setApproverList(data || []);
       setApproverStatus("finished");
     });
   }
@@ -606,7 +606,7 @@ function Approvers(props) {
                   loadingText="Loading accounts"
                   filteringType="auto"
                   empty="No options"
-                  options={accounts.map((account) => ({
+                  options={(accounts || []).map((account) => ({
                     label: account.name,
                     value: account.id,
                     description: account.id,

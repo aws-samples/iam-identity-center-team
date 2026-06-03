@@ -76,9 +76,9 @@ const COLUMN_DEFINITIONS = [
     sortingField: "accounts",
     header: "Accounts",
     cell: (item) => (
-      <>{item.accounts.length > 0 ?  <TextContent>
+      <>{(item.accounts || []).length > 0 ?  <TextContent>
         <ul>
-          {item.accounts.map(({name}) => (
+          {(item.accounts || []).map(({name}) => (
             <li>{name}</li>
           ))}
         </ul>
@@ -91,9 +91,9 @@ const COLUMN_DEFINITIONS = [
     sortingField: "ous",
     header: "OUs",
     cell: (item) => (
-      <>{item.ous.length > 0 ?  <TextContent>
+      <>{(item.ous || []).length > 0 ?  <TextContent>
         <ul>
-          {item.ous.map(({name}) => (
+          {(item.ous || []).map(({name}) => (
             <li>{name}</li>
           ))}
         </ul>
@@ -108,7 +108,7 @@ const COLUMN_DEFINITIONS = [
     cell: (item) => (
       <TextContent>
         <ul>
-          {item.permissions.map(({name}) => (
+          {(item.permissions || []).map(({name}) => (
             <li>{name}</li>
           ))}
         </ul>
@@ -461,7 +461,7 @@ function Eligible(props) {
   function getUsers() {
     setUserStatus("loading");
     fetchUsers().then((data) => {
-      setUsers(data);
+      setUsers(data || []);
       setUserStatus("finished");
     });
   }
@@ -469,7 +469,7 @@ function Eligible(props) {
   function getGroups() {
     setGroupStatus("loading");
     fetchIdCGroups().then((data) => {
-      setGroups(data);
+      setGroups(data || []);
       setGroupStatus("finished");
     });
   }
@@ -493,7 +493,7 @@ function Eligible(props) {
   function getAccounts() {
     setAccountStatus("loading");
     fetchAccounts().then((data) => {
-      setAccounts(data);
+      setAccounts(data || []);
       setAccountStatus("finished");
     });
   }
@@ -501,6 +501,10 @@ function Eligible(props) {
   function getPermissions() {
     setPermissionStatus("loading");
     fetchPermissions().then((data) => {
+      if (!data) {
+        setPermissionStatus("finished");
+        return;
+      }
       const subscription = API.graphql(
         graphqlOperation(onPublishPermissions)
       ).subscribe({
@@ -747,7 +751,7 @@ function Eligible(props) {
                   loadingText="Loading users"
                   filteringType="auto"
                   empty="No options"
-                  options={users.map((user) => ({
+                  options={(users || []).map((user) => ({
                     label: user.UserName,
                     value: user.UserId,
                     description: user.UserId,
@@ -776,7 +780,7 @@ function Eligible(props) {
                   loadingText="Loading Groups"
                   filteringType="auto"
                   empty="No options"
-                  options={groups.map((group) => ({
+                  options={(groups || []).map((group) => ({
                     label: group.DisplayName,
                     value: group.GroupId,
                     description: group.GroupId,
@@ -818,7 +822,7 @@ function Eligible(props) {
                 loadingText="Loading accounts"
                 filteringType="auto"
                 empty="No options"
-                options={accounts.map((account) => ({
+                options={(accounts || []).map((account) => ({
                   label: account.name,
                   value: account.id,
                   description: account.id,
@@ -876,7 +880,7 @@ function Eligible(props) {
                 loadingText="Loading Permissions"
                 filteringType="auto"
                 empty="No options"
-                options={permissions.map((permission) => ({
+                options={(permissions || []).map((permission) => ({
                   label: permission.Name,
                   value: permission.Arn,
                   description: permission.Arn,
@@ -1020,7 +1024,7 @@ function Eligible(props) {
                 loadingText="Loading accounts"
                 filteringType="auto"
                 empty="No options"
-                options={accounts.map((account) => ({
+                options={(accounts || []).map((account) => ({
                   label: account.name,
                   value: account.id,
                   description: account.id,
@@ -1077,7 +1081,7 @@ function Eligible(props) {
                 loadingText="Loading Permissions"
                 filteringType="auto"
                 empty="No options"
-                options={permissions.map((permission) => ({
+                options={(permissions || []).map((permission) => ({
                   label: permission.Name,
                   value: permission.Arn,
                   description: permission.Arn,

@@ -6,6 +6,12 @@ from botocore.exceptions import ClientError
 import boto3
 from datetime import date, datetime
 from operator import itemgetter
+from datetime import datetime, date
+
+def default_serializer(obj):
+    if isinstance(obj, (datetime, date)):
+        return obj.isoformat()
+    raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
 
 
 def get_identiy_store_id():

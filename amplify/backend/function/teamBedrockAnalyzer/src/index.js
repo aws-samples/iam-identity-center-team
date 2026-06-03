@@ -32,7 +32,7 @@ import {
 } from "@aws-sdk/client-athena";
 import {
   BedrockRuntimeClient,
-  InvokeModelCommand,
+  ConverseCommand,
 } from "@aws-sdk/client-bedrock-runtime";
 
 const { Sha256 } = crypto;
@@ -41,10 +41,36 @@ const { Sha256 } = crypto;
 const REGION = process.env.REGION;
 const GRAPHQL_ENDPOINT = process.env.API_TEAM_GRAPHQLAPIENDPOINTOUTPUT;
 
-// Bedrock configuration (from parameters.json via CloudFormation env vars)
+// Bedrock configuration
 const BEDROCK_AUDIT_ENABLED = process.env.BEDROCK_AUDIT_ENABLED === 'true';
-const BEDROCK_MODEL_ID = process.env.BEDROCK_MODEL_ID || 'anthropic.claude-3-haiku-20240307-v1:0';
+const BASE_MODEL_ID = process.env.BEDROCK_MODEL_ID || 'anthropic.claude-haiku-4-5-20251001-v1:0';
 const BEDROCK_REGION = process.env.BEDROCK_REGION || REGION;
+
+// Minimum minutes after session end before caching the report
+const CACHE_MIN_MINUTES = 15;
+
+/**
+ * Derive the cross-region inference profile ID from the base model ID and region.
+ * Amazon-native models (nova, titan) don't need a geo prefix.
+ */
+const resolveModelId = (baseModelId, region) => {
+  // Amazon models don't need cross-region inference prefix
+  if (baseModelId.startsWith('amazon.')) {
+    return baseModelId;
+  }
+  // Third-party models need geo prefix for cross-region inference
+  const getGeoPrefix = (r) => {
+    if (!r) return 'us';
+    if (r.startsWith('eu-')) return 'eu';
+    if (r.startsWith('us-') || r.startsWith('ca-')) return 'us';
+    if (r.startsWith('ap-southeast-2') || r.startsWith('ap-southeast-4')) return 'au';
+    if (r.startsWith('ap-northeast-1') || r.startsWith('ap-northeast-3')) return 'jp';
+    return 'us';
+  };
+  return `${getGeoPrefix(region)}.${baseModelId}`;
+};
+
+const BEDROCK_MODEL_ID = resolveModelId(BASE_MODEL_ID, BEDROCK_REGION);
 
 // Athena configuration
 const ATHENA_ROLE_ARN = process.env.ATHENA_ROLE_ARN;
@@ -61,43 +87,22 @@ const ATHENA_POLL_INTERVAL = 1000;
 
 /**
  * Parse the incoming event to extract sessionId and requestId.
- * Supports two invocation sources:
- * 1. GraphQL (AppSync @function): event.arguments.sessionId, event.arguments.requestId
- * 2. EventBridge Scheduler (auto-analysis): event.sessionId, event.requestId, event.source === "auto-analysis"
  */
 export const parseEvent = (event) => {
-  // EventBridge Scheduler invocation (auto-analysis)
   if (event.source === 'auto-analysis') {
-    return {
-      sessionId: event.sessionId,
-      requestId: event.requestId,
-      source: 'auto-analysis',
-    };
+    return { sessionId: event.sessionId, requestId: event.requestId, source: 'auto-analysis' };
   }
-
-  // GraphQL (AppSync @function) invocation
   if (event.arguments) {
-    return {
-      sessionId: event.arguments.sessionId,
-      requestId: event.arguments.requestId,
-      source: 'graphql',
-    };
+    return { sessionId: event.arguments.sessionId, requestId: event.arguments.requestId, source: 'graphql' };
   }
-
   throw new Error('Unable to parse event: unrecognized invocation source');
 };
 
 /**
  * Execute a signed GraphQL request against the AppSync API.
- * Uses IAM (SigV4) signing, matching the pattern in teamgetLogs and teamStatus.
- *
- * @param {string} graphqlQuery - The GraphQL query/mutation string
- * @param {Object} variables - The variables for the GraphQL operation
- * @returns {Object} The parsed response body from AppSync
  */
 const executeGraphQL = async (graphqlQuery, variables) => {
   const endpoint = new URL(GRAPHQL_ENDPOINT);
-
   const signer = new SignatureV4({
     credentials: defaultProvider(),
     region: REGION,
@@ -107,10 +112,7 @@ const executeGraphQL = async (graphqlQuery, variables) => {
 
   const requestToBeSigned = new HttpRequest({
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      host: endpoint.host,
-    },
+    headers: { 'Content-Type': 'application/json', host: endpoint.host },
     hostname: endpoint.host,
     body: JSON.stringify({ query: graphqlQuery, variables }),
     path: endpoint.pathname,
@@ -118,7 +120,6 @@ const executeGraphQL = async (graphqlQuery, variables) => {
 
   const signed = await signer.sign(requestToBeSigned);
   const request = new Request(endpoint, signed);
-
   const response = await fetch(request);
   const body = await response.json();
 
@@ -126,20 +127,12 @@ const executeGraphQL = async (graphqlQuery, variables) => {
     console.error('GraphQL errors:', JSON.stringify(body.errors));
     throw new Error(`GraphQL request failed: ${body.errors[0]?.message || 'Unknown error'}`);
   }
-
   return body.data;
 };
 
-/**
- * Get session metadata from DynamoDB via GraphQL.
- * Queries the Sessions model by ID to retrieve session details needed for Athena query.
- *
- * @param {string} sessionId - The session ID to look up
- * @returns {Object} Session metadata with startTime, endTime, username, accountId, role
- */
 export const getSessionFromDDB = async (sessionId) => {
   const graphqlQuery = /* GraphQL */ `
-    query GetSessions($id: String!) {
+    query GetSessions($id: ID!) {
       getSessions(id: $id) {
         id
         startTime
@@ -152,23 +145,15 @@ export const getSessionFromDDB = async (sessionId) => {
       }
     }
   `;
-
-  const data = await executeGraphQL(graphqlQuery, { id: sessionId });
-
-  if (!data?.getSessions) {
-    throw new Error(`Session not found: ${sessionId}`);
+  try {
+    const data = await executeGraphQL(graphqlQuery, { id: sessionId });
+    if (data?.getSessions) return data.getSessions;
+  } catch (err) {
+    console.warn(`getSessions failed for ${sessionId}: ${err.message}`);
   }
-
-  return data.getSessions;
+  return null;
 };
 
-/**
- * Get request metadata from DynamoDB via GraphQL.
- * Queries the Requests model by ID to retrieve the justification text.
- *
- * @param {string} requestId - The request ID to look up
- * @returns {Object} Request metadata including justification
- */
 export const getRequestFromDDB = async (requestId) => {
   const graphqlQuery = /* GraphQL */ `
     query GetRequests($id: ID!) {
@@ -187,27 +172,15 @@ export const getRequestFromDDB = async (requestId) => {
       }
     }
   `;
-
   const data = await executeGraphQL(graphqlQuery, { id: requestId });
-
-  if (!data?.getRequests) {
-    throw new Error(`Request not found: ${requestId}`);
-  }
-
+  if (!data?.getRequests) throw new Error(`Request not found: ${requestId}`);
   return data.getRequests;
 };
 
-// Escape single quotes for SQL string literals
+// SQL helpers
 export const escapeSql = (value) => value.replace(/'/g, "''");
-
-// Escape LIKE pattern special characters and single quotes
 export const escapeLike = (value) => value.replace(/'/g, "''").replace(/%/g, '\\%').replace(/_/g, '\\_');
 
-/**
- * Build partition filter for Athena query.
- * Generates date-based partition predicates (year, month, day) for the given time range and account.
- * Reuses the same logic as teamgetLogs buildPartitionFilter.
- */
 export const buildPartitionFilter = (start, end, accountId) => {
   const filters = [];
   const current = new Date(start);
@@ -223,10 +196,8 @@ export const buildPartitionFilter = (start, end, accountId) => {
 };
 
 /**
- * Build extended Athena SQL query for AI analysis.
- * Returns all 9 required columns: eventID, eventName, eventSource, eventTime,
- * requestparameters, responseelements, readonly, errorcode, sourceipaddress.
- * Uses the same WHERE clause filters as the existing buildAthenaQuery in teamgetLogs.
+ * Build Athena SQL query for AI analysis.
+ * Filters OUT read-only events (Describe*, List*, Get*) to focus on write/mutating actions.
  */
 export const buildExtendedAthenaQuery = (session) => {
   const { startTime, endTime, username, accountId, role } = session;
@@ -242,13 +213,10 @@ export const buildExtendedAthenaQuery = (session) => {
       AND eventTime > '${escapeSql(startTime)}'
       AND eventTime < '${escapeSql(endTime)}'
       AND lower(useridentity.principalId) LIKE '%:${escapeLike(cleanUsername)}%'
-      AND useridentity.sessionContext.sessionIssuer.arn LIKE '%${escapeLike(role)}%'`;
+      AND useridentity.sessionContext.sessionIssuer.arn LIKE '%${escapeLike(role)}%'
+      AND readonly = 'false'`;
 };
 
-/**
- * Assume cross-account role for Athena access.
- * Reuses the same mechanism as teamgetLogs.
- */
 const assumeCrossAccountRole = async () => {
   const stsClient = new STSClient({ region: REGION });
   const command = new AssumeRoleCommand({
@@ -260,12 +228,7 @@ const assumeCrossAccountRole = async () => {
   return response.Credentials;
 };
 
-/**
- * Execute extended Athena query for AI analysis.
- * Assumes cross-account role, starts query, polls for completion, and retrieves results.
- */
 export const executeExtendedAthenaQuery = async (session) => {
-  // 1. Assume cross-account role
   const credentials = await assumeCrossAccountRole();
   const athenaClient = new AthenaClient({
     region: REGION,
@@ -276,30 +239,23 @@ export const executeExtendedAthenaQuery = async (session) => {
     },
   });
 
-  // 2. Build and start the extended query
   const queryString = buildExtendedAthenaQuery(session);
+  console.log('Athena query:', queryString);
+
   const startCommand = new StartQueryExecutionCommand({
     QueryString: queryString,
     WorkGroup: ATHENA_WORKGROUP,
-    ResultConfiguration: {
-      OutputLocation: `s3://${ATHENA_RESULTS_BUCKET}/team-query-results/`,
-    },
-    QueryExecutionContext: {
-      Database: ATHENA_DATABASE,
-    },
+    ResultConfiguration: { OutputLocation: `s3://${ATHENA_RESULTS_BUCKET}/team-query-results/` },
+    QueryExecutionContext: { Database: ATHENA_DATABASE },
   });
 
   const startResponse = await athenaClient.send(startCommand);
   const queryExecutionId = startResponse.QueryExecutionId;
 
-  // 3. Poll for query completion
   let status = 'RUNNING';
   while (status === 'QUEUED' || status === 'RUNNING') {
     await new Promise(resolve => setTimeout(resolve, ATHENA_POLL_INTERVAL));
-    const pollCommand = new GetQueryExecutionCommand({
-      QueryExecutionId: queryExecutionId,
-    });
-    const pollResponse = await athenaClient.send(pollCommand);
+    const pollResponse = await athenaClient.send(new GetQueryExecutionCommand({ QueryExecutionId: queryExecutionId }));
     status = pollResponse.QueryExecution.Status.State;
   }
 
@@ -307,20 +263,13 @@ export const executeExtendedAthenaQuery = async (session) => {
     throw new Error(`Athena query failed with status: ${status}`);
   }
 
-  // 4. Retrieve query results
   const results = [];
   let nextToken = undefined;
   let isFirstPage = true;
 
   do {
-    const getResultsCommand = new GetQueryResultsCommand({
-      QueryExecutionId: queryExecutionId,
-      NextToken: nextToken,
-    });
-    const resultsResponse = await athenaClient.send(getResultsCommand);
+    const resultsResponse = await athenaClient.send(new GetQueryResultsCommand({ QueryExecutionId: queryExecutionId, NextToken: nextToken }));
     const rows = resultsResponse.ResultSet.Rows;
-
-    // Skip header row on first page
     const dataRows = isFirstPage ? rows.slice(1) : rows;
     isFirstPage = false;
 
@@ -338,25 +287,18 @@ export const executeExtendedAthenaQuery = async (session) => {
         sourceipaddress: data[8]?.VarCharValue || '',
       });
     }
-
     nextToken = resultsResponse.NextToken;
   } while (nextToken);
 
+  console.log(`Athena returned ${results.length} write events`);
   return results;
 };
 
 /**
  * Build the analysis prompt for Bedrock.
- * Constructs a structured prompt with session context, justification text,
- * and CloudTrail events for AI analysis.
- *
- * @param {Array} events - CloudTrail events from Athena query
- * @param {string} justification - Session justification text (included verbatim)
- * @param {Object} session - Session metadata (accountId, role, username, startTime, endTime)
- * @returns {string} The complete prompt string for Bedrock invocation
  */
 export const buildAnalysisPrompt = (events, justification, session) => {
-  return `You are a cloud security expert analyzing an AWS session.
+  return `You are a cloud security expert analyzing an AWS session. All events shown are WRITE/MUTATING actions only (read-only events have been pre-filtered).
 
 Session Context:
 - Account: ${session.accountId}
@@ -365,19 +307,19 @@ Session Context:
 - Duration: ${session.startTime} to ${session.endTime}
 - Justification: "${justification}"
 
-CloudTrail Events (${events.length} total):
+CloudTrail Write Events (${events.length} total):
 ${JSON.stringify(events, null, 2)}
 
 Provide analysis in the following JSON structure:
 {
   "summary": {
-    "description": "Brief summary of actions performed, prioritizing write/mutating actions",
+    "description": "Brief summary of mutating actions performed during this session",
     "serviceBreakdown": [{"service": "...", "actions": ["..."], "count": N}]
   },
   "coherenceCheck": {
     "status": "consistent|inconsistent|insufficient_justification",
-    "reasoning": "Explain your assessment",
-    "findings": [{"action": "...", "explanation": "..."}]
+    "reasoning": "Explain whether the actions match the stated justification",
+    "findings": [{"action": "...", "explanation": "why this action seems unrelated to justification"}]
   },
   "securityReview": {
     "findings": [{"severity": "HIGH", "eventName": "...", "resource": "...", "description": "..."}]
@@ -385,129 +327,44 @@ Provide analysis in the following JSON structure:
 }
 
 Rules:
-- For coherenceCheck: If the justification lacks sufficient detail/specificity to meaningfully compare against actions, set status to "insufficient_justification". Do NOT rely solely on length.
-- For securityReview: Only report HIGH criticality NEW misconfigurations introduced in this session (e.g., 0.0.0.0/0 security groups, public S3 buckets, disabled encryption, overly permissive IAM policies).
-- Focus coherence analysis on destructive/high-impact actions (delete, terminate, modify security).
+- coherenceCheck: set status "insufficient_justification" only if justification is too vague to compare. Set "inconsistent" if actions clearly don't match the stated purpose.
+- securityReview: Report only HIGH criticality NEW misconfigurations (0.0.0.0/0 security groups, public S3 buckets, disabled encryption, overly permissive IAM policies, unencrypted volumes). Look at requestparameters for these patterns.
+- If there are 0 events, set summary.description to "No write actions recorded during this session" and skip coherence/security review.
 - Return ONLY the JSON object, no additional text.`;
 };
 
-/**
- * Sleep utility for retry backoff.
- * @param {number} ms - Milliseconds to sleep
- */
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 /**
- * Truncate events to reduce prompt size, keeping most recent write events.
- * Used when the prompt exceeds the model's context window.
- *
- * @param {Array} events - CloudTrail events array
- * @returns {Array} Truncated events array prioritizing recent write events
- */
-export const truncateEvents = (events) => {
-  // Separate write and read events
-  const writeEvents = events.filter(e => e.readonly === 'false' || e.readonly === false);
-  const readEvents = events.filter(e => e.readonly !== 'false' && e.readonly !== false);
-
-  // Sort by eventTime descending (most recent first)
-  const sortByTime = (a, b) => (b.eventTime || '').localeCompare(a.eventTime || '');
-  writeEvents.sort(sortByTime);
-  readEvents.sort(sortByTime);
-
-  // Keep all write events (up to half the original size), fill rest with recent reads
-  const maxEvents = Math.max(Math.floor(events.length / 2), 1);
-  const keptWrites = writeEvents.slice(0, maxEvents);
-  const remainingSlots = Math.max(maxEvents - keptWrites.length, 0);
-  const keptReads = readEvents.slice(0, remainingSlots);
-
-  return [...keptWrites, ...keptReads].sort(sortByTime);
-};
-
-/**
- * Invoke Amazon Bedrock model with the analysis prompt.
- * Creates a BedrockRuntimeClient, builds the InvokeModel request with anthropic_version,
- * max_tokens, and messages. Enforces maxTokens limit (Property 8).
- * Implements retry with exponential backoff for ThrottlingException (max 3 retries).
- * Handles token limit exceeded by truncating events (keeping most recent write events) and retrying.
- *
- * @param {string} prompt - The analysis prompt to send to Bedrock
- * @returns {string} The text content from the Bedrock response
+ * Invoke Bedrock using the Converse API (model-agnostic, works with Anthropic, Nova, etc.)
  */
 export const invokeBedrockModel = async (prompt) => {
   const client = new BedrockRuntimeClient({ region: BEDROCK_REGION });
-
   const maxRetries = 3;
-  let currentPrompt = prompt;
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    const requestBody = JSON.stringify({
-      anthropic_version: 'bedrock-2023-05-31',
-      max_tokens: MAX_TOKENS,
-      messages: [
-        {
-          role: 'user',
-          content: currentPrompt,
-        },
-      ],
-    });
-
-    const command = new InvokeModelCommand({
+    const command = new ConverseCommand({
       modelId: BEDROCK_MODEL_ID,
-      contentType: 'application/json',
-      accept: 'application/json',
-      body: requestBody,
+      messages: [{ role: 'user', content: [{ text: prompt }] }],
+      inferenceConfig: { maxTokens: MAX_TOKENS },
     });
 
     try {
       const response = await client.send(command);
-      const responseBody = JSON.parse(new TextDecoder().decode(response.body));
-      // Extract text content from the Anthropic Messages API response
-      const textContent = responseBody.content
-        ?.filter(block => block.type === 'text')
+      const textContent = response.output?.message?.content
+        ?.filter(block => block.text)
         ?.map(block => block.text)
         ?.join('') || '';
       return textContent;
     } catch (error) {
-      // Handle ThrottlingException with exponential backoff
       if (error.name === 'ThrottlingException' || error.__type === 'ThrottlingException') {
         if (attempt < maxRetries) {
-          const backoffMs = Math.pow(2, attempt) * 1000; // 1s, 2s, 4s
+          const backoffMs = Math.pow(2, attempt) * 1000;
           console.warn(`Bedrock throttled (attempt ${attempt + 1}/${maxRetries + 1}), retrying in ${backoffMs}ms...`);
           await sleep(backoffMs);
           continue;
         }
-        throw new Error(`Bedrock invocation failed after ${maxRetries + 1} attempts: ThrottlingException`);
       }
-
-      // Handle token/input limit exceeded by truncating events and retrying
-      if (
-        error.name === 'ValidationException' &&
-        error.message?.toLowerCase().includes('too many input tokens')
-      ) {
-        if (attempt < maxRetries) {
-          console.warn(`Input too large (attempt ${attempt + 1}/${maxRetries + 1}), truncating events and retrying...`);
-          // Extract events JSON from prompt and truncate
-          const eventsMatch = currentPrompt.match(/CloudTrail Events \(\d+ total\):\n([\s\S]*?)\n\nProvide analysis/);
-          if (eventsMatch) {
-            try {
-              const events = JSON.parse(eventsMatch[1]);
-              const truncatedEvents = truncateEvents(events);
-              currentPrompt = currentPrompt.replace(
-                /CloudTrail Events \(\d+ total\):\n[\s\S]*?\n\nProvide analysis/,
-                `CloudTrail Events (${truncatedEvents.length} total, truncated from original):\n${JSON.stringify(truncatedEvents, null, 2)}\n\nProvide analysis`
-              );
-              continue;
-            } catch (parseError) {
-              // If we can't parse/truncate events, propagate the original error
-              throw new Error('Failed to parse AI response: input too large and events could not be truncated');
-            }
-          }
-          throw new Error('Failed to parse AI response: input too large and events could not be truncated');
-        }
-        throw new Error('Bedrock invocation failed: input too large even after truncation');
-      }
-
-      // Re-throw any other errors
       throw error;
     }
   }
@@ -515,15 +372,9 @@ export const invokeBedrockModel = async (prompt) => {
 
 /**
  * Parse and validate the Bedrock response.
- * Handles markdown code block wrapping, validates security findings structure,
- * preserves coherence check status, and sets boolean flags.
- *
- * @param {string} bedrockResponse - Raw text response from Bedrock (JSON string, possibly wrapped in markdown code blocks)
- * @returns {Object} Parsed analysis report with validated findings and boolean flags
  */
 export const parseAnalysisResponse = (bedrockResponse) => {
   try {
-    // Strip markdown code block wrapping if present (```json ... ``` or ``` ... ```)
     let jsonStr = bedrockResponse.trim();
     const codeBlockMatch = jsonStr.match(/^```(?:json)?\s*\n?([\s\S]*?)\n?\s*```$/);
     if (codeBlockMatch) {
@@ -532,62 +383,35 @@ export const parseAnalysisResponse = (bedrockResponse) => {
 
     const parsed = JSON.parse(jsonStr);
 
-    // Validate and filter security findings: only keep HIGH severity with non-empty required fields
     let securityFindings = [];
     if (parsed.securityReview && Array.isArray(parsed.securityReview.findings)) {
       securityFindings = parsed.securityReview.findings.filter(finding =>
         finding.severity === 'HIGH' &&
         finding.eventName && finding.eventName.trim() !== '' &&
-        finding.resource && finding.resource.trim() !== '' &&
         finding.description && finding.description.trim() !== ''
       );
     }
 
-    // Preserve coherence check status exactly as returned
     const coherenceCheck = parsed.coherenceCheck || {};
     const coherenceStatus = coherenceCheck.status || '';
     let coherenceFindings = Array.isArray(coherenceCheck.findings) ? coherenceCheck.findings : [];
-
-    // When status is "insufficient_justification", set findings to empty array
-    if (coherenceStatus === 'insufficient_justification') {
-      coherenceFindings = [];
-    }
-
-    // Set boolean flags
-    const hasSecurityFindings = securityFindings.length > 0;
-    const hasCoherenceFindings = coherenceFindings.length > 0;
+    if (coherenceStatus === 'insufficient_justification') coherenceFindings = [];
 
     return {
       status: 'completed',
       summary: parsed.summary || null,
-      coherenceCheck: {
-        status: coherenceStatus,
-        reasoning: coherenceCheck.reasoning || '',
-        findings: coherenceFindings,
-      },
-      securityReview: {
-        findings: securityFindings,
-      },
-      hasSecurityFindings,
-      hasCoherenceFindings,
+      coherenceCheck: { status: coherenceStatus, reasoning: coherenceCheck.reasoning || '', findings: coherenceFindings },
+      securityReview: { findings: securityFindings },
+      hasSecurityFindings: securityFindings.length > 0,
+      hasCoherenceFindings: coherenceFindings.length > 0,
       error: null,
     };
   } catch (error) {
-    return {
-      status: 'failed',
-      error: 'Failed to parse AI response',
-    };
+    console.error('Failed to parse Bedrock response:', error.message, 'Raw response:', bedrockResponse?.substring(0, 500));
+    return { status: 'failed', error: 'Failed to parse AI response' };
   }
 };
 
-/**
- * Store the analysis report in DynamoDB via GraphQL.
- * Creates an AnalysisReport record with the session analysis results.
- *
- * @param {string} sessionId - The session ID this report belongs to
- * @param {Object} report - The parsed analysis report to store
- * @returns {Object} The created AnalysisReport record
- */
 export const storeAnalysisReport = async (sessionId, requestId, report) => {
   const graphqlQuery = /* GraphQL */ `
     mutation CreateAnalysisReport($input: CreateAnalysisReportInput!) {
@@ -621,95 +445,140 @@ export const storeAnalysisReport = async (sessionId, requestId, report) => {
   };
 
   const data = await executeGraphQL(graphqlQuery, { input });
-
-  if (!data?.createAnalysisReport) {
-    throw new Error('Failed to store analysis report');
-  }
-
+  if (!data?.createAnalysisReport) throw new Error('Failed to store analysis report');
   return data.createAnalysisReport;
 };
 
 /**
+ * Check if a completed analysis report already exists for this session.
+ * Only returns cached report if session ended more than CACHE_MIN_MINUTES ago.
+ */
+const getExistingReport = async (sessionId, sessionEndTime) => {
+  // Only cache if session ended > 15 min ago (CloudTrail propagation time)
+  if (sessionEndTime) {
+    const endTime = new Date(sessionEndTime);
+    const minutesSinceEnd = (Date.now() - endTime.getTime()) / 60000;
+    if (minutesSinceEnd < CACHE_MIN_MINUTES) {
+      console.log(`Session ended ${Math.round(minutesSinceEnd)} min ago (< ${CACHE_MIN_MINUTES}), skipping cache`);
+      return null;
+    }
+  }
+
+  const graphqlQuery = /* GraphQL */ `
+    query AnalysisReportBySessionId($sessionId: String!) {
+      analysisReportBySessionId(sessionId: $sessionId, limit: 1, sortDirection: DESC) {
+        items {
+          id
+          sessionId
+          requestId
+          analyzedAt
+          status
+          summary
+          coherenceCheck
+          securityReview
+          hasSecurityFindings
+          hasCoherenceFindings
+          error
+        }
+      }
+    }
+  `;
+
+  try {
+    const data = await executeGraphQL(graphqlQuery, { sessionId });
+    const items = data?.analysisReportBySessionId?.items || [];
+    if (items.length > 0 && items[0].status === 'completed') {
+      return items[0];
+    }
+    return null;
+  } catch (err) {
+    console.warn('Failed to check for existing report:', err.message);
+    return null;
+  }
+};
+
+/**
  * Main Lambda handler.
- * Orchestrates the complete AI analysis flow for a session.
- * Triggered by GraphQL query (on-demand) or EventBridge Scheduler (auto-analysis).
- *
- * Flow: parse event → get session/request from DDB → execute extended Athena query →
- *       build prompt → invoke Bedrock → parse response → store report in DynamoDB
- *
- * Error handling:
- * - Athena failure: returns error status
- * - Bedrock failure: returns error status
- * - No Athena results: proceeds with empty events array (not a failure)
  */
 export const handler = async (event) => {
   console.log('Received event:', JSON.stringify(event, null, 2));
 
-  // Check if Bedrock is enabled
   if (!BEDROCK_AUDIT_ENABLED) {
     return {
-      status: 'failed',
+      id: 'error', sessionId: 'unknown', requestId: null,
+      analyzedAt: new Date().toISOString(), status: 'failed',
       error: 'Bedrock AI audit feature is not enabled',
     };
   }
 
+  let sessionId, requestId;
   try {
-    // 1. Parse event to get sessionId and requestId
-    const { sessionId, requestId, source } = parseEvent(event);
+    const parsed = parseEvent(event);
+    sessionId = parsed.sessionId;
+    requestId = parsed.requestId;
+    const source = parsed.source;
     console.log(`Processing analysis for session: ${sessionId}, request: ${requestId}, source: ${source}`);
 
-    // 2. Get session and request metadata from DynamoDB
+    // Get session metadata (needed for cache check and Athena query)
     const session = await getSessionFromDDB(sessionId);
     const request = await getRequestFromDDB(requestId);
 
-    // 3. Execute extended Athena query
+    // Build session context from session record (preferred) or fall back to request data
+    const sessionContext = session || {
+      id: request.id,
+      startTime: request.startTime,
+      endTime: new Date(new Date(request.startTime).getTime() + parseInt(request.duration) * 3600000).toISOString(),
+      username: request.username || request.email,
+      accountId: request.accountId,
+      role: request.role,
+    };
+
+    // Check for existing completed report (cache) — only for on-demand GraphQL invocations
+    if (source === 'graphql') {
+      const existing = await getExistingReport(sessionId, sessionContext.endTime);
+      if (existing) {
+        console.log(`Returning cached report for session: ${sessionId}`);
+        return existing;
+      }
+    }
+
+    // Execute Athena query (write events only)
     let athenaResults = [];
     try {
-      athenaResults = await executeExtendedAthenaQuery(session);
+      athenaResults = await executeExtendedAthenaQuery(sessionContext);
     } catch (athenaError) {
       console.error('Athena query failed:', athenaError);
-      const errorReport = {
-        status: 'failed',
-        error: `Athena query failed: ${athenaError.message}`,
-      };
-      await storeAnalysisReport(sessionId, requestId, errorReport);
-      return errorReport;
+      const errorReport = { status: 'failed', error: `Athena query failed: ${athenaError.message}` };
+      const stored = await storeAnalysisReport(sessionId, requestId, errorReport);
+      return stored;
     }
 
-    // No results case: proceed with empty events array (not a failure)
     if (athenaResults.length === 0) {
-      console.log('No Athena results found, proceeding with empty events array');
+      console.log('No write events found for this session');
     }
 
-    // 4. Build prompt with session context
-    const prompt = buildAnalysisPrompt(athenaResults, request.justification || '', session);
-
-    // 5. Invoke Bedrock
+    // Build prompt and invoke Bedrock
+    const prompt = buildAnalysisPrompt(athenaResults, request.justification || '', sessionContext);
     let bedrockResponse;
     try {
       bedrockResponse = await invokeBedrockModel(prompt);
+      console.log('Bedrock response length:', bedrockResponse?.length);
     } catch (bedrockError) {
       console.error('Bedrock invocation failed:', bedrockError);
-      const errorReport = {
-        status: 'failed',
-        error: `Bedrock invocation failed: ${bedrockError.message}`,
-      };
-      await storeAnalysisReport(sessionId, requestId, errorReport);
-      return errorReport;
+      const errorReport = { status: 'failed', error: `Bedrock invocation failed: ${bedrockError.message}` };
+      const stored = await storeAnalysisReport(sessionId, requestId, errorReport);
+      return stored;
     }
 
-    // 6. Parse structured response
+    // Parse and store
     const report = parseAnalysisResponse(bedrockResponse);
-
-    // 7. Persist report
-    await storeAnalysisReport(sessionId, requestId, report);
-
-    return report;
+    const stored = await storeAnalysisReport(sessionId, requestId, report);
+    return stored;
   } catch (error) {
     console.error('Analysis failed:', error);
     return {
-      status: 'failed',
-      error: error.message,
+      id: 'error', sessionId: sessionId || 'unknown', requestId: requestId || null,
+      analyzedAt: new Date().toISOString(), status: 'failed', error: error.message,
     };
   }
 };

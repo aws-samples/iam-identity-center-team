@@ -190,8 +190,8 @@ export async function getAllApprovers() {
     } while (nextToken);
     return data;
   } catch (err) {
-    console.log("error fetching approvers");
-    return {"error":err}
+    console.log("error fetching approvers", err);
+    return [];
   }
 }
 
@@ -400,8 +400,8 @@ export async function getAllEligibility() {
   } while (nextToken);
     return data;
   } catch (err) {
-    console.log("error fetching eligibility");
-    return {"error":err}
+    console.log("error fetching eligibility", err);
+    return [];
   }
 }
 
@@ -415,7 +415,8 @@ export async function getSetting(id) {
     let data = await request.data.getSettings;
     return data;
   } catch (err) {
-    console.log("error fetching settings");
+    console.log("error fetching settings", err);
+    return null;
   }
 }
 

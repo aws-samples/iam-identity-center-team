@@ -205,7 +205,7 @@ async function update_bedrock_parameters() {
   console.log(`updating Bedrock parameters for Lambda functions and frontend"...`);
 
   const bedrockEnabled = BEDROCK_AUDIT_ENABLED === 'true';
-  const bedrockModelId = BEDROCK_MODEL_ID || 'anthropic.claude-3-haiku-20240307-v1:0';
+  const bedrockModelId = BEDROCK_MODEL_ID || 'anthropic.claude-haiku-4-5-20251001-v1:0';
   const bedrockRegion = BEDROCK_REGION || process.env.AWS_REGION || process.env._BUILD_REGION || '';
 
   // Write to teamgetLogs parameters (needs to know about auto-analysis scheduling)

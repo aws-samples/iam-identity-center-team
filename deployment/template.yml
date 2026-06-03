@@ -86,7 +86,7 @@ Parameters:
   BedrockModelId:
     Type: String
     Description: Amazon Bedrock model identifier for AI analysis
-    Default: 'anthropic.claude-3-haiku-20240307-v1:0'
+    Default: 'anthropic.claude-haiku-4-5-20251001-v1:0'
   BedrockRegion:
     Type: String
     Description: AWS region for Bedrock API calls (defaults to deployment region if empty)
