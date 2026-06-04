@@ -372,7 +372,10 @@ const scheduleAutoAnalysis = async (sessionId, requestId, delayMinutes) => {
  * Checks if the feature is enabled at both infrastructure and settings level.
  * On any failure, logs the error but does NOT fail the session flow.
  *
- * @param {Object} data - The DynamoDB stream NewImage data
+ * The sessions table does not have a "status" field. A session INSERT with an endTime
+ * indicates the session has ended (the Logs component creates sessions with endTime set).
+ *
+ * @param {Object} data - The DynamoDB stream NewImage data (sessions table)
  */
 const tryScheduleAutoAnalysis = async (data) => {
   try {
@@ -386,9 +389,10 @@ const tryScheduleAutoAnalysis = async (data) => {
       return;
     }
 
-    // Check session status - only trigger for "ended" or "revoked"
-    const status = data["status"]?.["S"];
-    if (status !== 'ended' && status !== 'revoked') {
+    // Sessions table doesn't have a status field. Check endTime is set
+    // (sessions are created with endTime when the access session has ended)
+    const endTime = data["endTime"]?.["S"];
+    if (!endTime) {
       return;
     }
 
@@ -410,7 +414,7 @@ const tryScheduleAutoAnalysis = async (data) => {
 
     // Get sessionId and requestId from the stream event
     const sessionId = data["id"]?.["S"];
-    const requestId = data["requestId"]?.["S"] || data["id"]?.["S"];
+    const requestId = data["id"]?.["S"]; // session and request share the same ID
 
     if (!sessionId) {
       console.warn('Bedrock auto-analysis: missing sessionId in stream event');

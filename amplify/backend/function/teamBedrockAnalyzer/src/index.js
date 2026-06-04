@@ -80,16 +80,24 @@ const ATHENA_TABLE = process.env.ATHENA_TABLE;
 const ATHENA_RESULTS_BUCKET = process.env.ATHENA_RESULTS_BUCKET;
 
 // Maximum tokens for Bedrock response
-const MAX_TOKENS = 4096;
+const MAX_TOKENS = 2048;
+
+// Maximum characters for requestparameters/responseelements per event (cost optimization)
+const MAX_FIELD_LENGTH = 1000;
 
 // Athena query polling interval (ms)
 const ATHENA_POLL_INTERVAL = 1000;
 
 /**
  * Parse the incoming event to extract sessionId and requestId.
+ * Supports batch invocation for auto-analysis (array of sessions).
  */
 export const parseEvent = (event) => {
   if (event.source === 'auto-analysis') {
+    // Support batch: { source: 'auto-analysis', sessions: [{sessionId, requestId}, ...] }
+    if (Array.isArray(event.sessions)) {
+      return { sessions: event.sessions, source: 'auto-analysis-batch' };
+    }
     return { sessionId: event.sessionId, requestId: event.requestId, source: 'auto-analysis' };
   }
   if (event.arguments) {
@@ -197,7 +205,7 @@ export const buildPartitionFilter = (start, end, accountId) => {
 
 /**
  * Build Athena SQL query for AI analysis.
- * Filters OUT read-only events (Describe*, List*, Get*) to focus on write/mutating actions.
+ * Retrieves only write/mutating events for focused analysis and reduced context size.
  */
 export const buildExtendedAthenaQuery = (session) => {
   const { startTime, endTime, username, accountId, role } = session;
@@ -207,7 +215,7 @@ export const buildExtendedAthenaQuery = (session) => {
   const end = new Date(endTime);
   const partitionFilter = buildPartitionFilter(start, end, accountId);
 
-  return `SELECT eventID, eventName, eventSource, eventTime, requestparameters, responseelements, readonly, errorcode, sourceipaddress
+  return `SELECT eventID, eventName, eventSource, eventTime, requestparameters, responseelements, errorcode, sourceipaddress
     FROM "${ATHENA_DATABASE}"."${ATHENA_TABLE}"
     WHERE ${partitionFilter}
       AND eventTime > '${escapeSql(startTime)}'
@@ -280,11 +288,10 @@ export const executeExtendedAthenaQuery = async (session) => {
         eventName: data[1]?.VarCharValue || '',
         eventSource: data[2]?.VarCharValue || '',
         eventTime: data[3]?.VarCharValue || '',
-        requestparameters: data[4]?.VarCharValue || '',
-        responseelements: data[5]?.VarCharValue || '',
-        readonly: data[6]?.VarCharValue || '',
-        errorcode: data[7]?.VarCharValue || '',
-        sourceipaddress: data[8]?.VarCharValue || '',
+        requestparameters: (data[4]?.VarCharValue || '').substring(0, MAX_FIELD_LENGTH),
+        responseelements: (data[5]?.VarCharValue || '').substring(0, MAX_FIELD_LENGTH),
+        errorcode: data[6]?.VarCharValue || '',
+        sourceipaddress: data[7]?.VarCharValue || '',
       });
     }
     nextToken = resultsResponse.NextToken;
@@ -298,7 +305,7 @@ export const executeExtendedAthenaQuery = async (session) => {
  * Build the analysis prompt for Bedrock.
  */
 export const buildAnalysisPrompt = (events, justification, session) => {
-  return `You are a cloud security expert analyzing an AWS session. All events shown are WRITE/MUTATING actions only (read-only events have been pre-filtered).
+  return `You are a cloud security expert analyzing write/mutating actions from an AWS session.
 
 Session Context:
 - Account: ${session.accountId}
@@ -313,12 +320,12 @@ ${JSON.stringify(events, null, 2)}
 Provide analysis in the following JSON structure:
 {
   "summary": {
-    "description": "Brief summary of mutating actions performed during this session",
+    "description": "Brief summary of write/mutating actions performed during this session",
     "serviceBreakdown": [{"service": "...", "actions": ["..."], "count": N}]
   },
   "coherenceCheck": {
     "status": "consistent|inconsistent|insufficient_justification",
-    "reasoning": "Explain whether the actions match the stated justification",
+    "reasoning": "Explain whether the write actions match the stated justification",
     "findings": [{"action": "...", "explanation": "why this action seems unrelated to justification"}]
   },
   "securityReview": {
@@ -327,9 +334,9 @@ Provide analysis in the following JSON structure:
 }
 
 Rules:
-- coherenceCheck: set status "insufficient_justification" only if justification is too vague to compare. Set "inconsistent" if actions clearly don't match the stated purpose.
-- securityReview: Report only HIGH criticality NEW misconfigurations (0.0.0.0/0 security groups, public S3 buckets, disabled encryption, overly permissive IAM policies, unencrypted volumes). Look at requestparameters for these patterns.
-- If there are 0 events, set summary.description to "No write actions recorded during this session" and skip coherence/security review.
+- coherenceCheck: set status "insufficient_justification" only if justification is too vague to compare. Set "inconsistent" only if write actions clearly don't match the stated purpose.
+- securityReview: Report only HIGH criticality misconfigurations (0.0.0.0/0 security groups, public S3 buckets, disabled encryption, overly permissive IAM policies, unencrypted volumes). Inspect requestparameters for these patterns.
+- If there are 0 events, set summary.description to "No write actions recorded during this session", coherenceCheck.status to "consistent", coherenceCheck.reasoning to "No write events to evaluate", and securityReview.findings to [].
 - Return ONLY the JSON object, no additional text.`;
 };
 
@@ -452,6 +459,7 @@ export const storeAnalysisReport = async (sessionId, requestId, report) => {
 /**
  * Check if a completed analysis report already exists for this session.
  * Only returns cached report if session ended more than CACHE_MIN_MINUTES ago.
+ * Skips reports that have no meaningful data (stale empty reports from propagation delay).
  */
 const getExistingReport = async (sessionId, sessionEndTime) => {
   // Only cache if session ended > 15 min ago (CloudTrail propagation time)
@@ -466,7 +474,7 @@ const getExistingReport = async (sessionId, sessionEndTime) => {
 
   const graphqlQuery = /* GraphQL */ `
     query AnalysisReportBySessionId($sessionId: String!) {
-      analysisReportBySessionId(sessionId: $sessionId, limit: 1, sortDirection: DESC) {
+      analysisReportBySessionId(sessionId: $sessionId, limit: 1) {
         items {
           id
           sessionId
@@ -487,14 +495,102 @@ const getExistingReport = async (sessionId, sessionEndTime) => {
   try {
     const data = await executeGraphQL(graphqlQuery, { sessionId });
     const items = data?.analysisReportBySessionId?.items || [];
+    console.log(`Cache lookup for session ${sessionId}: found ${items.length} reports`);
     if (items.length > 0 && items[0].status === 'completed') {
-      return items[0];
+      const report = items[0];
+      // Only use cache if the report has meaningful data (not a stale empty report)
+      if (report.hasSecurityFindings || report.hasCoherenceFindings || report.summary) {
+        console.log(`Using cached report ${report.id} (analyzedAt: ${report.analyzedAt})`);
+        return report;
+      }
+      console.log('Cached report has no data, skipping cache to re-analyze');
+      return null;
     }
     return null;
   } catch (err) {
     console.warn('Failed to check for existing report:', err.message);
     return null;
   }
+};
+
+/**
+ * Analyze a single session. Extracted to support both single and batch invocations.
+ */
+const analyzeSession = async (sessionId, requestId, source) => {
+  console.log(`Processing analysis for session: ${sessionId}, request: ${requestId}, source: ${source}`);
+
+  // Get session metadata (needed for cache check and Athena query)
+  const session = await getSessionFromDDB(sessionId);
+  const request = await getRequestFromDDB(requestId);
+
+  // Build session context from session record (preferred) or fall back to request data
+  const sessionContext = session || {
+    id: request.id,
+    startTime: request.startTime,
+    endTime: new Date(new Date(request.startTime).getTime() + parseInt(request.duration) * 3600000).toISOString(),
+    username: request.username || request.email,
+    accountId: request.accountId,
+    role: request.role,
+  };
+
+  // Check for existing completed report (cache) — only for on-demand GraphQL invocations
+  if (source === 'graphql') {
+    const existing = await getExistingReport(sessionId, sessionContext.endTime);
+    if (existing) {
+      console.log(`Returning cached report for session: ${sessionId}`);
+      return existing;
+    }
+  }
+
+  // Execute Athena query (write events only)
+  let athenaResults = [];
+  try {
+    athenaResults = await executeExtendedAthenaQuery(sessionContext);
+  } catch (athenaError) {
+    console.error('Athena query failed:', athenaError);
+    const errorReport = { status: 'failed', error: `Athena query failed: ${athenaError.message}` };
+    const stored = await storeAnalysisReport(sessionId, requestId, errorReport);
+    return stored;
+  }
+
+  // Determine if session ended recently (within CloudTrail propagation window)
+  const sessionEndTime = sessionContext.endTime ? new Date(sessionContext.endTime) : null;
+  const minutesSinceEnd = sessionEndTime ? (Date.now() - sessionEndTime.getTime()) / 60000 : Infinity;
+  const isWithinPropagationWindow = minutesSinceEnd < CACHE_MIN_MINUTES;
+
+  if (athenaResults.length === 0) {
+    console.log('No write events found for this session');
+    if (isWithinPropagationWindow) {
+      // Session ended recently - logs may not be available yet, return partial (non-cached) result
+      console.log(`Session ended ${Math.round(minutesSinceEnd)} min ago, returning partial result (not cached)`);
+      return {
+        id: 'partial', sessionId, requestId,
+        analyzedAt: new Date().toISOString(), status: 'partial',
+        summary: JSON.stringify({ description: 'No write activity recorded yet. CloudTrail logs may still be propagating.', serviceBreakdown: [] }),
+        coherenceCheck: JSON.stringify({ status: 'pending', reasoning: 'Waiting for CloudTrail logs to become available', findings: [] }),
+        securityReview: JSON.stringify({ findings: [] }),
+        hasSecurityFindings: false, hasCoherenceFindings: false, error: null,
+      };
+    }
+  }
+
+  // Build prompt and invoke Bedrock
+  const prompt = buildAnalysisPrompt(athenaResults, request.justification || '', sessionContext);
+  let bedrockResponse;
+  try {
+    bedrockResponse = await invokeBedrockModel(prompt);
+    console.log('Bedrock response length:', bedrockResponse?.length);
+  } catch (bedrockError) {
+    console.error('Bedrock invocation failed:', bedrockError);
+    const errorReport = { status: 'failed', error: `Bedrock invocation failed: ${bedrockError.message}` };
+    const stored = await storeAnalysisReport(sessionId, requestId, errorReport);
+    return stored;
+  }
+
+  // Parse and store
+  const report = parseAnalysisResponse(bedrockResponse);
+  const stored = await storeAnalysisReport(sessionId, requestId, report);
+  return stored;
 };
 
 /**
@@ -511,73 +607,31 @@ export const handler = async (event) => {
     };
   }
 
-  let sessionId, requestId;
   try {
     const parsed = parseEvent(event);
-    sessionId = parsed.sessionId;
-    requestId = parsed.requestId;
-    const source = parsed.source;
-    console.log(`Processing analysis for session: ${sessionId}, request: ${requestId}, source: ${source}`);
 
-    // Get session metadata (needed for cache check and Athena query)
-    const session = await getSessionFromDDB(sessionId);
-    const request = await getRequestFromDDB(requestId);
-
-    // Build session context from session record (preferred) or fall back to request data
-    const sessionContext = session || {
-      id: request.id,
-      startTime: request.startTime,
-      endTime: new Date(new Date(request.startTime).getTime() + parseInt(request.duration) * 3600000).toISOString(),
-      username: request.username || request.email,
-      accountId: request.accountId,
-      role: request.role,
-    };
-
-    // Check for existing completed report (cache) — only for on-demand GraphQL invocations
-    if (source === 'graphql') {
-      const existing = await getExistingReport(sessionId, sessionContext.endTime);
-      if (existing) {
-        console.log(`Returning cached report for session: ${sessionId}`);
-        return existing;
+    // Batch mode: process multiple sessions sequentially in a single invocation
+    if (parsed.source === 'auto-analysis-batch') {
+      const results = [];
+      for (const { sessionId, requestId } of parsed.sessions) {
+        try {
+          const result = await analyzeSession(sessionId, requestId, 'auto-analysis');
+          results.push(result);
+        } catch (err) {
+          console.error(`Batch analysis failed for session ${sessionId}:`, err);
+          results.push({ id: 'error', sessionId, requestId, status: 'failed', error: err.message });
+        }
       }
+      return results;
     }
 
-    // Execute Athena query (write events only)
-    let athenaResults = [];
-    try {
-      athenaResults = await executeExtendedAthenaQuery(sessionContext);
-    } catch (athenaError) {
-      console.error('Athena query failed:', athenaError);
-      const errorReport = { status: 'failed', error: `Athena query failed: ${athenaError.message}` };
-      const stored = await storeAnalysisReport(sessionId, requestId, errorReport);
-      return stored;
-    }
-
-    if (athenaResults.length === 0) {
-      console.log('No write events found for this session');
-    }
-
-    // Build prompt and invoke Bedrock
-    const prompt = buildAnalysisPrompt(athenaResults, request.justification || '', sessionContext);
-    let bedrockResponse;
-    try {
-      bedrockResponse = await invokeBedrockModel(prompt);
-      console.log('Bedrock response length:', bedrockResponse?.length);
-    } catch (bedrockError) {
-      console.error('Bedrock invocation failed:', bedrockError);
-      const errorReport = { status: 'failed', error: `Bedrock invocation failed: ${bedrockError.message}` };
-      const stored = await storeAnalysisReport(sessionId, requestId, errorReport);
-      return stored;
-    }
-
-    // Parse and store
-    const report = parseAnalysisResponse(bedrockResponse);
-    const stored = await storeAnalysisReport(sessionId, requestId, report);
-    return stored;
+    // Single session mode
+    const { sessionId, requestId, source } = parsed;
+    return await analyzeSession(sessionId, requestId, source);
   } catch (error) {
     console.error('Analysis failed:', error);
     return {
-      id: 'error', sessionId: sessionId || 'unknown', requestId: requestId || null,
+      id: 'error', sessionId: 'unknown', requestId: null,
       analyzedAt: new Date().toISOString(), status: 'failed', error: error.message,
     };
   }

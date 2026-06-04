@@ -18,12 +18,17 @@ import {
 /**
  * Safely parse an AWSJSON field.
  * Returns the parsed object or null if parsing fails.
+ * Handles double-stringified values (JSON.stringify(obj) stored in AWSJSON field).
  */
 function parseJsonField(field) {
   if (!field) return null;
   if (typeof field === "object") return field;
   try {
-    return JSON.parse(field);
+    let parsed = JSON.parse(field);
+    if (typeof parsed === "string") {
+      parsed = JSON.parse(parsed);
+    }
+    return parsed;
   } catch {
     return null;
   }

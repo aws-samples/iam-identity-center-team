@@ -142,6 +142,12 @@ function Logs(props) {
   const [tableLoading, setTableLoading] = useState(true);
   const [refreshLoading, setRefreshLoading] = useState(false);
 
+  // Determine if session ended within CloudTrail propagation window (15 min)
+  const PROPAGATION_WINDOW_MS = 15 * 60 * 1000;
+  const isWithinPropagationWindow = props.item.endTime
+    ? (Date.now() - Date.parse(props.item.endTime)) < PROPAGATION_WINDOW_MS
+    : false;
+
   useEffect(() => {
     views();
     updateEvent()
@@ -152,7 +158,18 @@ function Logs(props) {
   function handleRefresh() {
     setRefreshLoading(true);
     setTableLoading(true);
-    views();
+    if (props.item.status !== "in progress") {
+      // For ended/revoked sessions, delete old session and re-create to trigger fresh Athena query
+      const args = { id: props.item.id };
+      deleteSessionLogs(args).then(() => {
+        const username = props.item.username;
+        const expiry = Math.floor(Date.now() / 1000) + 432000;
+        const endTime = new Date(Date.parse(props.item.endTime) + 60 * 60 * 1000).toISOString();
+        AddSessionLogs(expiry, endTime, username);
+      });
+    } else {
+      views();
+    }
   }
 
   async function addMeta(items) {
@@ -192,7 +209,7 @@ function Logs(props) {
         })
     } else {
       getSession(props.item.id).then((data) => {
-        if (data !== null) {
+        if (data !== null && data.queryId) {
           getLogs(data.queryId);
         } else {
           const expiry = Math.floor(Date.now() / 1000) + 432000 
@@ -215,7 +232,7 @@ function Logs(props) {
         });
       }
       setTableLoading(false);
-      setRefreshLoading(false)
+      setRefreshLoading(false);
     });
   }
 
@@ -260,7 +277,7 @@ function Logs(props) {
             description="Session activity logs are delivered in near real time"
             actions={
               <SpaceBetween size="s" direction="horizontal">
-              {props.item.status === "in progress" &&
+              {(props.item.status === "in progress" || isWithinPropagationWindow || allItems.length === 0) &&
                 <Button
                   iconName="refresh"
                   onClick={handleRefresh}

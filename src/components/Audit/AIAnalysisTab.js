@@ -14,7 +14,7 @@ import {
   TextContent,
 } from "@awsui/components-react";
 import { API, graphqlOperation } from "aws-amplify";
-import { analyzeSession, analysisReportBySessionId } from "../../graphql/queries";
+import { analyzeSession } from "../../graphql/queries";
 
 function AIAnalysisTab({ item }) {
   const [loading, setLoading] = useState(true);
@@ -22,45 +22,9 @@ function AIAnalysisTab({ item }) {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetchOrAnalyze();
+    triggerAnalysis();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [item.id]);
-
-  async function fetchExistingReport() {
-    try {
-      const response = await API.graphql(
-        graphqlOperation(analysisReportBySessionId, {
-          sessionId: item.id,
-          limit: 1,
-          sortDirection: "DESC",
-        })
-      );
-      const items = response.data.analysisReportBySessionId?.items || [];
-      if (items.length > 0 && items[0].status === "completed") {
-        return items[0];
-      }
-      return null;
-    } catch {
-      return null;
-    }
-  }
-
-  async function fetchOrAnalyze() {
-    setLoading(true);
-    setError(null);
-    setReport(null);
-
-    // Check for existing report first
-    const existing = await fetchExistingReport();
-    if (existing) {
-      setReport(existing);
-      setLoading(false);
-      return;
-    }
-
-    // No cached report, trigger new analysis
-    await triggerAnalysis();
-  }
 
   async function triggerAnalysis() {
     setLoading(true);
@@ -119,12 +83,22 @@ function AIAnalysisTab({ item }) {
   const summary = parseJSON(report.summary);
   const coherenceCheck = parseJSON(report.coherenceCheck);
   const securityReview = parseJSON(report.securityReview);
+  const isPartial = report.status === "partial";
 
   return (
     <SpaceBetween size="l">
       <Box variant="small" color="text-body-secondary">
         Analyzed at: {new Date(report.analyzedAt).toLocaleString()}
+        {isPartial && (
+          <StatusIndicator type="in-progress">
+            {" "}CloudTrail logs may still be propagating.
+          </StatusIndicator>
+        )}
       </Box>
+
+      {isPartial && (
+        <Button onClick={triggerAnalysis} loading={loading}>Refresh Analysis</Button>
+      )}
 
       {/* Summary Section */}
       {summary && (
@@ -209,7 +183,12 @@ function parseJSON(value) {
   if (!value) return null;
   if (typeof value === "object") return value;
   try {
-    return JSON.parse(value);
+    let parsed = JSON.parse(value);
+    // Handle double-stringified AWSJSON (stored as JSON.stringify(obj) then returned as AWSJSON string)
+    if (typeof parsed === "string") {
+      parsed = JSON.parse(parsed);
+    }
+    return parsed;
   } catch {
     return null;
   }
@@ -220,6 +199,7 @@ function getCoherenceStatusType(status) {
     case "consistent": return "success";
     case "inconsistent": return "error";
     case "insufficient_justification": return "warning";
+    case "pending": return "in-progress";
     default: return "info";
   }
 }
@@ -229,6 +209,7 @@ function formatCoherenceStatus(status) {
     case "consistent": return "Consistent with justification";
     case "inconsistent": return "Inconsistent with justification";
     case "insufficient_justification": return "Insufficient justification detail";
+    case "pending": return "Pending - waiting for logs";
     default: return status || "Unknown";
   }
 }
