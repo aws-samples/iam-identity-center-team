@@ -167,6 +167,27 @@
             },
             "ATHENA_RESULTS_BUCKET": {
               "Ref": "AthenaResultsBucket"
+            },
+            "BEDROCK_GUARDRAIL_ID": {
+              "Fn::If": [
+                "IsBedrockEnabled",
+                {
+                  "Fn::GetAtt": [
+                    "BedrockGuardrail",
+                    "GuardrailId"
+                  ]
+                },
+                ""
+              ]
+            },
+            "BEDROCK_GUARDRAIL_VERSION": {
+              "Fn::If": [
+                "IsBedrockEnabled",
+                {
+                  "Ref": "BedrockGuardrailVersion"
+                },
+                "DRAFT"
+              ]
             }
           }
         },
@@ -387,6 +408,91 @@
               "Resource": [
                 {
                   "Ref": "AthenaRoleArn"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "BedrockGuardrail": {
+      "Type": "AWS::Bedrock::Guardrail",
+      "Condition": "IsBedrockEnabled",
+      "Properties": {
+        "Name": {
+          "Fn::If": [
+            "ShouldNotCreateEnvResources",
+            "team-bedrock-analyzer-guardrail",
+            {
+              "Fn::Join": [
+                "",
+                [
+                  "team-bedrock-analyzer-guardrail",
+                  "-",
+                  {
+                    "Ref": "env"
+                  }
+                ]
+              ]
+            }
+          ]
+        },
+        "Description": "Prompt injection protection for TEAM Bedrock Analyzer input requests",
+        "BlockedInputMessaging": "Request blocked: potential prompt injection detected in input data.",
+        "BlockedOutputsMessaging": "Response blocked by guardrail policy.",
+        "ContentPolicyConfig": {
+          "FiltersConfig": [
+            {
+              "Type": "PROMPT_ATTACK",
+              "InputStrength": "HIGH",
+              "OutputStrength": "NONE"
+            }
+          ]
+        }
+      }
+    },
+    "BedrockGuardrailVersion": {
+      "Type": "AWS::Bedrock::GuardrailVersion",
+      "Condition": "IsBedrockEnabled",
+      "DependsOn": "BedrockGuardrail",
+      "Properties": {
+        "GuardrailIdentifier": {
+          "Fn::GetAtt": [
+            "BedrockGuardrail",
+            "GuardrailId"
+          ]
+        },
+        "Description": "Initial version"
+      }
+    },
+    "BedrockGuardrailPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Condition": "IsBedrockEnabled",
+      "DependsOn": [
+        "LambdaExecutionRole",
+        "BedrockGuardrail"
+      ],
+      "Properties": {
+        "PolicyName": "bedrock-guardrail-policy",
+        "Roles": [
+          {
+            "Ref": "LambdaExecutionRole"
+          }
+        ],
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "bedrock:ApplyGuardrail"
+              ],
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "BedrockGuardrail",
+                    "GuardrailArn"
+                  ]
                 }
               ]
             }
