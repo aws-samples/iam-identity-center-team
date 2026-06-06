@@ -596,6 +596,55 @@
               "Default": "DynamoDB Update EndTime",
               "Type": "Choice"
             },
+            "Check Overlapping Sessions": {
+              "Catch": [
+                {
+                  "ErrorEquals": [
+                    "States.ALL"
+                  ],
+                  "Next": "Revoke Permission",
+                  "ResultPath": "$.overlapError"
+                }
+              ],
+              "Next": "Overlap?",
+              "Parameters": {
+                "TableName.$": "$.requests_table",
+                "FilterExpression": "username = :u AND accountId = :a AND roleId = :r AND #s = :inprogress AND id <> :id",
+                "ExpressionAttributeNames": {
+                  "#s": "status"
+                },
+                "ExpressionAttributeValues": {
+                  ":u": { "S.$": "$.username" },
+                  ":a": { "S.$": "$.accountId" },
+                  ":r": { "S.$": "$.roleId" },
+                  ":inprogress": { "S": "in progress" },
+                  ":id": { "S.$": "$.id" }
+                },
+                "Select": "COUNT"
+              },
+              "Resource": "arn:aws:states:::aws-sdk:dynamodb:scan",
+              "ResultPath": "$.overlapScan",
+              "Retry": [
+                {
+                  "ErrorEquals": ["DynamoDb.ProvisionedThroughputExceededException", "DynamoDb.ThrottlingException", "ThrottlingException", "ServiceUnavailable", "InternalServerError"],
+                  "IntervalSeconds": 2,
+                  "BackoffRate": 2,
+                  "MaxAttempts": 5
+                }
+              ],
+              "Type": "Task"
+            },
+            "Overlap?": {
+              "Choices": [
+                {
+                  "NumericGreaterThan": 0,
+                  "Variable": "$.overlapScan.Count",
+                  "Next": "Notify Requester Session Ended"
+                }
+              ],
+              "Default": "Revoke Permission",
+              "Type": "Choice"
+            },
             "Revoke Permission": {
               "Catch": [
                 {
@@ -654,7 +703,7 @@
                   "Next": "Pass"
                 }
               ],
-              "Default": "Revoke Permission",
+              "Default": "Check Overlapping Sessions",
               "Type": "Choice"
             },
             "Update Request Status": {
@@ -1178,7 +1227,7 @@
                 },
                 {
                   "Effect": "Allow",
-                  "Action": ["dynamodb:UpdateItem", "dynamodb:GetItem"],
+                  "Action": ["dynamodb:UpdateItem", "dynamodb:GetItem", "dynamodb:Scan"],
                   "Resource": {
                     "Fn::Sub": "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/requests*"
                   }
