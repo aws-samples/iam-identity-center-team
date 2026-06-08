@@ -21,8 +21,8 @@ Go through an end-to-end scenario in which a developer requests, and is granted 
 
 ### Before we begin
 {: .no_toc}
-- You successfully followed the instructions to [deploy TEAM application](./deployment/index.md).
-- The admin persona configured an [eligibility and an approver policy](./deployment/policies.md).
+- You successfully followed the instructions to [deploy TEAM application]({% link docs/deployment/index.md %}).
+- The admin persona configured an [eligibility and an approver policy]({% link docs/deployment/configuration/policies.md %}).
 
 In this walkthrough, you will assume 3 different personas:
 - Requestor (typically a developer) 🦓
