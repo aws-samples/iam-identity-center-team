@@ -91,6 +91,9 @@ async function update_router_parameters() {
   const routerParametersJson = require(routerParametersJsonPath);
 
   routerParametersJson.SSOLoginUrl = SSO_LOGIN;
+  routerParametersJson.TeamAppUrl = AMPLIFY_CUSTOM_DOMAIN
+    ? `https://${AMPLIFY_CUSTOM_DOMAIN}`
+    : `https://${AWS_BRANCH}.${AWS_APP_ID}.amplifyapp.com`;
 
   fs.writeFileSync(
     routerParametersJsonPath,

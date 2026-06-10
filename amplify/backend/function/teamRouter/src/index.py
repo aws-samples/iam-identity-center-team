@@ -28,10 +28,12 @@ schedule = os.getenv("SCHEDULE_SM")
 approval = os.getenv("APPROVAL_SM")
 notification_topic_arn = os.getenv("NOTIFICATION_TOPIC_ARN")
 sso_login_url = os.getenv("SSO_LOGIN_URL")
+team_app_url = os.getenv("TEAM_APP_URL", "")
 fn_teamstatus_arn = os.getenv("FN_TEAMSTATUS_ARN")
 fn_teamnotifications_arn = os.getenv("FN_TEAMNOTIFICATIONS_ARN")
 team_config = {
     "sso_login_url": sso_login_url,
+    "team_app_url": team_app_url,
     "requests_table": requests_table_name,
     "revoke_sm": revoke,
     "grant_sm": grant,
