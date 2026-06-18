@@ -26,7 +26,10 @@ def list_idc_groups(IdentityStoreId):
         all_groups = []
         for page in paginator:
             all_groups.extend(page["Groups"])
-        return sorted(all_groups, key=itemgetter('DisplayName'))
+        return sorted(
+            [{"GroupId": group["GroupId"], "DisplayName": group["DisplayName"]} for group in all_groups],
+            key=itemgetter('DisplayName'),
+        )
     except ClientError as e:
         print(e.response['Error']['Message'])
 

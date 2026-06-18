@@ -16,7 +16,7 @@ def get_identiy_store_id():
 
 
 sso_instance = get_identiy_store_id()
-        
+
 def list_idc_users(IdentityStoreId):
     try:
         client = boto3.client('identitystore')
@@ -25,7 +25,10 @@ def list_idc_users(IdentityStoreId):
         all_users = []
         for page in paginator:
             all_users.extend(page["Users"])
-        return sorted(all_users, key=itemgetter('UserName'))
+        return sorted(
+            [{"UserName": user["UserName"], "UserId": user["UserId"]} for user in all_users],
+            key=itemgetter('UserName'),
+        )
     except ClientError as e:
         print(e.response['Error']['Message'])
 
