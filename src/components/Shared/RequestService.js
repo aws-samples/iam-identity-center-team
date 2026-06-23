@@ -166,6 +166,43 @@ export async function getSessionList() {
   }
 }
 
+// Query the requests table by `status` using the byStatus GSI instead of
+// scanning the whole table via listRequests. `status` may be a single value
+// or an array of statuses (each queried and merged). This keeps reads scoped
+// to the small, current status partitions (e.g. pending / in progress).
+export async function getRequestsByStatus(status) {
+  const statuses = Array.isArray(status) ? status : [status];
+  let data = [];
+  try {
+    for (const s of statuses) {
+      let nextToken = null;
+      do {
+        const requests = await API.graphql(
+          graphqlOperation(requestByStatus, { status: s, nextToken })
+        );
+        data = data.concat(requests.data.requestByStatus.items);
+        nextToken = requests.data.requestByStatus.nextToken;
+      } while (nextToken);
+    }
+    return data;
+  } catch (err) {
+    console.log("error fetching requests by status", err);
+    return { error: err };
+  }
+}
+
+// Active sessions for the given user. Queries only the "scheduled" and
+// "in progress" partitions, then keeps rows the user owns or can approve.
+export async function getActiveSessions(user) {
+  const items = await getRequestsByStatus(["scheduled", "in progress"]);
+  if (items && items.error) return items;
+  return items.filter(
+    (i) =>
+      i.email === user ||
+      (Array.isArray(i.approvers) && i.approvers.includes(user))
+  );
+}
+
 export async function getRequest(id) {
   try {
     const request = await API.graphql(
