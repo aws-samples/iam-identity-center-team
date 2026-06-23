@@ -21,7 +21,7 @@ import {
 } from "@awsui/components-react";
 import { useCollection } from "@awsui/collection-hooks";
 import { useHistory } from "react-router-dom";
-import { sessions, updateStatus, getSetting} from "../Shared/RequestService";
+import { getActiveSessions, updateStatus, getSetting} from "../Shared/RequestService";
 import { API, graphqlOperation } from "aws-amplify";
 import { onUpdateRequests } from "../../graphql/subscriptions";
 import Status from "../Shared/Status";
@@ -287,13 +287,7 @@ function Active(props) {
   }, []);
 
   function views() {
-    let filter = {
-      and: [
-        {or: [{ status: { eq: "scheduled" } }, { status: { eq: "in progress" } }]},
-        {or: [{ email: { eq: props.user } }, { approvers: { contains: props.user } }]}
-      ]
-    };
-    sessions(filter).then((items) => {
+    getActiveSessions(props.user).then((items) => {
       items.sort((a, b) => (a.updatedAt < b.updatedAt ? 1 : -1));
       setAllItems(items);
       setTableLoading(false);
