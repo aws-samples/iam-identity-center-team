@@ -6,8 +6,15 @@ $util.qr($ctx.stash.defaultValues.put("createdAt", $createdAt))
 $util.qr($ctx.stash.defaultValues.put("updatedAt", $createdAt))
 $util.qr($ctx.args.input.put("modifiedBy", $ctx.identity.username))
 
-#if (!$util.matches("\b(OU|Account)\b", $ctx.args.input.type))
+#if (!$util.matches("\b(OU|Account|Group)\b", $ctx.args.input.type))
     	$util.error('Invalid input')
+#end
+
+## Validate Group type ID - alphanumeric, hyphens, underscores, hash, max 2048 chars
+#if ($ctx.args.input.type == "Group" && $ctx.args.input.id)
+    #if (!$util.matches("^[a-zA-Z0-9\\-_#]+$", $ctx.args.input.id) || $ctx.args.input.id.length() > 2048)
+        $util.error('Invalid Group ID format. Only alphanumeric characters, hyphens, underscores and # are allowed. Maximum 2048 characters.')
+    #end
 #end
 
 #foreach($arg in $ctx.args.input.approvers)

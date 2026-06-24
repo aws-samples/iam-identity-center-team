@@ -1,11 +1,10 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
-  "Description": "{\"createdOn\":\"Linux\",\"createdBy\":\"Amplify\",\"createdWith\":\"9.2.1\",\"stackType\":\"function-Lambda\",\"metadata\":{}}",
+  "Description": "Lambda Function for listing policies with resolved OU accounts",
   "Parameters": {
     "CloudWatchRule": {
       "Type": "String",
-      "Default": "NONE",
-      "Description": " Schedule Expression"
+      "Default": "NONE"
     },
     "deploymentBucketName": {
       "Type": "String"
@@ -16,9 +15,12 @@
     "s3Key": {
       "Type": "String"
     },
-    "functionteamPublishOUsName": {
+    "apiteamGraphQLAPIIdOutput": {
+      "Type": "String"
+    },
+    "cacheTTL": {
       "Type": "String",
-      "Default": "functionteamPublishOUsName"
+      "Default": "604800"
     }
   },
   "Conditions": {
@@ -54,12 +56,12 @@
         "FunctionName": {
           "Fn::If": [
             "ShouldNotCreateEnvResources",
-            "teamgetOUs",
+            "teamListPoliciesWithAccounts",
             {
               "Fn::Join": [
                 "",
                 [
-                  "teamgetOUs",
+                  "teamListPoliciesWithAccounts",
                   "-",
                   {
                     "Ref": "env"
@@ -77,8 +79,26 @@
             "REGION": {
               "Ref": "AWS::Region"
             },
-            "FUNCTION_TEAMPUBLISHOUS_NAME": {
-              "Ref": "functionteamPublishOUsName"
+            "POLICIES_TABLE_NAME": {
+              "Fn::ImportValue": {
+                "Fn::Sub": "${apiteamGraphQLAPIIdOutput}:GetAtt:PoliciesTable:Name"
+              }
+            },
+            "SETTINGS_TABLE_NAME": {
+              "Fn::ImportValue": {
+                "Fn::Sub": "${apiteamGraphQLAPIIdOutput}:GetAtt:SettingsTable:Name"
+              }
+            },
+            "CACHE_TABLE_NAME": {
+              "Fn::ImportValue": {
+                "Fn::Sub": "${apiteamGraphQLAPIIdOutput}:GetAtt:OUAccountsCacheTable:Name"
+              }
+            },
+            "CACHE_TTL": {
+              "Ref": "cacheTTL"
+            },
+            "ACCOUNT_ID": {
+              "Ref": "AWS::AccountId"
             }
           }
         },
@@ -88,9 +108,9 @@
             "Arn"
           ]
         },
-        "Runtime": "python3.10",
-        "Layers": [],
-        "Timeout": 120
+        "Runtime": "python3.12",
+        "Timeout": 180,
+        "MemorySize": 256
       }
     },
     "LambdaExecutionRole": {
@@ -99,12 +119,12 @@
         "RoleName": {
           "Fn::If": [
             "ShouldNotCreateEnvResources",
-            "teamLambdaRole1a0781fb",
+            "teamLambdaRoleListPoliciesWithAccounts",
             {
               "Fn::Join": [
                 "",
                 [
-                  "teamLambdaRole1a0781fb",
+                  "teamLambdaRoleListPoliciesWithAccounts",
                   "-",
                   {
                     "Ref": "env"
@@ -175,40 +195,10 @@
         }
       }
     },
-    "CustomLambdaExecutionPolicy": {
+    "PoliciesTablePolicy": {
       "Type": "AWS::IAM::Policy",
       "Properties": {
-        "PolicyName": "custom-lambda-execution-policy",
-        "PolicyDocument": {
-          "Version": "2012-10-17",
-          "Statement": [
-            {
-              "Action": [
-                "organizations:Describe*",
-                "organizations:List*"
-              ],
-              "Resource": [
-                "*"
-              ],
-              "Effect": "Allow"
-            }
-          ]
-        },
-        "Roles": [
-          {
-            "Ref": "LambdaExecutionRole"
-          }
-        ]
-      },
-      "DependsOn": "LambdaExecutionRole"
-    },
-    "AmplifyResourcesPolicy": {
-      "DependsOn": [
-        "LambdaExecutionRole"
-      ],
-      "Type": "AWS::IAM::Policy",
-      "Properties": {
-        "PolicyName": "amplify-lambda-execution-policy",
+        "PolicyName": "policies-table-scan-policy",
         "Roles": [
           {
             "Ref": "LambdaExecutionRole"
@@ -220,31 +210,142 @@
             {
               "Effect": "Allow",
               "Action": [
-                "lambda:Get*",
-                "lambda:List*",
-                "lambda:Invoke*"
+                "dynamodb:Scan"
               ],
-              "Resource": [
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:lambda:",
-                      {
-                        "Ref": "AWS::Region"
-                      },
-                      ":",
-                      {
-                        "Ref": "AWS::AccountId"
-                      },
-                      ":function:",
-                      {
-                        "Ref": "functionteamPublishOUsName"
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:dynamodb:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":table/",
+                    {
+                      "Fn::ImportValue": {
+                        "Fn::Sub": "${apiteamGraphQLAPIIdOutput}:GetAtt:PoliciesTable:Name"
                       }
-                    ]
+                    }
                   ]
-                }
-              ]
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    "SettingsTablePolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "settings-table-read-policy",
+        "Roles": [
+          {
+            "Ref": "LambdaExecutionRole"
+          }
+        ],
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "dynamodb:GetItem"
+              ],
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:dynamodb:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":table/",
+                    {
+                      "Fn::ImportValue": {
+                        "Fn::Sub": "${apiteamGraphQLAPIIdOutput}:GetAtt:SettingsTable:Name"
+                      }
+                    }
+                  ]
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    "CacheTablePolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "cache-table-crud-policy",
+        "Roles": [
+          {
+            "Ref": "LambdaExecutionRole"
+          }
+        ],
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "dynamodb:GetItem",
+                "dynamodb:PutItem",
+                "dynamodb:UpdateItem",
+                "dynamodb:DeleteItem"
+              ],
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:dynamodb:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":table/",
+                    {
+                      "Fn::ImportValue": {
+                        "Fn::Sub": "${apiteamGraphQLAPIIdOutput}:GetAtt:OUAccountsCacheTable:Name"
+                      }
+                    }
+                  ]
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    "OrganizationsPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "organizations-read-policy",
+        "Roles": [
+          {
+            "Ref": "LambdaExecutionRole"
+          }
+        ],
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "organizations:DescribeOrganization",
+                "organizations:ListAccountsForParent"
+              ],
+              "Resource": "*"
             }
           ]
         }

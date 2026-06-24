@@ -112,6 +112,7 @@ type requests
     ]
   )
   session_duration: String
+  policyId: String
 }
 type sessions
   @model(subscriptions: { level: off })
@@ -178,7 +179,17 @@ type Settings
   slackToken: String
   teamAdminGroup: String
   teamAuditorGroup: String
+  allowLegacyEligibility: Boolean
   useOUCache: Boolean
+  supportContacts: [SupportContact]
+}
+type SupportContact @aws_iam @aws_cognito_user_pools {
+  key: String
+  value: String
+}
+input SupportContactInput {
+  key: String
+  value: String
 }
 type data @aws_iam @aws_cognito_user_pools {
   name: String
@@ -203,9 +214,29 @@ type Eligibility
   type: String
   accounts: [data]
   ous: [data]
+  policyIds: [String]
   permissions: [data]
   ticketNo: String
   approvalRequired: Boolean
+  duration: String
+  modifiedBy: String
+}
+type Policies
+  @model
+  @auth(
+    rules: [
+      { allow: groups, groups: ["Admin"] }
+      { allow: groups, groupClaim: "scope", groups: ["api/admin"] }
+      { allow: private, operations: [read] }
+      { allow: private, provider: iam, operations: [read, update] }
+    ]
+  ) {
+  id: ID!
+  accounts: [data]
+  ous: [data]
+  permissions: [data]
+  approvalRequired: Boolean
+  approverGroupIds: [data]
   duration: String
   modifiedBy: String
 }
@@ -239,6 +270,17 @@ type InvalidateCacheResult @aws_cognito_user_pools {
   failed: [String]
   message: String
 }
+type PolicyWithResolvedAccounts @aws_iam @aws_cognito_user_pools {
+  id: ID!
+  accounts: [data]
+  resolvedAccounts: [data]
+  ous: [data]
+  permissions: [data]
+  approvalRequired: Boolean
+  approverGroupIds: [data]
+  duration: String
+  modifiedBy: String
+}
 type RequestValidationResult @aws_iam @aws_cognito_user_pools {
   valid: Boolean!
   reason: String
@@ -248,6 +290,8 @@ type Entitlement @aws_iam @aws_cognito_user_pools {
   permissions: [data]
   approvalRequired: Boolean
   duration: String
+  policyIds: [String]
+  approverGroupIds: [data]
 }
 
 input EntitlementInput {
@@ -255,6 +299,8 @@ input EntitlementInput {
   permissions: [DataInput]
   approvalRequired: Boolean
   duration: String
+  policyIds: [String]
+  approverGroupIds: [DataInput]
 }
 
 type IdCGroups {
@@ -337,7 +383,7 @@ type Mutation {
   invalidateOUCache(ouIds: [String]!): InvalidateCacheResult
   @function(name: "teaminvalidateOUCache-${env}")
   @auth(rules: [{ allow: groups, groups: ["Admin"] }])
-  validateRequest(accountId: String!, roleId: String!, userId: String!, groupIds: [String]!): RequestValidationResult
+  validateRequest(accountId: String!, roleId: String!, userId: String!, groupIds: [String]!, policyId: String): RequestValidationResult
   @function(name: "teamvalidateRequest-${env}")
   @auth(rules: [{ allow: private }])
 }
@@ -407,7 +453,7 @@ type Query {
   updateRequestData: requests
     @function(name: "teamupdateRequest-${env}")
     @auth(rules: [{ allow: private }])
-  validateRequest(accountId: String!, roleId: String!, userId: String!, groupIds: [String]!): RequestValidationResult
+  validateRequest(accountId: String!, roleId: String!, userId: String!, groupIds: [String]!, policyId: String): RequestValidationResult
   @function(name: "teamvalidateRequest-${env}")
   @auth(rules: [{ allow: private }])
   getOUAccounts(
@@ -415,5 +461,8 @@ type Query {
   ): OUAccountsBatch
     @function(name: "teamgetOUAccounts-${env}")
     @auth(rules: [{ allow: private, provider: iam} { allow: private }])
+  listPoliciesWithAccounts: [PolicyWithResolvedAccounts]
+    @function(name: "teamListPoliciesWithAccounts-${env}")
+    @auth(rules: [{ allow: private }])
 }
 

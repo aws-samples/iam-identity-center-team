@@ -11,6 +11,9 @@ import Header from "@awsui/components-react/header";
 import SpaceBetween from "@awsui/components-react/space-between";
 import Button from "@awsui/components-react/button";
 import Textarea from "@awsui/components-react/textarea";
+import RadioGroup from "@awsui/components-react/radio-group";
+import StatusIndicator from "@awsui/components-react/status-indicator";
+import Box from "@awsui/components-react/box";
 import moment from "moment";
 import { DatePicker } from "antd";
 import "../../index.css";
@@ -25,10 +28,40 @@ import {
   fetchPolicy,
   validateRequest,
 } from "../Shared/RequestService";
+import {
+  EligibilityMode,
+  REQUEST_FLOW_OPTIONS
+} from "../Shared/eligibilityModes";
 import { useHistory } from "react-router-dom";
 import { API, graphqlOperation } from "aws-amplify";
 import { onPublishPolicy } from "../../graphql/subscriptions";
 import params from "../../parameters.json";
+
+function CopyableContact({ value }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(value);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 800);
+  };
+
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: "8px", paddingLeft: "16px" }}>
+      <span>{value}</span>
+      {copied ? (
+        <StatusIndicator type="success">Copied</StatusIndicator>
+      ) : (
+        <Button
+          variant="icon"
+          iconName="copy"
+          onClick={handleCopy}
+          ariaLabel={`Copy ${value}`}
+        />
+      )}
+    </div>
+  );
+}
 
 function Request(props) {
   const [email, setEmail] = useState("");
@@ -58,14 +91,25 @@ function Request(props) {
 
   const [permissions, setPermissions] = useState([]);
   const [permissionStatus, setPermissionStatus] = useState("loading");
+  const [eligibilityType, setEligibilityType] = useState(null);
+  const [showEligibilityChoice, setShowEligibilityChoice] = useState(false);
+  const [policies, setPolicies] = useState([]);
+  const [selectedPolicy, setSelectedPolicy] = useState(null);
+  const [policyMap, setPolicyMap] = useState({});
+  const [policiesStatus, setPoliciesStatus] = useState("loading");
+  const [policiesError, setPoliciesError] = useState("");
+  const [legacyItems, setLegacyItems] = useState([]);
 
   const [submitLoading, setSubmitLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
 
   const [mgmtPs, setMgmtPs] = useState([]);
 
   const [maxDuration, setMaxDuration] = useState(9);
   const [ticketRequired, setTicketRequired] = useState(true);
   const [approvalRequired, setApprovalRequired] = useState(true);
+  const [noEligibility, setNoEligibility] = useState(false);
+  const [supportContacts, setSupportContacts] = useState([]);
 
   const history = useHistory();
 
@@ -103,10 +147,51 @@ function Request(props) {
     });
   }
 
+  // Handle policy selection for policy-based flow
+  function handlePolicySelect(selectedOption) {
+    setSelectedPolicy(selectedOption);
+    setPoliciesError("");
+    setAccount([]);
+    setRole([]);
+    setDuration("");
+
+    if (selectedOption) {
+      const policyData = policyMap[selectedOption.value];
+      if (policyData) {
+        setAccounts(policyData.accounts || []);
+        setPermissions(policyData.permissions || []);
+        setMaxDuration(parseInt(policyData.duration));
+      }
+    } else {
+      setAccounts([]);
+      setPermissions([]);
+    }
+  }
+
+  // Handle eligibility type change
+  function handleEligibilityTypeChange(value) {
+    setEligibilityType(value);
+    // Reset selections
+    setAccount([]);
+    setRole([]);
+    setPermissions([]);
+    setSelectedPolicy(null);
+
+    if (value === EligibilityMode.LEGACY) {
+      setAccounts(concatenateAccounts(legacyItems));
+    } else {
+      setAccounts([]);
+    }
+  }
+
   async function getPermissions(accountId) {
     let permissionData = [];
     setRole([]);
-    const permissions = item.map((data) => {
+    // Filter items based on eligibility type - legacy items have no policyIds
+    const relevantItems = eligibilityType === EligibilityMode.LEGACY
+      ? item.filter(data => !data.policyIds || data.policyIds.length === 0)
+      : item;
+    relevantItems.map((data) => {
       data.accounts.map((account) => {
         if (account.id == accountId) {
           permissionData = permissionData.concat(data.permissions);
@@ -117,7 +202,7 @@ function Request(props) {
     return permissionData;
   }
 
-  const getPolicy = () => {
+  const fetchUserPolicy = () => {
     let args = {
       userId: props.userId,
       groupIds: props.groupIds,
@@ -129,21 +214,87 @@ function Request(props) {
     const subscription = API.graphql(graphqlOperation(onPublishPolicy)).subscribe({
       next: (result) => {
         const policy = result.value.data.onPublishPolicy.policy;
+        if (!policy || policy.length === 0) {
+          setNoEligibility(true);
+          setInitialLoading(false);
+          subscription.unsubscribe();
+          return;
+        }
         if (policy?.length > 0) {
+          setNoEligibility(false);
           setItem(policy);
-          setAccounts(concatenateAccounts(policy));
+
+          // Separate legacy items (have accounts/permissions directly, no policyIds)
+          const legacy = policy.filter(item =>
+            (item.accounts?.length > 0 || item.permissions?.length > 0) &&
+            (!item.policyIds || item.policyIds.length === 0)
+          );
+          setLegacyItems(legacy);
+
+          // Get policy-based items (have policyIds)
+          const policyBasedItems = policy.filter(item => item.policyIds?.length > 0);
+
+          const hasLegacy = legacy.length > 0;
+          const hasPolicyBased = policyBasedItems.length > 0;
+
+          if (hasLegacy && hasPolicyBased) {
+            setShowEligibilityChoice(true);
+            setEligibilityType(EligibilityMode.POLICY_BASED);
+          } else if (hasLegacy) {
+            setEligibilityType(EligibilityMode.LEGACY);
+            setShowEligibilityChoice(false);
+            setAccounts(concatenateAccounts(legacy));
+          } else if (hasPolicyBased) {
+            setEligibilityType(EligibilityMode.POLICY_BASED);
+            setShowEligibilityChoice(false);
+          } else {
+            setEligibilityType(null);
+            setShowEligibilityChoice(false);
+          }
+
+          // Build policy map directly from subscription data (accounts already resolved by backend)
+          if (hasPolicyBased) {
+            const map = {};
+            const policyList = [];
+
+            policyBasedItems.forEach(item => {
+              const policyId = item.policyIds[0]; // Each item has one policyId
+              if (policyId && !map[policyId]) {
+                map[policyId] = {
+                  accounts: item.accounts || [],
+                  permissions: item.permissions || [],
+                  duration: item.duration,
+                  approverGroupIds: item.approverGroupIds || [],
+                  approvalRequired: item.approvalRequired
+                };
+                policyList.push({
+                  id: policyId,
+                  accounts: item.accounts || [],
+                  permissions: item.permissions || []
+                });
+              }
+            });
+
+            setPolicyMap(map);
+            setPolicies(policyList);
+            setPoliciesStatus("finished");
+          }
         }
         setAccountStatus("finished");
         setPermissionStatus("finished");
+        setInitialLoading(false);
         subscription.unsubscribe();
       },
       error: (error) => {
         console.warn(error);
+        setAccountStatus("error");
+        setPermissionStatus("error");
+        setPoliciesStatus("error");
+        setInitialLoading(false);
         subscription.unsubscribe();
       }
     });
-    
-    // Return the subscription to allow external cleanup if needed
+
     return subscription;
   }
 
@@ -153,6 +304,7 @@ function Request(props) {
         setMaxDuration(parseInt(data.duration));
         setTicketRequired(data.ticketNo);
         setApprovalRequired(data.approval);
+        setSupportContacts(data.supportContacts ?? []);
       }
     });
   }
@@ -167,7 +319,7 @@ function Request(props) {
     setEmail(props.user);
     getSettings();
     // getEligibility();
-    getPolicy();
+    fetchUserPolicy();
     props.addNotification([]);
     getMgmtPs();
     setTime(moment().format());
@@ -181,21 +333,23 @@ function Request(props) {
       accountName: account.label,
       role: role.label,
       roleId: role.value,
+      ...(selectedPolicy && { policyId: selectedPolicy.value }),
       duration: duration,
       startTime: time,
       justification: justification,
       ticketNo: ticketNo,
     };
-    
+
     // Validate request before creating
     try {
       const validation = await validateRequest(
-        account.value, 
-        role.value, 
-        props.userId, 
-        props.groupIds
+        account.value,
+        role.value,
+        props.userId,
+        props.groupIds,
+        selectedPolicy?.value || null
       );
-      
+
       if (!validation.valid) {
         props.addNotification([
           {
@@ -220,7 +374,7 @@ function Request(props) {
       setSubmitLoading(false);
       return;
     }
-    
+
     requestTeam(data).then(() => {
       setSubmitLoading(false);
       props.addNotification([
@@ -243,10 +397,13 @@ function Request(props) {
   }
 
   function sendError() {
+    const errorMessage = eligibilityType === EligibilityMode.POLICY_BASED
+      ? `No approver configured for policy - ${selectedPolicy?.label || 'Unknown'}`
+      : `No approver for Account - ${account.label}`;
     props.addNotification([
       {
         type: "error",
-        content: `No approver for Account - ${account.label}`,
+        content: errorMessage,
         dismissible: true,
         onDismiss: () => props.addNotification([]),
       },
@@ -256,6 +413,11 @@ function Request(props) {
 
   async function validate() {
     let error = false;
+    // Validate policy selection for policy-based flow
+    if (eligibilityType === EligibilityMode.POLICY_BASED && !selectedPolicy) {
+      setPoliciesError("Select a policy");
+      error = true;
+    }
     if (
       !duration ||
       isNaN(duration) ||
@@ -339,41 +501,129 @@ function Request(props) {
     return false;
   }
   async function checkApprovalAndApproverGroups(account, role) {
-    if (await checkApprovalNotRequired(account, role)) {
+    let approverGroupIds = null;
+    let approvalNotRequired = false;
+
+    // Policy-based: load groupIds from policy's approverGroupIds
+    if (eligibilityType === EligibilityMode.POLICY_BASED && selectedPolicy) {
+      const policyData = policyMap[selectedPolicy.value];
+      if (policyData) {
+        approvalNotRequired = !policyData.approvalRequired;
+        if (policyData.approverGroupIds && policyData.approverGroupIds.length > 0) {
+          approverGroupIds = [];
+          for (const approverRecord of policyData.approverGroupIds) {
+            const approverData = await fetchApprovers(approverRecord.id, null);
+            if (approverData && approverData.groupIds) {
+              approverGroupIds.push(...approverData.groupIds);
+            }
+          }
+        }
+      }
+    } else {
+      // Legacy: load from account/OU
+      approvalNotRequired = await checkApprovalNotRequired(account, role);
+      const account_approvers = await fetchApprovers(account, "Account");
+      if (account_approvers) {
+        approverGroupIds = account_approvers.groupIds;
+      } else {
+        const ou = await fetchOU(account);
+        const ou_approvers = await fetchApprovers(ou.Id, "OU");
+        if (ou_approvers) {
+          approverGroupIds = ou_approvers.groupIds;
+        }
+      }
+    }
+
+    // Common logic for both flows
+    if (approvalNotRequired) {
       return true;
     }
-    const account_approvers = await fetchApprovers(account, "Account");
-    if (account_approvers) {
-      const data = await getGroupMemberships(account_approvers.groupIds);
-      const requesterIsApprover = checkGroupMembership(
-        props.groupIds,
-        account_approvers.groupIds
-      );
-      // If the requester is also an approver, then we need at least 2 approvers to exist (i.e. at
-      // least one person who didn't make the request). Otherwise we only need a single approver to exist.
-      const approverGroupMembersRequired = requesterIsApprover ? 2 : 1;
-
-      if (data.members.length >= approverGroupMembersRequired) {
-        return true;
-      }
+    if (!approverGroupIds || approverGroupIds.length === 0) {
+      return false;
     }
-    const ou = await fetchOU(account);
-    const ou_approvers = await fetchApprovers(ou.Id, "OU");
-    if (ou_approvers) {
-      const data = await getGroupMemberships(ou_approvers.groupIds);
-      const requesterIsApprover = checkGroupMembership(
-        props.groupIds,
-        ou_approvers.groupIds
-      );
-      // If the requester is also an approver, then we need at least 2 approvers to exist (i.e. at
-      // least one person who didn't make the request). Otherwise we only need a single approver to exist.
-      const approverGroupMembersRequired = requesterIsApprover ? 2 : 1;
+    const data = await getGroupMemberships(approverGroupIds);
+    const requesterIsApprover = checkGroupMembership(props.groupIds, approverGroupIds);
+    // If requester is also an approver, need at least 2 members (someone else to approve)
+    const approverGroupMembersRequired = requesterIsApprover ? 2 : 1;
+    return data.members.length >= approverGroupMembersRequired;
+  }
 
-      if (data.members.length >= approverGroupMembersRequired) {
-        return true;
-      }
-    }
-    return false;
+  if (initialLoading) {
+    return (
+      <div className="container">
+        <Container
+          header={
+            <Header
+              variant="h2"
+              description="Request temporary elevated access"
+            >
+              Elevated access request
+            </Header>
+          }
+        >
+          <Box textAlign="center" padding="xxl">
+            <StatusIndicator type="loading">
+              Loading your eligibility policies...
+            </StatusIndicator>
+          </Box>
+        </Container>
+      </div>
+    );
+  }
+
+  if (noEligibility) {
+    return (
+      <div className="container">
+        <Container
+          header={
+            <Header
+              variant="h2"
+              description="Request temporary elevated access"
+            >
+              Elevated access request
+            </Header>
+          }
+        >
+          <Box textAlign="center" padding="xl">
+            <SpaceBetween size="l">
+              <StatusIndicator type="warning">
+                No eligibility assigned
+              </StatusIndicator>
+              <Box variant="p">
+                You are not a member of any eligibility group. You cannot request elevated access to any accounts or permission sets.
+              </Box>
+              <Box>
+                <Box variant="h4" textAlign="center">Contact support to request eligibility:</Box>
+                {supportContacts.length > 0 ? (
+                  <div style={{ display: "flex", justifyContent: "center", marginTop: "16px" }}>
+                    <div style={{ textAlign: "left" }}>
+                      <SpaceBetween size="s">
+                        {Object.entries(
+                          supportContacts.reduce((acc, contact) => {
+                            if (!acc[contact.key]) acc[contact.key] = [];
+                            acc[contact.key].push(contact.value);
+                            return acc;
+                          }, {})
+                        ).map(([key, values]) => (
+                          <div key={key}>
+                            <Box variant="strong">{key}:</Box>
+                            {values.map((value, index) => (
+                              <CopyableContact key={index} value={value} />
+                            ))}
+                          </div>
+                        ))}
+                      </SpaceBetween>
+                    </div>
+                  </div>
+                ) : (
+                  <Box variant="p" textAlign="center">Contact your TEAM administrators.</Box>
+                )}
+              </Box>
+            </SpaceBetween>
+          </Box>
+        </Container>
+      </div>
+    );
   }
 
   return (
@@ -414,57 +664,100 @@ function Request(props) {
             >
               <Input value={email} type="email" />
             </FormField>
-            <FormField
-              label="Account"
-              stretch
-              description="Target account for elevated access"
-              errorText={accountError}
-            >
-              <Select
-                statusType={accountStatus}
-                placeholder="Select an account"
-                loadingText="Loading accounts"
-                filteringType="auto"
-                empty="No eligible accounts found"
-                options={accounts.map((account) => ({
-                  label: account.name,
-                  value: account.id,
-                  description: account.id,
-                }))}
-                selectedOption={account}
-                onChange={(event) => {
-                  setAccountError();
-                  setAccount(event.detail.selectedOption);
-                  getPermissions(event.detail.selectedOption.value);
-                  getDuration(event.detail.selectedOption.value);
-                }}
-                selectedAriaLabel="selected"
-              />
-            </FormField>
-            <FormField
-              label="Role"
-              stretch
-              description="Requested permission set and associated role"
-              errorText={roleError}
-            >
-              <Select
-                statusType={permissionStatus}
-                placeholder="Select a role"
-                loadingText="Loading permissions"
-                filteringType="auto"
-                empty="No eligible permissions found"
-                options={permissions.map((permission) => ({
-                  label: permission.name,
-                  value: permission.id,
-                }))}
-                selectedOption={role}
-                onChange={(event) => {
-                  setRoleError();
-                  setRole(event.detail.selectedOption);
-                }}
-                selectedAriaLabel="selected"
-              />
-            </FormField>
+            {showEligibilityChoice && (
+              <FormField
+                label="Eligibility type"
+                stretch
+                description="Do you want to use the legacy or policy-based flow to request elevated access?"
+              >
+                <RadioGroup
+                  value={eligibilityType}
+                  onChange={({ detail }) => handleEligibilityTypeChange(detail.value)}
+                  items={REQUEST_FLOW_OPTIONS}
+                />
+              </FormField>
+            )}
+            {eligibilityType === EligibilityMode.POLICY_BASED && (
+              <FormField
+                label="Policy"
+                stretch
+                description="Select a policy that defines your access"
+                errorText={policiesError}
+              >
+                <Select
+                  statusType={policiesStatus}
+                  placeholder="Select a policy"
+                  loadingText="Loading policies"
+                  filteringType="auto"
+                  empty="No eligible policies found"
+                  options={policies.map((policy) => ({
+                    label: policy.id,
+                    value: policy.id,
+                    description: `Accounts: ${policy.accounts?.length || 0}, Permissions: ${policy.permissions?.length || 0}`,
+                  }))}
+                  selectedOption={selectedPolicy}
+                  onChange={({ detail }) => handlePolicySelect(detail.selectedOption)}
+                  selectedAriaLabel="selected"
+                />
+              </FormField>
+            )}
+            {(eligibilityType === EligibilityMode.LEGACY || (eligibilityType === EligibilityMode.POLICY_BASED && selectedPolicy)) && (
+              <FormField
+                label="Account"
+                stretch
+                description="Target account for elevated access"
+                errorText={accountError}
+              >
+                <Select
+                  statusType={accountStatus}
+                  placeholder="Select an account"
+                  loadingText="Loading accounts"
+                  filteringType="auto"
+                  empty="No eligible accounts found"
+                  options={accounts.map((account) => ({
+                    label: account.name,
+                    value: account.id,
+                    description: account.id,
+                  }))}
+                  selectedOption={account}
+                  onChange={(event) => {
+                    setAccountError();
+                    setAccount(event.detail.selectedOption);
+                    if (eligibilityType === EligibilityMode.LEGACY) {
+                      getPermissions(event.detail.selectedOption.value);
+                      getDuration(event.detail.selectedOption.value);
+                    }
+                  }}
+                  selectedAriaLabel="selected"
+                />
+              </FormField>
+            )}
+            {(eligibilityType === EligibilityMode.LEGACY || (eligibilityType === EligibilityMode.POLICY_BASED && selectedPolicy)) && (
+              <FormField
+                label="Role"
+                stretch
+                description="Requested permission set and associated role"
+                errorText={roleError}
+              >
+                <Select
+                  statusType={permissionStatus}
+                  placeholder="Select a role"
+                  loadingText="Loading permissions"
+                  filteringType="auto"
+                  empty="No eligible permissions found"
+                  options={permissions.map((permission) => ({
+                    label: permission.name,
+                    value: permission.id,
+                  }))}
+                  selectedOption={role}
+                  onChange={(event) => {
+                    setRoleError();
+                    setRole(event.detail.selectedOption);
+                  }}
+                  selectedAriaLabel="selected"
+                />
+              </FormField>
+            )}
             <FormField
               label="Start time"
               stretch

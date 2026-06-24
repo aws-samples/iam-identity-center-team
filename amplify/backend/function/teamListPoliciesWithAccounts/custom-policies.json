@@ -1,0 +1,11 @@
+[
+  {
+    "Action": [
+      "organizations:DescribeOrganization",
+      "organizations:ListAccountsForParent"
+    ],
+    "Resource": [
+      "*"
+    ]
+  }
+]

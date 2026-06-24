@@ -164,6 +164,11 @@
                 "Fn::Sub": "${apiteamGraphQLAPIIdOutput}:GetAtt:requestsTable:Name"
               }
             },
+            "POLICIES_TABLE_NAME": {
+              "Fn::ImportValue": {
+                "Fn::Sub": "${apiteamGraphQLAPIIdOutput}:GetAtt:PoliciesTable:Name"
+              }
+            },
             "API_TEAM_GRAPHQLAPIIDOUTPUT": {
               "Ref": "apiteamGraphQLAPIIdOutput"
             },
@@ -278,8 +283,23 @@
                 },
                 {
                   "Fn::Sub": "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/Settings-*"
+                },
+                {
+                  "Fn::Sub": "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/Approvers-*"
+                },
+                {
+                  "Fn::Sub": "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/Policies-*"
                 }
               ]
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "dynamodb:BatchGetItem"
+              ],
+              "Resource": {
+                "Fn::Sub": "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/Approvers-*"
+              }
             },
             {
               "Effect": "Allow",
@@ -301,15 +321,6 @@
                   "Ref": "customstepfunctionsApprovalSMOutput"
                 }
               ]
-            },
-            {
-              "Effect": "Allow",
-              "Action": [
-                "dynamodb:GetItem"
-              ],
-              "Resource": {
-                "Fn::Sub": "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/Approvers-*"
-              }
             }
           ]
         }
