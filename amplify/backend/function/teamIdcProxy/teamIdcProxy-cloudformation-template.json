@@ -47,9 +47,7 @@
         "aws:asset:property": "Code"
       },
       "Properties": {
-        "Architectures": [
-          "arm64"
-        ],
+        "Architectures": ["arm64"],
         "Code": {
           "S3Bucket": {
             "Ref": "deploymentBucketName"
@@ -62,12 +60,12 @@
         "FunctionName": {
           "Fn::If": [
             "ShouldNotCreateEnvResources",
-            "teamgetMgmtAccountDetails",
+            "teamIdcProxy",
             {
               "Fn::Join": [
                 "",
                 [
-                  "teamgetMgmtAccountDetails",
+                  "teamIdcProxy",
                   "-",
                   {
                     "Ref": "env"
@@ -104,7 +102,7 @@
         },
         "Runtime": "python3.10",
         "Layers": [],
-        "Timeout": 25
+        "Timeout": 60
       }
     },
     "LambdaExecutionRole": {
@@ -113,12 +111,12 @@
         "RoleName": {
           "Fn::If": [
             "ShouldNotCreateEnvResources",
-            "teamidcappLambdaRole86d24cc3",
+            "teamIdcProxyLambdaRole",
             {
               "Fn::Join": [
                 "",
                 [
-                  "teamidcappLambdaRole86d24cc3",
+                  "teamIdcProxyLambdaRole",
                   "-",
                   {
                     "Ref": "env"
@@ -134,22 +132,16 @@
             {
               "Effect": "Allow",
               "Principal": {
-                "Service": [
-                  "lambda.amazonaws.com"
-                ]
+                "Service": ["lambda.amazonaws.com"]
               },
-              "Action": [
-                "sts:AssumeRole"
-              ]
+              "Action": ["sts:AssumeRole"]
             }
           ]
         }
       }
     },
     "lambdaexecutionpolicy": {
-      "DependsOn": [
-        "LambdaExecutionRole"
-      ],
+      "DependsOn": ["LambdaExecutionRole"],
       "Type": "AWS::IAM::Policy",
       "Properties": {
         "PolicyName": "lambda-execution-policy",
@@ -170,7 +162,7 @@
               ],
               "Resource": {
                 "Fn::Sub": [
-                  "arn:aws:logs:${region}:${account}:log-group:/aws/lambda/${lambda}:log-stream:*",
+                  "arn:${AWS::Partition}:logs:${region}:${account}:log-group:/aws/lambda/${lambda}:log-stream:*",
                   {
                     "region": {
                       "Ref": "AWS::Region"
@@ -198,24 +190,10 @@
           "Statement": [
             {
               "Action": [
-                "sso:DescribePermissionSet",
-                "sso:ListPermissionSets",
-                "sso:ListInstances",
-                "sso:ListTagsForResource",
-                "sso:ListPermissionSetsProvisionedToAccount"
+                "sso:CreateAccountAssignment",
+                "sso:DeleteAccountAssignment"
               ],
-              "Resource": [
-                "*"
-              ],
-              "Effect": "Allow"
-            },
-            {
-              "Action": [
-                "organizations:DescribeOrganization"
-              ],
-              "Resource": [
-                "*"
-              ],
+              "Resource": ["*"],
               "Effect": "Allow"
             }
           ]

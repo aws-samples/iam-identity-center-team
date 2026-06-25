@@ -3,13 +3,20 @@
 # http: // aws.amazon.com/agreement or other written agreement between Customer and either
 # Amazon Web Services, Inc. or Amazon Web Services EMEA SARL or both.
 import json
+import os
 import boto3
 from botocore.exceptions import ClientError
 
-client = boto3.client('sso-admin')
+idc_region = os.getenv('IDC_REGION', os.environ.get('REGION'))
+
+client = boto3.client('sso-admin', region_name=idc_region)
 
 def list_existing_sso_instances():
-    client = boto3.client('sso-admin')
+    instance_arn = os.getenv('INSTANCE_ARN')
+    identity_store_id = os.getenv('IDENTITY_STORE_ID')
+    if instance_arn and identity_store_id:
+        return {'InstanceArn': instance_arn, 'IdentityStoreId': identity_store_id}
+    client = boto3.client('sso-admin', region_name=idc_region)
     try:
         response = client.list_instances()
         return response['Instances'][0]

@@ -46,9 +46,7 @@ Update the parameters in the **parameters.sh** file as follows:
 
 **Required:**
 - **IDC_LOGIN_URL** - AWS IAM Identity Center Login URL
-- **REGION** - AWS region where the application will be deployed.
-    > This must be the same region AWS IAM Identity Center is deployed in
-    {: .important}
+- **REGION** - AWS region where the Amplify application will be deployed. This does not need to be the same region as IAM Identity Center — if IDC is in a different region, set the optional cross-region parameters below.
 - **TEAM_ACCOUNT** - ID of AWS Account into which TEAM application will be deployed
 - **ORG_MASTER_PROFILE** - Named profile for Organisation master account
 - **TEAM_ACCOUNT_PROFILE** - Named profile for TEAM Application deployment Account
@@ -63,6 +61,9 @@ Update the parameters in the **parameters.sh** file as follows:
 - **TAGS** - Tags that should be propagated to nested stacks and underlying resources
 - **UI_DOMAIN** - Custom domain for Amplify hosted frontend application (should only be included if you have setup a custom domain for the frontend application)
 - **CACHE_TTL** - Cache time-to-live in seconds for organizational unit (OU) account lists (default: 604800 = 1 week). Cached entries automatically expire after this duration. Consider increasing this value (e.g., 2592000 = 30 days) for organizations with infrequent account changes. Administrators can also manually invalidate specific OU cache entries or disable caching entirely via the Settings page.
+- **IDC_REGION** - AWS region where IAM Identity Center is deployed, if different from **REGION**. When set, all Lambda functions will target this region for IDC API calls.
+- **INSTANCE_ARN** - ARN of the IAM Identity Center instance (e.g., `arn:aws:sso:::instance/ssoins-xxxxxxxxxxxxxxxx`). Required when IDC is in a different region, since `ListInstances` returns empty results from a non-IDC region.
+- **IDENTITY_STORE_ID** - ID of the IAM Identity Center Identity Store (e.g., `d-xxxxxxxxxx`). Required when IDC is in a different region.
 
 For example:
 
@@ -79,6 +80,29 @@ CLOUDTRAIL_AUDIT_LOGS=arn:aws:cloudtrail:us-east-1:123456789101:eventdatastore/e
 UI_DOMAIN=portal.teamtest.online
 SECRET_NAME=TEAM-IDC-APP
 CACHE_TTL=604800
+
+# Uncomment the following lines only if IAM Identity Center is in a different region than TEAM
+# IDC_REGION=ap-southeast-3
+# INSTANCE_ARN=arn:aws:sso:::instance/ssoins-xxxxxxxxxxxxxxxx
+# IDENTITY_STORE_ID=d-xxxxxxxxxx
+```
+
+**Cross-region example** (IDC in a different region than Amplify):
+
+```sh
+IDC_LOGIN_URL=https://d-12345678.awsapps.com/start
+REGION=ap-southeast-1
+TEAM_ACCOUNT=123456789101
+ORG_MASTER_PROFILE=OrgMAsterProfileName
+TEAM_ACCOUNT_PROFILE=TeamAccountProfileName
+TEAM_ADMIN_GROUP="team_admin_group_name"
+TEAM_AUDITOR_GROUP="team_auditor_group_name"
+CLOUDTRAIL_AUDIT_LOGS=arn:aws:cloudtrail:ap-southeast-1:123456789101:eventdatastore/e646f20d-7959-4682-be84-6c5b8a37cf15
+SECRET_NAME=TEAM-IDC-APP
+CACHE_TTL=604800
+IDC_REGION=ap-southeast-3
+INSTANCE_ARN=arn:aws:sso:::instance/ssoins-xxxxxxxxxxxxxxxx
+IDENTITY_STORE_ID=d-xxxxxxxxxx
 ```
 
 ---

@@ -129,6 +129,13 @@
           ],
           "category": "function",
           "resourceName": "teamNotifications"
+        },
+        {
+          "attributes": [
+            "Arn"
+          ],
+          "category": "function",
+          "resourceName": "teamIdcProxy"
         }
       ],
       "providerPlugin": "awscloudformation",
@@ -265,6 +272,13 @@
           ],
           "category": "function",
           "resourceName": "teamNotifications"
+        },
+        {
+          "attributes": [
+            "Arn"
+          ],
+          "category": "function",
+          "resourceName": "teamIdcProxy"
         }
       ],
       "providerPlugin": "awscloudformation",
@@ -289,6 +303,11 @@
       "build": true,
       "providerPlugin": "awscloudformation",
       "service": "LambdaLayer"
+    },
+    "teamIdcProxy": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
     },
     "teamgetAccounts": {
       "build": true,
@@ -594,6 +613,22 @@
         {
           "category": "function",
           "resourceName": "teamapplicationboto3layer"
+        }
+      ]
+    },
+    "AMPLIFY_function_teamIdcProxy_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teamIdcProxy"
+        }
+      ]
+    },
+    "AMPLIFY_function_teamIdcProxy_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teamIdcProxy"
         }
       ]
     },

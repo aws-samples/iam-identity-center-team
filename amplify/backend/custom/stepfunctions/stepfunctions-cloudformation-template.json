@@ -12,6 +12,10 @@
       "Type": "String",
       "Description": "Input parameter describing Arn attribute for function/teamNotifications resource"
     },
+    "functionteamIdcProxyArn": {
+      "Type": "String",
+      "Description": "Input parameter describing Arn attribute for function/teamIdcProxy resource"
+    },
     "customsnsNotificationTopicArn": {
       "Type": "String",
       "Description": "Input parameter describing NotificationTopicArn attribute for custom/sns resource"
@@ -79,18 +83,22 @@
               ],
               "Next": "Update Request Status - in progress",
               "Parameters": {
-                "InstanceArn.$": "$.instanceARN",
-                "PermissionSetArn.$": "$.roleId",
-                "PrincipalId.$": "$.userId",
-                "PrincipalType": "USER",
-                "TargetId.$": "$.accountId",
-                "TargetType": "AWS_ACCOUNT"
+                "FunctionName.$": "$.idcProxyArn",
+                "Payload": {
+                  "action": "createAccountAssignment",
+                  "InstanceArn.$": "$.instanceARN",
+                  "PermissionSetArn.$": "$.roleId",
+                  "PrincipalId.$": "$.userId",
+                  "PrincipalType": "USER",
+                  "TargetId.$": "$.accountId",
+                  "TargetType": "AWS_ACCOUNT"
+                }
               },
-              "Resource": "arn:aws:states:::aws-sdk:ssoadmin:createAccountAssignment",
+              "Resource": "arn:aws:states:::lambda:invoke",
               "ResultPath": "$.grant",
               "Retry": [
                 {
-                  "ErrorEquals": ["SsoAdmin.ThrottlingException", "ThrottlingException", "ServiceUnavailable", "InternalServerError"],
+                  "ErrorEquals": ["Lambda.ServiceException", "Lambda.AWSLambdaException", "Lambda.SdkClientException", "Lambda.TooManyRequestsException"],
                   "IntervalSeconds": 3,
                   "BackoffRate": 2,
                   "MaxAttempts": 5
@@ -608,18 +616,22 @@
               ],
               "Next": "Notify Requester Session Ended",
               "Parameters": {
-                "InstanceArn.$": "$.instanceARN",
-                "PermissionSetArn.$": "$.roleId",
-                "PrincipalId.$": "$.userId",
-                "PrincipalType": "USER",
-                "TargetId.$": "$.accountId",
-                "TargetType": "AWS_ACCOUNT"
+                "FunctionName.$": "$.idcProxyArn",
+                "Payload": {
+                  "action": "deleteAccountAssignment",
+                  "InstanceArn.$": "$.instanceARN",
+                  "PermissionSetArn.$": "$.roleId",
+                  "PrincipalId.$": "$.userId",
+                  "PrincipalType": "USER",
+                  "TargetId.$": "$.accountId",
+                  "TargetType": "AWS_ACCOUNT"
+                }
               },
-              "Resource": "arn:aws:states:::aws-sdk:ssoadmin:deleteAccountAssignment",
+              "Resource": "arn:aws:states:::lambda:invoke",
               "ResultPath": "$.revoke",
               "Retry": [
                 {
-                  "ErrorEquals": ["SsoAdmin.ThrottlingException", "ThrottlingException", "ServiceUnavailable", "InternalServerError"],
+                  "ErrorEquals": ["Lambda.ServiceException", "Lambda.AWSLambdaException", "Lambda.SdkClientException", "Lambda.TooManyRequestsException"],
                   "IntervalSeconds": 3,
                   "BackoffRate": 2,
                   "MaxAttempts": 5
@@ -1073,8 +1085,10 @@
                 },
                 {
                   "Effect": "Allow",
-                  "Action": ["sso:CreateAccountAssignment"],
-                  "Resource": "*"
+                  "Action": ["lambda:InvokeFunction"],
+                  "Resource": {
+                    "Ref": "functionteamIdcProxyArn"
+                  }
                 },
                 {
                   "Effect": "Allow",
@@ -1173,8 +1187,10 @@
                 },
                 {
                   "Effect": "Allow",
-                  "Action": ["sso:DeleteAccountAssignment"],
-                  "Resource": "*"
+                  "Action": ["lambda:InvokeFunction"],
+                  "Resource": {
+                    "Ref": "functionteamIdcProxyArn"
+                  }
                 },
                 {
                   "Effect": "Allow",

@@ -1,0 +1,9 @@
+[
+  {
+    "Action": [
+      "sso:CreateAccountAssignment",
+      "sso:DeleteAccountAssignment"
+    ],
+    "Resource": ["*"]
+  }
+]

@@ -1,0 +1,6 @@
+{
+  "pluginId": "amplify-python-function-runtime-provider",
+  "functionRuntime": "python",
+  "useLegacyBuild": false,
+  "defaultEditorFile": "src/index.py"
+}

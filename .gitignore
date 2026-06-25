@@ -23,6 +23,7 @@
 .env.test.local
 .env.production.local
 .scannerwork
+.kiro/
 
 npm-debug.log*
 yarn-debug.log*

@@ -6,7 +6,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const { AWS_APP_ID, AWS_BRANCH, SSO_LOGIN, TEAM_ADMIN_GROUP, TEAM_AUDITOR_GROUP, TAGS, CLOUDTRAIL_AUDIT_LOGS, TEAM_ACCOUNT, AMPLIFY_CUSTOM_DOMAIN } = process.env;
+const { AWS_APP_ID, AWS_BRANCH, SSO_LOGIN, TEAM_ADMIN_GROUP, TEAM_AUDITOR_GROUP, TAGS, CLOUDTRAIL_AUDIT_LOGS, TEAM_ACCOUNT, AMPLIFY_CUSTOM_DOMAIN, IDC_REGION, INSTANCE_ARN, IDENTITY_STORE_ID } = process.env;
 
 async function update_auth_parameters() {
   console.log(`updating amplify config for branch "${AWS_BRANCH}"...`);
@@ -91,6 +91,9 @@ async function update_router_parameters() {
   const routerParametersJson = require(routerParametersJsonPath);
 
   routerParametersJson.SSOLoginUrl = SSO_LOGIN;
+  if (IDC_REGION) routerParametersJson.idcRegion = IDC_REGION;
+  if (INSTANCE_ARN) routerParametersJson.instanceArn = INSTANCE_ARN;
+  if (IDENTITY_STORE_ID) routerParametersJson.identityStoreId = IDENTITY_STORE_ID;
 
   fs.writeFileSync(
     routerParametersJsonPath,
@@ -150,9 +153,55 @@ async function update_cloudtrail_parameters() {
   );
 }
 
+async function update_idc_parameters() {
+  console.log(`updating IDC parameters for affected Lambdas...`);
+
+  // Lambdas that only need idcRegion + identityStoreId (identitystore APIs only)
+  const identityStoreLambdas = [
+    "team06dbb7fcPreTokenGeneration",
+    "teamListGroups",
+    "teamgetUsers",
+    "teamgetIdCGroups",
+  ];
+
+  // Lambdas that also need instanceArn (sso-admin APIs)
+  const ssoAdminLambdas = [
+    "teamGetPermissionSets",
+    "teamgetMgmtAccountDetails",
+    "teamIdcProxy",
+  ];
+
+  const baseParams = {};
+  if (IDC_REGION) baseParams.idcRegion = IDC_REGION;
+  if (IDENTITY_STORE_ID) baseParams.identityStoreId = IDENTITY_STORE_ID;
+
+  const ssoParams = { ...baseParams };
+  if (INSTANCE_ARN) ssoParams.instanceArn = INSTANCE_ARN;
+
+  for (const lambda of [...identityStoreLambdas, ...ssoAdminLambdas]) {
+    const parametersJsonPath = path.resolve(
+      `./amplify/backend/function/${lambda}/parameters.json`
+    );
+
+    let parametersJson = {};
+    if (fs.existsSync(parametersJsonPath)) {
+      parametersJson = JSON.parse(fs.readFileSync(parametersJsonPath, "utf8"));
+    }
+
+    const params = ssoAdminLambdas.includes(lambda) ? ssoParams : baseParams;
+    Object.assign(parametersJson, params);
+
+    fs.writeFileSync(
+      parametersJsonPath,
+      JSON.stringify(parametersJson, null, 4)
+    );
+  }
+}
+
 update_auth_parameters();
 update_react_parameters();
 update_groups_parameters();
 update_router_parameters()
 update_tag_parameters();
 update_cloudtrail_parameters();
+update_idc_parameters();
