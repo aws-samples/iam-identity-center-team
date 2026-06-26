@@ -33,7 +33,7 @@ jobs:
         working-directory: docs
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
@@ -45,7 +45,7 @@ jobs:
       
       - name: Setup Pages
         id: pages
-        uses: actions/configure-pages@v2
+        uses: actions/configure-pages@v5
       
       - name: Build with Jekyll
         # Outputs to the './_site' directory by default
@@ -53,13 +53,9 @@ jobs:
         env:
           JEKYLL_ENV: production
       
-      # Explicitly include upload-artifact action before it's needed
-      - name: Setup upload-artifact
-        uses: actions/upload-artifact@v3
-      
       - name: Upload artifact
         # Automatically uploads an artifact from the './_site' directory by default
-        uses: actions/upload-pages-artifact@v1
+        uses: actions/upload-pages-artifact@v3
         with:
           path: "docs/_site/"
 
@@ -73,4 +69,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v1
+        uses: actions/deploy-pages@v4
