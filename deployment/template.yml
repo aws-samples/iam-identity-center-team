@@ -40,6 +40,10 @@ Parameters:
     Type: Number
     Description: Cache TTL in seconds for OU accounts cache
     Default: 604800
+  IdentityCenterKmsKeyArn:
+    Type: String
+    Description: Optional KMS key ARN for IAM Identity Center CMK encryption
+    Default: ''
 
 Conditions:
   IsEmptyCloudTrailAuditLogs: !Equals [!Ref CloudTrailAuditLogs, ""]
@@ -170,6 +174,8 @@ Resources:
           Value: !Ref customAmplifyDomain
         - Name: CACHE_TTL
           Value: !Ref cacheTTL
+        - Name: IDENTITY_CENTER_KMS_KEY_ARN
+          Value: !Ref IdentityCenterKmsKeyArn
         - Name: _CUSTOM_IMAGE
           Value: amplify:al2023
       Tags:
