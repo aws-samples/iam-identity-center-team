@@ -22,7 +22,8 @@ import {
   listGroups,
   getSettings,
   getMgmtPermissions,
-  getUserPolicy
+  getUserPolicy,
+  requestByStatus
 } from "../../graphql/queries";
 import {
   createRequests,
@@ -210,6 +211,33 @@ export async function sessions(filter) {
   } catch (err) {
     console.log("error fetching sessions");
     return {"error":err}
+  }
+}
+
+export async function getPendingRequests(userEmail) {
+  let nextToken = null;
+  let data = [];
+  try {
+    do {
+      const request = await API.graphql(
+        graphqlOperation(requestByStatus, {
+          status: "pending",
+          filter: {
+            and: [
+              { email: { ne: userEmail } },
+              { approvers: { contains: userEmail } },
+            ],
+          },
+          nextToken,
+        })
+      );
+      data = data.concat(request.data.requestByStatus.items);
+      nextToken = request.data.requestByStatus.nextToken;
+    } while (nextToken);
+    return data;
+  } catch (err) {
+    console.log("error fetching pending requests");
+    return { error: err };
   }
 }
 
