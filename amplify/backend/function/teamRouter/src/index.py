@@ -28,10 +28,16 @@ schedule = os.getenv("SCHEDULE_SM")
 approval = os.getenv("APPROVAL_SM")
 notification_topic_arn = os.getenv("NOTIFICATION_TOPIC_ARN")
 sso_login_url = os.getenv("SSO_LOGIN_URL")
+# URL used as the "Open TEAM" button target in Slack/SES/SNS notifications.
+# Falls back to SSO_LOGIN_URL so behavior is unchanged when the new variable
+# is not set. Set it (e.g. to the TEAM custom domain) when the SSO portal is
+# also surfaced elsewhere in the UI and you don't want notification buttons
+# to share the same target.
+notification_button_url = os.getenv("NOTIFICATION_BUTTON_URL") or sso_login_url
 fn_teamstatus_arn = os.getenv("FN_TEAMSTATUS_ARN")
 fn_teamnotifications_arn = os.getenv("FN_TEAMNOTIFICATIONS_ARN")
 team_config = {
-    "sso_login_url": sso_login_url,
+    "sso_login_url": notification_button_url,
     "requests_table": requests_table_name,
     "revoke_sm": revoke,
     "grant_sm": grant,
