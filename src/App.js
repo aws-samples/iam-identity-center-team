@@ -10,10 +10,25 @@ import Nav from "./components/Navigation/Nav";
 import home from "./media/Home.svg";
 import "./index.css";
 import { Button } from "@awsui/components-react";
+import parameters from "./parameters.json";
 
 const { Header, Content } = Layout;
 
 Amplify.configure(awsconfig);
+
+async function redirectToSSO() {
+  const loginUrl = String(parameters?.Login || "").trim();
+  if (loginUrl.startsWith("https://")) {
+    window.location.assign(loginUrl);
+    return;
+  }
+  try {
+    await Auth.federatedSignIn();
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error("Auth.federatedSignIn failed:", err);
+  }
+}
 
 function Home(props) {
   return (
@@ -47,6 +62,7 @@ function App() {
       // eslint-disable-next-line default-case
       switch (event) {
         case "signIn":
+          // eslint-disable-next-line no-console
           console.log("User signed in");
           break;
         // eslint-disable-next-line no-fallthrough
@@ -54,13 +70,21 @@ function App() {
           setData();
           break;
         case "signOut":
+          // eslint-disable-next-line no-console
           console.log("User signed out");
+          if (parameters.DisableLandingPage === "true") {
+            setLoading(true);
+            redirectToSSO();
+            break;
+          }
           setLoading(false);
           break;
         case "signIn_failure":
+          // eslint-disable-next-line no-console
           console.log("User sign in failure");
           break;
         case "cognitoHostedUI_failure":
+          // eslint-disable-next-line no-console
           console.log("Sign in failure");
           break;
       }
@@ -71,6 +95,14 @@ function App() {
 
   function setData() {
     getUser().then((userData) => {
+      if (!userData) {
+        if (parameters.DisableLandingPage === "true") {
+          redirectToSSO();
+        } else {
+          setLoading(false);
+        }
+        return;
+      }
       setUser(userData);
       const payload = userData.signInUserSession.idToken.payload;
       setcognitoGroups(payload["cognito:groups"]);
@@ -86,7 +118,7 @@ function App() {
       const userData = await Auth.currentAuthenticatedUser();
       return userData;
     } catch {
-      setLoading(false);
+      // eslint-disable-next-line no-console
       return console.log("Not signed in");
     }
   }
@@ -101,7 +133,7 @@ function App() {
           groups={groups}
           cognitoGroups={cognitoGroups}
         />
-      ) : (
+      ) : loading ? null : (
         <Home loading={loading} />
       )}
     </div>
