@@ -291,12 +291,17 @@ def lambda_handler(event: dict, context):
     justification = event.get("justification", "No justification provided")
     ticket = event.get("ticketNo", "No ticket provided")
     login_url = event["sso_login_url"]
+    team_app_url = event.get("team_app_url", "")
+    request_id = event.get("id", "")
+    button_url = login_url
     sns_message = json.dumps(event)
     slack_audit_message = ""
 
     match request_status:
         case "pending":
             if approval_required:
+                if team_app_url and request_id:
+                    button_url = f"{team_app_url.rstrip('/')}/approvals/approve/{request_id}"
                 # Notify approvers pending request
                 slack_recipients = approvers
                 slack_message = f"<mailto:{requester}|{requester}> requests access to AWS, please approve or reject this request in TEAM."
@@ -306,7 +311,7 @@ def lambda_handler(event: dict, context):
                 email_to_addresses = approvers
                 email_cc_addresses = [requester]
                 subject = f"Access request to AWS account - {account}"
-                email_message_html = f'<html><body><p><b>{requester}</b> requests access to AWS, please <b>approve or reject this request</b> in <a href="{login_url}">TEAM</a>.</p><p><b>Account:</b> {account}<br /><b>Role:</b> {role}<br /><b>Start Time:</b> {request_start_time}<br /><b>Duration:</b> {duration_hours} hours<br /><b>Justification:</b> {justification}<br /><b>Ticket Number:</b> {ticket}<br /></p></body></html>'
+                email_message_html = f'<html><body><p><b>{requester}</b> requests access to AWS, please <b>approve or reject this request</b> in <a href="{button_url}">TEAM</a>.</p><p><b>Account:</b> {account}<br /><b>Role:</b> {role}<br /><b>Start Time:</b> {request_start_time}<br /><b>Duration:</b> {duration_hours} hours<br /><b>Justification:</b> {justification}<br /><b>Ticket Number:</b> {ticket}<br /></p></body></html>'
         case "scheduled":
             # Don't need to send a notification if the request start time has already passed
             if datetime.now(timezone.utc) > parser.parse(request_start_time).astimezone(
@@ -407,7 +412,7 @@ def lambda_handler(event: dict, context):
             recipients=slack_recipients,
             message=slack_message,
             audit_message=slack_audit_message,
-            login_url=login_url,
+            login_url=button_url,
             role=role,
             account=account,
             request_start_time=request_start_time,
