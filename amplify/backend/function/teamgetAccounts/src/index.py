@@ -13,19 +13,30 @@ ACCOUNT_ID = os.environ['ACCOUNT_ID']
 
 
 def get_mgmt_account_id():
+    """Get the management account ID from Organizations. Fails fast if unavailable."""
     org_client = boto3.client('organizations')
     try:
         response = org_client.describe_organization()
         return response['Organization']['MasterAccountId']
     except ClientError as e:
-        print(e.response['Error']['Message'])
+        raise RuntimeError(f"Cannot retrieve management account ID: {e}") from e
 
 
-mgmt_account_id = get_mgmt_account_id()
+# Lazy init - not called at module level to avoid cold start failures
+_mgmt_account_id = None
+
+
+def ensure_mgmt_account_id():
+    """Lazy init for mgmt_account_id. Retries on each invocation if previously failed."""
+    global _mgmt_account_id
+    if _mgmt_account_id is None:
+        _mgmt_account_id = get_mgmt_account_id()
+    return _mgmt_account_id
 
 
 def handler(event, context):
     account = []
+    mgmt_account_id = ensure_mgmt_account_id()
     deployed_in_mgmt = True if ACCOUNT_ID == mgmt_account_id else False
     try:
         p = client.get_paginator('list_accounts')

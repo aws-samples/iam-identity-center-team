@@ -13,18 +13,28 @@ ACCOUNT_ID = os.environ["ACCOUNT_ID"]
 
 
 def get_mgmt_account_id():
+    """Get the management account ID from Organizations. Fails fast if unavailable."""
     try:
         response = org_client.describe_organization()
         return response["Organization"]["MasterAccountId"]
     except ClientError as e:
-        print(f"Error getting management account: {e}")
-        return None
+        raise RuntimeError(f"Cannot retrieve management account ID: {e}") from e
 
 
-mgmt_account_id = get_mgmt_account_id()
+# Lazy init - not called at module level to avoid cold start failures
+_mgmt_account_id = None
+
+
+def ensure_mgmt_account_id():
+    """Lazy init for mgmt_account_id. Retries on each invocation if previously failed."""
+    global _mgmt_account_id
+    if _mgmt_account_id is None:
+        _mgmt_account_id = get_mgmt_account_id()
+    return _mgmt_account_id
 
 
 def list_accounts_for_ou(ou_id):
+    mgmt_account_id = ensure_mgmt_account_id()
     deployed_in_mgmt = ACCOUNT_ID == mgmt_account_id
     accounts = []
     
@@ -97,7 +107,9 @@ def populate_cache(ou_id):
             # Wait and retry read
             time.sleep(0.5)
             cached = get_cached_accounts(ou_id)
-            return cached if cached is not None else []
+            if cached is not None:
+                return cached
+            return list_accounts_for_ou(ou_id)
         raise
     
     try:
@@ -128,17 +140,19 @@ def populate_cache(ou_id):
 
 def get_accounts_for_ous(ou_ids):
     results = {}
-    
+
     for ou_id in ou_ids:
-        # Try cache first
-        cached = get_cached_accounts(ou_id)
-        if cached is not None:
-            results[ou_id] = {"accounts": cached, "cached": True}
-        else:
-            # Cache miss - populate
-            accounts = populate_cache(ou_id)
-            results[ou_id] = {"accounts": accounts, "cached": False}
-    
+        try:
+            cached = get_cached_accounts(ou_id)
+            if cached is not None:
+                results[ou_id] = {"accounts": cached, "cached": True}
+            else:
+                accounts = populate_cache(ou_id)
+                results[ou_id] = {"accounts": accounts, "cached": False}
+        except Exception as e:
+            print(f"Error getting accounts for OU {ou_id}: {e}")
+            results[ou_id] = {"accounts": [], "cached": False}
+
     return results
 
 

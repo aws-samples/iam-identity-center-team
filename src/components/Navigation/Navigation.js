@@ -64,8 +64,9 @@ function Navigation(props) {
               type: "section",
               text: "Administration",
               items: [
-                { type: "link", text: "Approver policy", href: "/admin/approvers" },
-                { type: "link", text: "Eligibility policy", href: "/admin/policy" },
+                { type: "link", text: "Approver groups", href: "/admin/approvers" },
+                { type: "link", text: "Eligibility policies", href: "/admin/policies" },
+                { type: "link", text: "Eligibility groups", href: "/admin/eligibility" },
                 { type: "link", text: "Settings", href: "/admin/settings", info: <Icon name="settings" />},
               ],
             }

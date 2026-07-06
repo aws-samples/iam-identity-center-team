@@ -1,0 +1,56 @@
+## [Start] Initialization default values. **
+$util.qr($ctx.stash.put("defaultValues", $util.defaultIfNull($ctx.stash.defaultValues, {})))
+#set( $createdAt = $util.time.nowISO8601() )
+$util.qr($ctx.stash.defaultValues.put("createdAt", $createdAt))
+$util.qr($ctx.stash.defaultValues.put("updatedAt", $createdAt))
+$util.qr($ctx.args.input.put("modifiedBy", $ctx.identity.username))
+
+## Validate Policy ID - alphanumeric, hyphens, underscores, hash, max 2048 chars
+#if (!$ctx.args.input.id || $ctx.args.input.id.trim() == "")
+    $util.error('Policy ID is required')
+#end
+
+#if (!$util.matches("^[a-zA-Z0-9\\-_#]+$", $ctx.args.input.id) || $ctx.args.input.id.length() > 2048)
+    $util.error('Invalid Policy ID format. Only alphanumeric characters, hyphens, underscores and # are allowed. Maximum 2048 characters.')
+#end
+
+## Validate duration
+#if ($ctx.args.input.duration)
+    #if (!$util.matches("^[0-9]+$", $ctx.args.input.duration) || $Integer.parseInt($ctx.args.input.duration) > 8000 || $Integer.parseInt($ctx.args.input.duration) < 1)
+        $util.error('Invalid duration. Must be a number between 1 and 8000.')
+    #end
+#end
+
+## Validate accounts
+#foreach($arg in $ctx.args.input.accounts)
+    #if (!$util.matches("^\d{12}$", $arg.id))
+        $util.error('Invalid account ID format. Must be 12 digits.')
+    #end
+#end
+
+## Validate permissions
+#foreach($arg in $ctx.args.input.permissions)
+    #if (!$util.matches("^arn:aws:sso:::permissionSet\/ssoins-[a-zA-Z0-9-.]{16}\/ps-[a-zA-Z0-9-.]{16}$", $arg.id))
+        $util.error('Invalid permission set ARN format.')
+    #end
+#end
+
+## Validate OUs
+#foreach($arg in $ctx.args.input.ous)
+    #if (!$util.matches("^(r-[0-9a-z]{4,32})|(ou-[0-9a-z]{4,32}-[a-z0-9]{8,32})$", $arg.id))
+        $util.error('Invalid OU ID format.')
+    #end
+#end
+
+## Validate approverGroupIds
+#foreach($arg in $ctx.args.input.approverGroupIds)
+    #if (!$util.matches("^[a-zA-Z0-9\\-_#]+$", $arg.id) || $arg.id.length() > 2048)
+        $util.error('Invalid approver group ID format.')
+    #end
+#end
+
+$util.toJson({
+  "version": "2018-05-29",
+  "payload": {}
+})
+## [End] Initialization default values. **

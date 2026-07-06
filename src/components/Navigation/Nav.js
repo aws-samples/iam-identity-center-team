@@ -20,6 +20,7 @@ import "../../index.css";
 import Landing from "./Landing";
 import Header from "./Header";
 import Eligible from "../Admin/Eligible";
+import Policies from "../Admin/Policies";
 import Active from "../Sessions/Active";
 import Audit from "../Sessions/Audit";
 import { Amplify } from "aws-amplify";
@@ -145,7 +146,17 @@ function Nav(props) {
                   </Route>
                 ) : null}
                 {group && group.includes("Admin") ? (
-                  <Route path="/admin/policy">
+                  <Route path="/admin/policies">
+                    <Policies
+                      addNotification={setNotifications}
+                      setActiveHref={setActiveHref}
+                      user={User}
+                      group={group}
+                    />
+                  </Route>
+                ) : null}
+                {group && group.includes("Admin") ? (
+                  <Route path="/admin/eligibility">
                     <Eligible
                       addNotification={setNotifications}
                       setActiveHref={setActiveHref}

@@ -1,6 +1,6 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
-  "Description": "Lambda Function for validating access requests",
+  "Description": "Lambda Function resource stack creation using Amplify CLI",
   "Parameters": {
     "CloudWatchRule": {
       "Type": "String",
@@ -78,6 +78,11 @@
             "ELIGIBILITY_TABLE_NAME": {
               "Fn::ImportValue": {
                 "Fn::Sub": "${apiteamGraphQLAPIIdOutput}:GetAtt:EligibilityTable:Name"
+              }
+            },
+            "POLICIES_TABLE_NAME": {
+              "Fn::ImportValue": {
+                "Fn::Sub": "${apiteamGraphQLAPIIdOutput}:GetAtt:PoliciesTable:Name"
               }
             }
           }
@@ -174,26 +179,47 @@
               "Effect": "Allow",
               "Action": [
                 "dynamodb:GetItem",
-                "dynamodb:Query"
+                "dynamodb:Query",
+                "dynamodb:BatchGetItem"
               ],
-              "Resource": {
-                "Fn::Sub": [
-                  "arn:aws:dynamodb:${region}:${account}:table/${tableName}",
-                  {
-                    "region": {
-                      "Ref": "AWS::Region"
-                    },
-                    "account": {
-                      "Ref": "AWS::AccountId"
-                    },
-                    "tableName": {
-                      "Fn::ImportValue": {
-                        "Fn::Sub": "${apiteamGraphQLAPIIdOutput}:GetAtt:EligibilityTable:Name"
+              "Resource": [
+                {
+                  "Fn::Sub": [
+                    "arn:aws:dynamodb:${region}:${account}:table/${tableName}",
+                    {
+                      "region": {
+                        "Ref": "AWS::Region"
+                      },
+                      "account": {
+                        "Ref": "AWS::AccountId"
+                      },
+                      "tableName": {
+                        "Fn::ImportValue": {
+                          "Fn::Sub": "${apiteamGraphQLAPIIdOutput}:GetAtt:EligibilityTable:Name"
+                        }
                       }
                     }
-                  }
-                ]
-              }
+                  ]
+                },
+                {
+                  "Fn::Sub": [
+                    "arn:aws:dynamodb:${region}:${account}:table/${tableName}",
+                    {
+                      "region": {
+                        "Ref": "AWS::Region"
+                      },
+                      "account": {
+                        "Ref": "AWS::AccountId"
+                      },
+                      "tableName": {
+                        "Fn::ImportValue": {
+                          "Fn::Sub": "${apiteamGraphQLAPIIdOutput}:GetAtt:PoliciesTable:Name"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
             },
             {
               "Effect": "Allow",
