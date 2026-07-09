@@ -531,7 +531,10 @@ def process_record(data):
         print("Request not updated")
 
 def handler(event, context):
-    for record in event["Records"]:
-        data = record["dynamodb"]["NewImage"]
+    for record in event.get("Records", []):
+        if record.get("eventName") not in ("INSERT", "MODIFY"):
+            continue
+        data = record.get("dynamodb", {}).get("NewImage")
+        if not data:
+            continue
         process_record(data)
-
