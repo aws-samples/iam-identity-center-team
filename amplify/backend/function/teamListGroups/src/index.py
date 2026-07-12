@@ -4,6 +4,7 @@
 # http: // aws.amazon.com/agreement or other written agreement between Customer and either
 # Amazon Web Services, Inc. or Amazon Web Services EMEA SARL or both.
 import boto3
+from datetime import date, datetime
 from botocore.exceptions import ClientError
 
 
@@ -18,6 +19,14 @@ def get_identiy_store_id():
 
 sso_instance = get_identiy_store_id()
 
+def jsonify(obj):
+    if isinstance(obj, (datetime, date)):
+        return obj.isoformat()
+    if isinstance(obj, list):
+        return [jsonify(item) for item in obj]
+    if isinstance(obj, dict):
+        return {key: jsonify(value) for key, value in obj.items()}
+    return obj
 
 def list_idc_group_membership(groupId):
     try:
@@ -32,11 +41,11 @@ def list_idc_group_membership(groupId):
         return all_groups
     except ClientError as e:
         print(e.response['Error']['Message'])
-        
+        return []
+
 def handler(event, context):
-    
     members = []
     groupIds = event["arguments"]["groupIds"]
     for groupId in groupIds:
         members.extend(list_idc_group_membership(groupId))
-    return {"members": members}
+    return jsonify({"members": members})
