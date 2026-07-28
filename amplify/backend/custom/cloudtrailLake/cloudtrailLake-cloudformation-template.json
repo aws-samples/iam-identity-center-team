@@ -50,14 +50,6 @@
       "Fn::Or": [
         {
           "Fn::Equals": [
-            "none",
-            {
-              "Ref": "CloudTrailAuditLogs"
-            }
-          ]
-        },
-        {
-          "Fn::Equals": [
             "read",
             {
               "Ref": "CloudTrailAuditLogs"
