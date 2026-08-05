@@ -415,7 +415,16 @@ export async function getSetting(id) {
     let data = await request.data.getSettings;
     return data;
   } catch (err) {
+    // Non-admin users are not authorized to read admin-only Settings fields
+    // (e.g. slackToken). AppSync returns the remaining Settings fields together
+    // with a field-level authorization error, which the Amplify client surfaces
+    // as a thrown response. Return that partial data so the request/approval UI
+    // keeps working while the restricted field stays hidden (null).
+    if (err?.data?.getSettings) {
+      return err.data.getSettings;
+    }
     console.log("error fetching settings");
+    return null;
   }
 }
 
