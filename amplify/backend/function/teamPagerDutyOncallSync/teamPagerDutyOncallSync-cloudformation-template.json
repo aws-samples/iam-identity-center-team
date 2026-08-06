@@ -1,0 +1,387 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Lambda Function resource stack creation using Amplify CLI",
+  "Parameters": {
+    "CloudWatchRule": {
+      "Type": "String",
+      "Default": "NONE",
+      "Description": " Schedule Expression"
+    },
+    "deploymentBucketName": {
+      "Type": "String"
+    },
+    "env": {
+      "Type": "String"
+    },
+    "s3Key": {
+      "Type": "String"
+    },
+    "PagerDutyScheduleIds": {
+      "Type": "String",
+      "Default": "",
+      "Description": "Comma separated PagerDuty schedule IDs to read on-call responders from. The schedule is disabled while this is empty."
+    },
+    "PagerDutyTokenSecretName": {
+      "Type": "String",
+      "Default": "team/pagerduty/api-token",
+      "Description": "Name of the Secrets Manager secret holding the PagerDuty REST API token."
+    },
+    "IdCGroupName": {
+      "Type": "String",
+      "Default": "",
+      "Description": "Display name of the IAM Identity Center group to keep in sync with the on-call rota."
+    },
+    "IdCGroupId": {
+      "Type": "String",
+      "Default": "",
+      "Description": "Optional IAM Identity Center group ID. Takes precedence over IdCGroupName when set."
+    },
+    "LookaheadHours": {
+      "Type": "String",
+      "Default": "48",
+      "Description": "How far ahead to look for on-call responders. 48 hours covers today and tomorrow."
+    },
+    "ScheduleExpression": {
+      "Type": "String",
+      "Default": "rate(12 hours)",
+      "Description": "EventBridge schedule expression controlling how often the sync runs."
+    },
+    "DryRun": {
+      "Type": "String",
+      "Default": "true",
+      "Description": "When true the function logs the membership changes it would make without applying them."
+    }
+  },
+  "Conditions": {
+    "ShouldNotCreateEnvResources": {
+      "Fn::Equals": [
+        {
+          "Ref": "env"
+        },
+        "NONE"
+      ]
+    },
+    "ShouldEnableSchedule": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "PagerDutyScheduleIds"
+            },
+            ""
+          ]
+        }
+      ]
+    }
+  },
+  "Resources": {
+    "LambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Metadata": {
+        "aws:asset:path": "./src",
+        "aws:asset:property": "Code"
+      },
+      "Properties": {
+        "Architectures": [
+          "arm64"
+        ],
+        "Code": {
+          "S3Bucket": {
+            "Ref": "deploymentBucketName"
+          },
+          "S3Key": {
+            "Ref": "s3Key"
+          }
+        },
+        "Handler": "index.handler",
+        "FunctionName": {
+          "Fn::If": [
+            "ShouldNotCreateEnvResources",
+            "teamPagerDutyOncallSync",
+            {
+              "Fn::Join": [
+                "",
+                [
+                  "teamPagerDutyOncallSync",
+                  "-",
+                  {
+                    "Ref": "env"
+                  }
+                ]
+              ]
+            }
+          ]
+        },
+        "Environment": {
+          "Variables": {
+            "ENV": {
+              "Ref": "env"
+            },
+            "REGION": {
+              "Ref": "AWS::Region"
+            },
+            "PAGERDUTY_SCHEDULE_IDS": {
+              "Ref": "PagerDutyScheduleIds"
+            },
+            "PAGERDUTY_TOKEN_SECRET": {
+              "Ref": "PagerDutyTokenSecretName"
+            },
+            "IDC_GROUP_NAME": {
+              "Ref": "IdCGroupName"
+            },
+            "IDC_GROUP_ID": {
+              "Ref": "IdCGroupId"
+            },
+            "LOOKAHEAD_HOURS": {
+              "Ref": "LookaheadHours"
+            },
+            "DRY_RUN": {
+              "Ref": "DryRun"
+            }
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "LambdaExecutionRole",
+            "Arn"
+          ]
+        },
+        "Runtime": "python3.12",
+        "Layers": [],
+        "MemorySize": 256,
+        "Timeout": 300
+      }
+    },
+    "LambdaExecutionRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": {
+          "Fn::If": [
+            "ShouldNotCreateEnvResources",
+            "teamPagerDutyOncallSyncLambdaRole",
+            {
+              "Fn::Join": [
+                "",
+                [
+                  "teamPagerDutyOncallSyncLambdaRole",
+                  "-",
+                  {
+                    "Ref": "env"
+                  }
+                ]
+              ]
+            }
+          ]
+        },
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "lambda.amazonaws.com"
+                ]
+              },
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "lambdaexecutionpolicy": {
+      "DependsOn": [
+        "LambdaExecutionRole"
+      ],
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "lambda-execution-policy",
+        "Roles": [
+          {
+            "Ref": "LambdaExecutionRole"
+          }
+        ],
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+              ],
+              "Resource": {
+                "Fn::Sub": [
+                  "arn:aws:logs:${region}:${account}:log-group:/aws/lambda/${lambda}:log-stream:*",
+                  {
+                    "region": {
+                      "Ref": "AWS::Region"
+                    },
+                    "account": {
+                      "Ref": "AWS::AccountId"
+                    },
+                    "lambda": {
+                      "Ref": "LambdaFunction"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    "CustomLambdaExecutionPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "custom-lambda-execution-policy",
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Action": [
+                "sso:ListInstances"
+              ],
+              "Resource": [
+                "*"
+              ],
+              "Effect": "Allow"
+            },
+            {
+              "Action": [
+                "identitystore:GetGroupId",
+                "identitystore:GetUserId",
+                "identitystore:DescribeUser",
+                "identitystore:ListUsers",
+                "identitystore:ListGroupMemberships",
+                "identitystore:CreateGroupMembership",
+                "identitystore:DeleteGroupMembership"
+              ],
+              "Resource": [
+                "*"
+              ],
+              "Effect": "Allow"
+            },
+            {
+              "Action": [
+                "secretsmanager:GetSecretValue"
+              ],
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${PagerDutyTokenSecretName}-*"
+                }
+              ],
+              "Effect": "Allow"
+            }
+          ]
+        },
+        "Roles": [
+          {
+            "Ref": "LambdaExecutionRole"
+          }
+        ]
+      },
+      "DependsOn": "LambdaExecutionRole"
+    },
+    "OncallSyncScheduleRule": {
+      "Type": "AWS::Events::Rule",
+      "Properties": {
+        "Name": {
+          "Fn::If": [
+            "ShouldNotCreateEnvResources",
+            "teamPagerDutyOncallSyncSchedule",
+            {
+              "Fn::Join": [
+                "",
+                [
+                  "teamPagerDutyOncallSyncSchedule",
+                  "-",
+                  {
+                    "Ref": "env"
+                  }
+                ]
+              ]
+            }
+          ]
+        },
+        "Description": "Runs the PagerDuty on-call to IAM Identity Center group sync.",
+        "ScheduleExpression": {
+          "Ref": "ScheduleExpression"
+        },
+        "State": {
+          "Fn::If": [
+            "ShouldEnableSchedule",
+            "ENABLED",
+            "DISABLED"
+          ]
+        },
+        "Targets": [
+          {
+            "Id": "teamPagerDutyOncallSyncTarget",
+            "Arn": {
+              "Fn::GetAtt": [
+                "LambdaFunction",
+                "Arn"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "OncallSyncSchedulePermission": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "LambdaFunction",
+            "Arn"
+          ]
+        },
+        "Principal": "events.amazonaws.com",
+        "SourceArn": {
+          "Fn::GetAtt": [
+            "OncallSyncScheduleRule",
+            "Arn"
+          ]
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "Name": {
+      "Value": {
+        "Ref": "LambdaFunction"
+      }
+    },
+    "Arn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "LambdaFunction",
+          "Arn"
+        ]
+      }
+    },
+    "Region": {
+      "Value": {
+        "Ref": "AWS::Region"
+      }
+    },
+    "LambdaExecutionRole": {
+      "Value": {
+        "Ref": "LambdaExecutionRole"
+      }
+    },
+    "LambdaExecutionRoleArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "LambdaExecutionRole",
+          "Arn"
+        ]
+      }
+    }
+  }
+}

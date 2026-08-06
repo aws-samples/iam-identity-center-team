@@ -201,6 +201,11 @@
       "providerPlugin": "awscloudformation",
       "service": "Lambda"
     },
+    "teamPagerDutyOncallSync": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
     "teamPublishOUs": {
       "build": true,
       "dependsOn": [
