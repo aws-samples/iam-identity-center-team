@@ -1,0 +1,9 @@
+{
+    "PagerDutyScheduleIds": "",
+    "PagerDutyTokenSecretName": "team/pagerduty/api-token",
+    "IdCGroupName": "",
+    "IdCGroupId": "",
+    "LookaheadHours": "48",
+    "ScheduleExpression": "rate(12 hours)",
+    "DryRun": "true"
+}

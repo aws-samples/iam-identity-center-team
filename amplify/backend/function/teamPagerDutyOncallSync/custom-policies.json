@@ -1,0 +1,22 @@
+[
+  {
+    "Action": ["sso:ListInstances"],
+    "Resource": ["*"]
+  },
+  {
+    "Action": [
+      "identitystore:GetGroupId",
+      "identitystore:GetUserId",
+      "identitystore:DescribeUser",
+      "identitystore:ListUsers",
+      "identitystore:ListGroupMemberships",
+      "identitystore:CreateGroupMembership",
+      "identitystore:DeleteGroupMembership"
+    ],
+    "Resource": ["*"]
+  },
+  {
+    "Action": ["secretsmanager:GetSecretValue"],
+    "Resource": ["arn:aws:secretsmanager:*:*:secret:team/pagerduty/*"]
+  }
+]
