@@ -447,3 +447,44 @@ export async function revokePim(data) {
     console.log("error revoking request");
   }
 }
+
+export async function invalidateOUCache(ouIds) {
+  try {
+    const mutation = `
+      mutation InvalidateOUCache($ouIds: [String]!) {
+        invalidateOUCache(ouIds: $ouIds) {
+          invalidated
+          failed
+          message
+        }
+      }
+    `;
+    const response = await API.graphql(
+      graphqlOperation(mutation, { ouIds })
+    );
+    return response.data.invalidateOUCache;
+  } catch (err) {
+    console.log("error invalidating OU cache", err);
+    throw err;
+  }
+}
+
+export async function validateRequest(accountId, roleId, userId, groupIds) {
+  try {
+    const mutation = `
+      mutation ValidateRequest($accountId: String!, $roleId: String!, $userId: String!, $groupIds: [String]!) {
+        validateRequest(accountId: $accountId, roleId: $roleId, userId: $userId, groupIds: $groupIds) {
+          valid
+          reason
+        }
+      }
+    `;
+    const response = await API.graphql(
+      graphqlOperation(mutation, { accountId, roleId, userId, groupIds })
+    );
+    return response.data.validateRequest;
+  } catch (err) {
+    console.log("error validating request", err);
+    throw err;
+  }
+}

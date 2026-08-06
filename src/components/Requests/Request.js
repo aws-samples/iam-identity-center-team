@@ -23,6 +23,7 @@ import {
   getSetting,
   getMgmtAccountPs,
   fetchPolicy,
+  validateRequest,
 } from "../Shared/RequestService";
 import { useHistory } from "react-router-dom";
 import { API, graphqlOperation } from "aws-amplify";
@@ -174,7 +175,7 @@ function Request(props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  function sendRequest() {
+  async function sendRequest() {
     const data = {
       accountId: account.value,
       accountName: account.label,
@@ -185,6 +186,41 @@ function Request(props) {
       justification: justification,
       ticketNo: ticketNo,
     };
+    
+    // Validate request before creating
+    try {
+      const validation = await validateRequest(
+        account.value, 
+        role.value, 
+        props.userId, 
+        props.groupIds
+      );
+      
+      if (!validation.valid) {
+        props.addNotification([
+          {
+            type: "error",
+            content: `Access request denied: ${validation.reason}`,
+            dismissible: true,
+            onDismiss: () => props.addNotification([]),
+          },
+        ]);
+        setSubmitLoading(false);
+        return;
+      }
+    } catch (err) {
+      props.addNotification([
+        {
+          type: "error",
+          content: "Failed to validate request. Please try again.",
+          dismissible: true,
+          onDismiss: () => props.addNotification([]),
+        },
+      ]);
+      setSubmitLoading(false);
+      return;
+    }
+    
     requestTeam(data).then(() => {
       setSubmitLoading(false);
       props.addNotification([

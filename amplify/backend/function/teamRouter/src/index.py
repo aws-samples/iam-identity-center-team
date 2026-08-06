@@ -500,8 +500,7 @@ def request_is_updated(status,data,username,request_id):
         updated = True
     return updated
 
-def handler(event, context):
-    data = event["Records"].pop()["dynamodb"]["NewImage"]
+def process_record(data):
     print("Checking if request is updated")
     status = data["status"]["S"]
     username = data["username"]["S"]
@@ -530,4 +529,9 @@ def handler(event, context):
             invoke_workflow(request, approval_required, notification_config, team_config)
     else:
         print("Request not updated")
-        
+
+def handler(event, context):
+    for record in event["Records"]:
+        data = record["dynamodb"]["NewImage"]
+        process_record(data)
+

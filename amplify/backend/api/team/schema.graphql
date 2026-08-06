@@ -159,6 +159,7 @@ type Settings
       { allow: groups, groups: ["Admin"] }
       { allow: groups, groupClaim: "scope", groups: ["api/admin"] }
       { allow: private, operations: [read] }
+      { allow: private, provider: iam, operations: [read] }
     ]
   ) {
   id: String
@@ -177,6 +178,7 @@ type Settings
   slackToken: String
   teamAdminGroup: String
   teamAuditorGroup: String
+  useOUCache: Boolean
 }
 type data @aws_iam @aws_cognito_user_pools {
   name: String
@@ -207,9 +209,39 @@ type Eligibility
   duration: String
   modifiedBy: String
 }
-type Accounts {
+type OUAccountsCache
+  @model(subscriptions: null, queries: null, mutations: null)
+  @auth(
+    rules: [
+      { allow: private, provider: iam, operations: [create, read, update, delete] }
+    ]
+  ) {
+  ou_id: ID! @primaryKey
+  accounts: AWSJSON
+  cached_at: AWSTimestamp
+  ttl: AWSTimestamp @ttl
+  status: String
+}
+type Accounts @aws_iam @aws_cognito_user_pools {
   name: String!
   id: String!
+}
+type OUAccounts @aws_iam @aws_cognito_user_pools {
+  ouId: String!
+  accounts: [Accounts]
+  cached: Boolean
+}
+type OUAccountsBatch @aws_iam @aws_cognito_user_pools {
+  results: [OUAccounts]
+}
+type InvalidateCacheResult @aws_cognito_user_pools {
+  invalidated: [String]
+  failed: [String]
+  message: String
+}
+type RequestValidationResult @aws_iam @aws_cognito_user_pools {
+  valid: Boolean!
+  reason: String
 }
 type Entitlement @aws_iam @aws_cognito_user_pools {
   accounts: [data]
@@ -302,6 +334,12 @@ type Mutation {
   @auth(rules: [{ allow: private, provider: iam} { allow: private }])
   publishPermissions(result: PermissionInput): Permission
   @auth(rules: [{ allow: private, provider: iam} { allow: private }])
+  invalidateOUCache(ouIds: [String]!): InvalidateCacheResult
+  @function(name: "teaminvalidateOUCache-${env}")
+  @auth(rules: [{ allow: groups, groups: ["Admin"] }])
+  validateRequest(accountId: String!, roleId: String!, userId: String!, groupIds: [String]!): RequestValidationResult
+  @function(name: "teamvalidateRequest-${env}")
+  @auth(rules: [{ allow: private }])
 }
 
 type Subscription {
@@ -369,8 +407,13 @@ type Query {
   updateRequestData: requests
     @function(name: "teamupdateRequest-${env}")
     @auth(rules: [{ allow: private }])
-  validateRequest: requests
-    @function(name: "teamvalidateRequest-${env}")
-    @auth(rules: [{ allow: private }])
+  validateRequest(accountId: String!, roleId: String!, userId: String!, groupIds: [String]!): RequestValidationResult
+  @function(name: "teamvalidateRequest-${env}")
+  @auth(rules: [{ allow: private }])
+  getOUAccounts(
+    ouIds: [String]!
+  ): OUAccountsBatch
+    @function(name: "teamgetOUAccounts-${env}")
+    @auth(rules: [{ allow: private, provider: iam} { allow: private }])
 }
 

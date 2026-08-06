@@ -23,7 +23,7 @@ parent: Guides
 3. The email field should be pre-populated with your email address.
 4. In the *Account* dropdown, select an account you would like elevated access to.
 5. In the *Role* dropdown, select a permission set/role you would like to request for the specified account.
-   > You will only see the accounts and roles that you have been granted access to via an the [eligibility policy]()(configured by TEAM admin). If you don't see the account/role required, contact the TEAM admin to re-configure the eligibility policies.
+   > You will only see the accounts and roles that you have been granted access to via an the [eligibility policy]({% link docs/deployment/configuration/policies.md %})(configured by TEAM admin). If you don't see the account/role required, contact the TEAM admin to re-configure the eligibility policies.
    {: .note}
 6. Select the required session *Start time*. This is the moment from which the access should be granted to you.
 7. Select the required session *Duration*.

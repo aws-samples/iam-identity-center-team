@@ -62,6 +62,7 @@ Update the parameters in the **parameters.sh** file as follows:
 **Optional:**
 - **TAGS** - Tags that should be propagated to nested stacks and underlying resources
 - **UI_DOMAIN** - Custom domain for Amplify hosted frontend application (should only be included if you have setup a custom domain for the frontend application)
+- **CACHE_TTL** - Cache time-to-live in seconds for organizational unit (OU) account lists (default: 604800 = 1 week). Cached entries automatically expire after this duration. Consider increasing this value (e.g., 2592000 = 30 days) for organizations with infrequent account changes. Administrators can also manually invalidate specific OU cache entries or disable caching entirely via the Settings page.
 
 For example:
 
@@ -77,6 +78,7 @@ TAGS="tag1=value1 tag2=value2"
 CLOUDTRAIL_AUDIT_LOGS=arn:aws:cloudtrail:us-east-1:123456789101:eventdatastore/e646f20d-7959-4682-be84-6c5b8a37cf15
 UI_DOMAIN=portal.teamtest.online
 SECRET_NAME=TEAM-IDC-APP
+CACHE_TTL=604800
 ```
 
 ---

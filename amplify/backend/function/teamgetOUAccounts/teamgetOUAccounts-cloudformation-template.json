@@ -1,11 +1,10 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
-  "Description": "Lambda Function resource stack creation using Amplify CLI",
+  "Description": "Lambda Function for getting OU accounts with caching",
   "Parameters": {
     "CloudWatchRule": {
       "Type": "String",
-      "Default": "NONE",
-      "Description": " Schedule Expression"
+      "Default": "NONE"
     },
     "deploymentBucketName": {
       "Type": "String"
@@ -17,18 +16,11 @@
       "Type": "String"
     },
     "apiteamGraphQLAPIIdOutput": {
-      "Type": "String",
-      "Default": "apiteamGraphQLAPIIdOutput"
-    },
-    "apiteamGraphQLAPIEndpointOutput": {
-      "Type": "String",
-      "Default": "apiteamGraphQLAPIEndpointOutput"
-    },
-    "teamAdminGroup": {
       "Type": "String"
     },
-    "teamAuditorGroup": {
-      "Type": "String"
+    "cacheTTL": {
+      "Type": "String",
+      "Default": "604800"
     }
   },
   "Conditions": {
@@ -64,12 +56,12 @@
         "FunctionName": {
           "Fn::If": [
             "ShouldNotCreateEnvResources",
-            "team06dbb7fcPreTokenGeneration",
+            "teamgetOUAccounts",
             {
               "Fn::Join": [
                 "",
                 [
-                  "team06dbb7fcPreTokenGeneration",
+                  "teamgetOUAccounts",
                   "-",
                   {
                     "Ref": "env"
@@ -87,22 +79,16 @@
             "REGION": {
               "Ref": "AWS::Region"
             },
-            "API_TEAM_GRAPHQLAPIIDOUTPUT": {
-              "Ref": "apiteamGraphQLAPIIdOutput"
-            },
-            "API_TEAM_GRAPHQLAPIENDPOINTOUTPUT": {
-              "Ref": "apiteamGraphQLAPIEndpointOutput"
-            },
-            "SETTINGS_TABLE_NAME": {
+            "CACHE_TABLE_NAME": {
               "Fn::ImportValue": {
-                "Fn::Sub": "${apiteamGraphQLAPIIdOutput}:GetAtt:SettingsTable:Name"
+                "Fn::Sub": "${apiteamGraphQLAPIIdOutput}:GetAtt:OUAccountsCacheTable:Name"
               }
             },
-            "TEAM_ADMIN_GROUP": {
-              "Ref": "teamAdminGroup"
+            "CACHE_TTL": {
+              "Ref": "cacheTTL"
             },
-            "TEAM_AUDITOR_GROUP": {
-              "Ref": "teamAuditorGroup"
+            "ACCOUNT_ID": {
+              "Ref": "AWS::AccountId"
             }
           }
         },
@@ -112,9 +98,8 @@
             "Arn"
           ]
         },
-        "Runtime": "python3.11",
-        "Layers": [],
-        "Timeout": 120
+        "Runtime": "python3.12",
+        "Timeout": 30
       }
     },
     "LambdaExecutionRole": {
@@ -123,12 +108,12 @@
         "RoleName": {
           "Fn::If": [
             "ShouldNotCreateEnvResources",
-            "teamidcappLambdaRole1a94c239",
+            "teamLambdaRolegetOUAccounts",
             {
               "Fn::Join": [
                 "",
                 [
-                  "teamidcappLambdaRole1a94c239",
+                  "teamLambdaRolegetOUAccounts",
                   "-",
                   {
                     "Ref": "env"
@@ -194,29 +179,15 @@
                   }
                 ]
               }
-            },
-            {
-              "Effect": "Allow",
-              "Action": [
-                "dynamodb:GetItem"
-              ],
-              "Resource": [
-                {
-                  "Fn::Sub": "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/Settings-*"
-                }
-              ]
             }
           ]
         }
       }
     },
-    "AmplifyResourcesPolicy": {
-      "DependsOn": [
-        "LambdaExecutionRole"
-      ],
+    "DynamoDBPolicy": {
       "Type": "AWS::IAM::Policy",
       "Properties": {
-        "PolicyName": "amplify-lambda-execution-policy",
+        "PolicyName": "dynamodb-cache-policy",
         "Roles": [
           {
             "Ref": "LambdaExecutionRole"
@@ -228,72 +199,53 @@
             {
               "Effect": "Allow",
               "Action": [
-                "appsync:GraphQL"
+                "dynamodb:GetItem",
+                "dynamodb:PutItem",
+                "dynamodb:UpdateItem",
+                "dynamodb:DeleteItem"
               ],
-              "Resource": [
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:appsync:",
-                      {
-                        "Ref": "AWS::Region"
-                      },
-                      ":",
-                      {
-                        "Ref": "AWS::AccountId"
-                      },
-                      ":apis/",
-                      {
-                        "Ref": "apiteamGraphQLAPIIdOutput"
-                      },
-                      "/types/Query/*"
-                    ]
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:dynamodb:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":table/",
+                    {
+                      "Fn::ImportValue": {
+                        "Fn::Sub": "${apiteamGraphQLAPIIdOutput}:GetAtt:OUAccountsCacheTable:Name"
+                      }
+                    }
                   ]
-                }
-              ]
+                ]
+              }
             }
           ]
         }
       }
     },
-    "CustomLambdaExecutionPolicy": {
+    "CustomPolicies": {
       "Type": "AWS::IAM::Policy",
       "Properties": {
-        "PolicyName": "custom-lambda-execution-policy",
+        "PolicyName": "custom-policies",
+        "Roles": [
+          {
+            "Ref": "LambdaExecutionRole"
+          }
+        ],
         "PolicyDocument": {
           "Version": "2012-10-17",
           "Statement": [
             {
               "Action": [
-                "identitystore:GetUserId"
-              ],
-              "Resource": [
-                "*"
-              ],
-              "Effect": "Allow"
-            },
-            {
-              "Action": [
-                "identitystore:GetGroupId"
-              ],
-              "Resource": [
-                "*"
-              ],
-              "Effect": "Allow"
-            },
-            {
-              "Action": [
-                "identitystore:ListGroupMembershipsForMember"
-              ],
-              "Resource": [
-                "*"
-              ],
-              "Effect": "Allow"
-            },
-            {
-              "Action": [
-                "sso:ListInstances"
+                "organizations:DescribeOrganization",
+                "organizations:ListAccountsForParent"
               ],
               "Resource": [
                 "*"
@@ -301,14 +253,8 @@
               "Effect": "Allow"
             }
           ]
-        },
-        "Roles": [
-          {
-            "Ref": "LambdaExecutionRole"
-          }
-        ]
-      },
-      "DependsOn": "LambdaExecutionRole"
+        }
+      }
     }
   },
   "Outputs": {
