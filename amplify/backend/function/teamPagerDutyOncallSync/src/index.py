@@ -9,8 +9,7 @@ Runs on a schedule (every 12 hours by default). Each run:
 
 The target group is treated as owned by this function: anybody in it who is not
 on call gets removed. Nothing is written until all PagerDuty calls have
-succeeded and at least one responder has been matched, so a PagerDuty outage or
-a wholesale matching failure can never empty the group.
+succeeded and at least one responder has been matched.
 """
 
 import json

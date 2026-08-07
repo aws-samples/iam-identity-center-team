@@ -1,8 +1,8 @@
 {
-    "PagerDutyScheduleIds": "",
+    "PagerDutyScheduleIds": "PSKF6XJ",
     "PagerDutyTokenSecretName": "team/pagerduty/api-token",
-    "IdCGroupName": "",
-    "IdCGroupId": "",
+    "IdCGroupName": "OnCallEngineers",
+    "IdCGroupId": "0374e842-60d1-709a-d252-558840260d97",
     "LookaheadHours": "48",
     "ScheduleExpression": "rate(12 hours)",
     "DryRun": "true"
