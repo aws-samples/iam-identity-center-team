@@ -71,7 +71,7 @@ export const buildPartitionFilter = (start, end, accountId) => {
     current.setDate(current.getDate() + 1);
   }
   const dateFilter = filters.length > 0 ? `(${filters.join(' OR ')})` : '1=1';
-  return dateFilter;
+  return `account_id = '${accountId}' AND ${dateFilter}`;
 };
 
 export const buildAthenaQuery = (event) => {
@@ -91,8 +91,7 @@ export const buildAthenaQuery = (event) => {
       AND eventTime > '${startTime}'
       AND eventTime < '${endTime}'
       AND lower(useridentity.principalId) LIKE '%:${username}%'
-      AND useridentity.sessionContext.sessionIssuer.arn LIKE '%${role}%'
-      AND recipientAccountId = '${accountId}'`;
+      AND useridentity.sessionContext.sessionIssuer.arn LIKE '%${role}%'`;
 };
 
 const startAthenaQuery = async (event) => {

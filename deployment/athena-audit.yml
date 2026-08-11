@@ -59,10 +59,19 @@ Parameters:
     Description: Optional KMS key ARN for decrypting encrypted CloudTrail logs
     Default: ""
 
+  LakeFormationEnabled:
+    Type: String
+    Description: Set to true if Lake Formation governs access to the Glue catalog in this account
+    AllowedValues:
+      - "true"
+      - "false"
+    Default: "false"
+
 Conditions:
   ShouldCreateResources: !Equals [!Ref CreateResources, "true"]
   HasKmsKey: !Not [!Equals [!Ref KmsKeyArn, ""]]
   HasCloudTrailPrefix: !Not [!Equals [!Ref CloudTrailPrefix, ""]]
+  UseLakeFormation: !Equals [!Ref LakeFormationEnabled, "true"]
 
 Resources:
   CrossAccountRole:
@@ -301,6 +310,33 @@ Resources:
             Type: string
           - Name: day
             Type: string
+
+  LakeFormationDbPermission:
+    Type: AWS::LakeFormation::Permissions
+    Condition: UseLakeFormation
+    DependsOn: CrossAccountRole
+    Properties:
+      DataLakePrincipal:
+        DataLakePrincipalIdentifier: !GetAtt CrossAccountRole.Arn
+      Resource:
+        DatabaseResource:
+          Name: !Ref DatabaseName
+      Permissions:
+        - DESCRIBE
+
+  LakeFormationTablePermission:
+    Type: AWS::LakeFormation::Permissions
+    Condition: UseLakeFormation
+    DependsOn: CrossAccountRole
+    Properties:
+      DataLakePrincipal:
+        DataLakePrincipalIdentifier: !GetAtt CrossAccountRole.Arn
+      Resource:
+        TableResource:
+          DatabaseName: !Ref DatabaseName
+          Name: !Ref TableName
+      Permissions:
+        - SELECT
 
 Outputs:
   CrossAccountRoleArn:

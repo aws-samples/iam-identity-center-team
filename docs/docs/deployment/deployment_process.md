@@ -171,7 +171,7 @@ aws cloudformation deploy \
   --profile <LOG_ARCHIVE_PROFILE>
 ```
 
-   If your trail uses an S3 prefix (e.g. the org ID for Control Tower), add `CloudTrailPrefix=<PREFIX>`. If CloudTrail logs are KMS-encrypted, add `KmsKeyArn=<KEY_ARN>`.
+   If your trail uses an S3 prefix (e.g. the org ID for Control Tower), add `CloudTrailPrefix=<PREFIX>`. If CloudTrail logs are KMS-encrypted, add `KmsKeyArn=<KEY_ARN>`. If the account uses Lake Formation, add `LakeFormationEnabled=true`.
    
    To skip resource creation and use existing workgroup, bucket, database, and table, set `CreateResources=false` and provide `ExistingResultsBucket=<BUCKET_NAME>`,`WorkgroupName`, `DatabaseName`, and `TableName`.
 
