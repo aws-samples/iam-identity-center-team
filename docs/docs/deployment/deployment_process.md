@@ -188,6 +188,23 @@ ATHENA_LOGGING_ACCOUNT_ID=<Logging account ID>
 
 3. **Follow the standard deployment steps** above (run `./deploy.sh`).
 
+### KMS prerequisites
+
+> If the Organization Trail S3 bucket is encrypted with a customer-managed KMS key, the key policy must grant `kms:Decrypt` to the cross-account role (`arn:aws:iam::<log-archive-account>:role/team-audit-cross-account-athena-role`). The `athena-audit.yml` template creates the IAM policy on the role side via the `KmsKeyArn` parameter, but the KMS key policy itself must be updated separately by the key administrator.
+{: .important}
+
+### Cleanup / Decommissioning
+
+When deleting the `team-athena-audit` stack, the Athena workgroup and results S3 bucket are **retained** (`DeletionPolicy: Retain`) to avoid `DELETE_FAILED` errors caused by non-empty buckets or active workgroup history. After stack deletion, manually remove:
+
+1. The Athena workgroup (default: `team-audit`)
+2. The results S3 bucket (default: `team-athena-results-<account>-<region>`)
+3. The Glue database and table (if created by the stack)
+
+### Table schema
+
+The expected Glue table schema (columns, partition keys, partition projection configuration) is defined in `deployment/athena-audit.yml`. Use the CloudFormation template as the source of truth for the table structure.
+
 ---
 
 ## Deploying TEAM into management account
