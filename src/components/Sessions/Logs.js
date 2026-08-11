@@ -21,6 +21,7 @@ import {
 } from "../../graphql/subscriptions";
 import "../../index.css";
 import { CSVLink } from "react-csv";
+import params from "../../parameters.json";
 
 const COLUMN_DEFINITIONS = [
   {
@@ -274,7 +275,7 @@ function Logs(props) {
                 ? `(${selectedItems.length}/${allItems.length})`
                 : `(${allItems.length})`
             }
-            description="Session activity logs are delivered in near real time"
+            description={params.auditMode === 'athena' ? "Session activity logs are typically available within 15 minutes" : "Session activity logs are delivered in near real time"}
             actions={
               <SpaceBetween size="s" direction="horizontal">
               {(props.item.status === "in progress" || isWithinPropagationWindow || allItems.length === 0) &&
