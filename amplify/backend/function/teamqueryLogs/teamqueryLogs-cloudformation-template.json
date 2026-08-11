@@ -21,7 +21,8 @@
     },
     "AuditMode": {
       "Type": "String",
-      "Default": "cloudtrail_lake"
+      "Default": "cloudtrail_lake",
+      "AllowedValues": ["cloudtrail_lake", "athena", "none"]
     },
     "AthenaRoleArn": {
       "Type": "String",

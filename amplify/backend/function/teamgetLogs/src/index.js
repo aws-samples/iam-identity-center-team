@@ -101,6 +101,10 @@ export const buildAthenaQuery = (event) => {
   const accountId = event["accountId"]["S"];
   const role = event["role"]["S"];
 
+  if (!/^\d{12}$/.test(accountId)) {
+    throw new Error(`Invalid accountId for Athena query: ${accountId}`);
+  }
+
   const start = new Date(startTime);
   const end = new Date(endTime);
   const partitionFilter = buildPartitionFilter(start, end, accountId);
@@ -110,7 +114,7 @@ export const buildAthenaQuery = (event) => {
     WHERE ${partitionFilter}
       AND eventTime > '${escapeSql(startTime)}'
       AND eventTime < '${escapeSql(endTime)}'
-      AND lower(useridentity.principalId) LIKE '%:${escapeLike(username)}%'
+      AND lower(useridentity.principalId) LIKE '%:${escapeLike(username.toLowerCase())}%'
       AND useridentity.sessionContext.sessionIssuer.arn LIKE '%${escapeLike(role)}%'`;
 };
 
@@ -126,16 +130,19 @@ const startAthenaQuery = async (event) => {
   });
 
   const queryString = buildAthenaQuery(event);
-  const command = new StartQueryExecutionCommand({
+  const params = {
     QueryString: queryString,
     WorkGroup: ATHENA_WORKGROUP,
-    ResultConfiguration: {
-      OutputLocation: `s3://${ATHENA_RESULTS_BUCKET}/team-query-results/`,
-    },
     QueryExecutionContext: {
       Database: ATHENA_DATABASE,
     },
-  });
+  };
+  if (ATHENA_RESULTS_BUCKET) {
+    params.ResultConfiguration = {
+      OutputLocation: `s3://${ATHENA_RESULTS_BUCKET}/team-query-results/`,
+    };
+  }
+  const command = new StartQueryExecutionCommand(params);
 
   const response = await athenaClient.send(command);
   return { queryExecutionId: response.QueryExecutionId, athenaClient };
@@ -438,24 +445,32 @@ export const handler = async (event) => {
   // Attempt to schedule Bedrock auto-analysis (non-blocking)
   await tryScheduleAutoAnalysis(data);
 
+  if (AUDIT_MODE === 'none') {
+    console.log("Audit mode disabled, skipping query.");
+    return;
+  }
+
   if (AUDIT_MODE === 'athena') {
     try {
       const { queryExecutionId, athenaClient } = await startAthenaQuery(data);
       let status = await pollAthenaQuery(athenaClient, queryExecutionId);
-      while (status === 'QUEUED' || status === 'RUNNING') {
+      const MAX_POLL_ATTEMPTS = 120;
+      let attempts = 0;
+      while ((status === 'QUEUED' || status === 'RUNNING') && attempts < MAX_POLL_ATTEMPTS) {
         await new Promise(resolve => setTimeout(resolve, 1000));
         status = await pollAthenaQuery(athenaClient, queryExecutionId);
+        attempts++;
       }
       if (status === 'SUCCEEDED') {
         console.log("Athena query Finished - queryExecutionId:", queryExecutionId);
         return await updateItem(id, queryExecutionId);
       } else {
-        console.error(`Athena query failed with status: ${status}, executionId: ${queryExecutionId}, sessionId: ${id}`);
+        console.error(`Athena query ended with status: ${status} after ${attempts} attempts, executionId: ${queryExecutionId}, sessionId: ${id}`);
       }
     } catch (err) {
       console.error(`Athena query error for session ${id}:`, err);
     }
-  } else {
+  } else if (AUDIT_MODE === 'cloudtrail_lake') {
     const queryId = await start_query(data);
     let status = await get_query_status(queryId);
     while (status) {
@@ -467,5 +482,8 @@ export const handler = async (event) => {
         return response;
       }
     }
+  } else {
+    console.error(`Unknown AUDIT_MODE: '${AUDIT_MODE}', skipping audit query.`);
+    return;
   }
 };

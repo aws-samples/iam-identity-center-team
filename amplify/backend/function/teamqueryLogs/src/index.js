@@ -109,6 +109,11 @@ try {
 exports.handler = async (event) => {
   const queryId = event["arguments"]["queryId"];
 
+  if (AUDIT_MODE === 'none' || !queryId) {
+    console.log("Audit disabled or no queryId recorded; returning empty logs.");
+    return [];
+  }
+
   if (AUDIT_MODE === 'athena') {
     try {
       return await getAthenaResults(queryId);

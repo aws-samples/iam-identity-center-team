@@ -30,7 +30,8 @@
     "AuditMode": {
       "Type": "String",
       "Default": "cloudtrail_lake",
-      "Description": "Audit backend mode: cloudtrail_lake or athena"
+      "AllowedValues": ["cloudtrail_lake", "athena", "none"],
+      "Description": "Audit backend mode: cloudtrail_lake, athena, or none to disable"
     },
     "AthenaRoleArn": {
       "Type": "String",
