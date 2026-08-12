@@ -39,9 +39,7 @@ if [ -z "$SECRET_NAME" ]; then
   aws codecommit create-repository --region $REGION --repository-name team-idc-app --repository-description "Temporary Elevated Access Management (TEAM) Application" 2>/dev/null || true
   git remote remove origin 2>/dev/null || true
   git remote add origin codecommit::$REGION://team-idc-app 2>/dev/null || true
-  # TEMPORARY: push feature branch as main for testing (revert to "git push origin main" when done)
-  git push origin feat/bedrock-audit-ai:main
-  #git push origin main
+  git push origin main
 
   cd ./deployment
   if [[ ! -z "$TAGS" ]]; then

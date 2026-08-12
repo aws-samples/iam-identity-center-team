@@ -184,7 +184,10 @@
               "Fn::If": [
                 "IsBedrockEnabled",
                 {
-                  "Ref": "BedrockGuardrailVersion"
+                  "Fn::GetAtt": [
+                    "BedrockGuardrailVersion",
+                    "Version"
+                  ]
                 },
                 "DRAFT"
               ]
