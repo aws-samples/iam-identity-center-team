@@ -25,7 +25,7 @@ if [ -n "$ATHENA_CLOUDTRAIL_BUCKET" ]; then
 fi
 
 # Build Bedrock parameter overrides
-BEDROCK_PARAMS="BedrockAuditEnabled=${BEDROCK_AUDIT_ENABLED:-false} BedrockModelId=${BEDROCK_MODEL_ID:-anthropic.claude-haiku-4-5-20251001-v1:0} BedrockRegion=${BEDROCK_REGION:-}"
+BEDROCK_PARAMS="BedrockAuditEnabled=${BEDROCK_AUDIT_ENABLED:-false} BedrockModelId=${BEDROCK_MODEL_ID:-amazon.nova-lite-v1:0} BedrockRegion=${BEDROCK_REGION:-}"
 
 if [ -z "$TEAM_ACCOUNT" ]; then 
   export AWS_PROFILE=$ORG_MASTER_PROFILE

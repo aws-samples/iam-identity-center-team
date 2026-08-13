@@ -45,7 +45,7 @@ const GRAPHQL_ENDPOINT = process.env.API_TEAM_GRAPHQLAPIENDPOINTOUTPUT;
 
 // Bedrock configuration
 const BEDROCK_AUDIT_ENABLED = process.env.BEDROCK_AUDIT_ENABLED === 'true';
-const BASE_MODEL_ID = process.env.BEDROCK_MODEL_ID || 'anthropic.claude-haiku-4-5-20251001-v1:0';
+const BASE_MODEL_ID = process.env.BEDROCK_MODEL_ID || 'amazon.nova-lite-v1:0';
 const BEDROCK_REGION = process.env.BEDROCK_REGION || REGION;
 
 // Bedrock Guardrails configuration (prompt attack detection on input)
@@ -57,14 +57,14 @@ const CACHE_MIN_MINUTES = 15;
 
 /**
  * Derive the cross-region inference profile ID from the base model ID and region.
- * Amazon-native models (nova, titan) don't need a geo prefix.
+ * Both Amazon-native models (nova, titan) and third-party models require a geo prefix
+ * for cross-region inference; on-demand invocation without prefix is not supported.
  */
 const resolveModelId = (baseModelId, region) => {
-  // Amazon models don't need cross-region inference prefix
-  if (baseModelId.startsWith('amazon.')) {
+  // Already has a geo prefix — don't double-prefix
+  if (/^(us|eu|ap|au|jp)\./.test(baseModelId)) {
     return baseModelId;
   }
-  // Third-party models need geo prefix for cross-region inference
   const getGeoPrefix = (r) => {
     if (!r) return 'us';
     if (r.startsWith('eu-')) return 'eu';

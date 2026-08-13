@@ -21,14 +21,18 @@ try {
   console.warn("Could not load parameters.json:", e.message);
 }
 
-const BASE_MODEL_ID = parameters.BedrockModelId || "anthropic.claude-haiku-4-5-20251001-v1:0";
+const BASE_MODEL_ID = parameters.BedrockModelId || "amazon.nova-lite-v1:0";
 const BEDROCK_REGION = parameters.BedrockRegion || process.env.REGION || process.env.AWS_REGION;
 
 /**
- * Resolve model ID: Amazon models don't need geo prefix, third-party models do.
+ * Resolve model ID: all models require a geo prefix for cross-region inference.
+ * On-demand invocation without prefix is not supported (including amazon.* models).
  */
 const resolveModelId = (baseModelId, region) => {
-  if (baseModelId.startsWith('amazon.')) return baseModelId;
+  // Already has a geo prefix — don't double-prefix
+  if (/^(us|eu|ap|au|jp)\./.test(baseModelId)) {
+    return baseModelId;
+  }
   const getGeoPrefix = (r) => {
     if (!r) return 'us';
     if (r.startsWith('eu-')) return 'eu';

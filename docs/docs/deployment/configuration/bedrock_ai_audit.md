@@ -21,21 +21,21 @@ Add the following parameters to `deployment/parameters.sh`:
 ```sh
 # Bedrock AI Audit parameters
 BEDROCK_AUDIT_ENABLED=true
-BEDROCK_MODEL_ID=anthropic.claude-haiku-4-5-20251001-v1:0
+BEDROCK_MODEL_ID=amazon.nova-lite-v1:0
 BEDROCK_REGION=$REGION
 ```
 
 | Parameter | Default | Description |
 |-----------|---------|-------------|
 | `BEDROCK_AUDIT_ENABLED` | `false` | Set to `true` to deploy Bedrock AI audit infrastructure. |
-| `BEDROCK_MODEL_ID` | `anthropic.claude-haiku-4-5-20251001-v1:0` | Bedrock model identifier (base ID without geo prefix). |
+| `BEDROCK_MODEL_ID` | `amazon.nova-lite-v1:0` | Bedrock model identifier (base ID without geo prefix). |
 | `BEDROCK_REGION` | Same as `REGION` | Override only if needed. |
 
 Run `./deploy.sh` after updating parameters.
 
 ## Anthropic Model Access (First-Time Setup)
 
-Required one-time per account when using Anthropic models. Not needed for Amazon models (Nova).
+Required one-time per account when using Anthropic models. Not needed for the default Amazon Nova Lite model.
 
 **Step 1 — Submit Anthropic use case:**
 
@@ -77,14 +77,14 @@ After deployment, configure runtime behavior from the **Settings** page:
 
 ## Model Selection
 
-The default model is Claude Haiku 4.5. The geo prefix for cross-region inference is added automatically at runtime.
+The default model is Amazon Nova Lite. The geo prefix for cross-region inference is added automatically at runtime.
 
 To use a different model, update `BEDROCK_MODEL_ID` in `parameters.sh` and redeploy:
 
 | Model | ID |
 |-------|-----|
-| Claude Haiku 4.5 (default) | `anthropic.claude-haiku-4-5-20251001-v1:0` |
-| Amazon Nova Lite | `amazon.nova-lite-v1:0` |
+| Claude Haiku 4.5 | `anthropic.claude-haiku-4-5-20251001-v1:0` |
+| Amazon Nova Lite (default) | `amazon.nova-lite-v1:0` |
 
 Amazon models (Nova) do not require the Anthropic model access steps above.
 
