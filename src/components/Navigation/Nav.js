@@ -94,7 +94,7 @@ function Nav(props) {
                     groupIds={props.groupIds}
                   />
                 </Route>
-                <Route path="/approvals/approve">
+                <Route path="/approvals/approve/:id?">
                   <Approvals
                     addNotification={setNotifications}
                     setActiveHref={setActiveHref}

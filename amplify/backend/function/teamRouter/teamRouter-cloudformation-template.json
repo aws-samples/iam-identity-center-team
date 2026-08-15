@@ -19,6 +19,11 @@
     "SSOLoginUrl": {
       "Type": "String"
     },
+    "TeamAppUrl": {
+      "Type": "String",
+      "Default": "",
+      "Description": "Optional. Public URL of the TEAM web app (e.g. https://main.xxxxx.amplifyapp.com). When set, pending-approval notifications deep-link directly to /approvals/approve/<id> instead of the IAM Identity Center start URL."
+    },
     "customstepfunctionsGrantSMOutput": {
       "Type": "String",
       "Default": "customstepfunctionsGrantSMOutput"
@@ -153,6 +158,9 @@
             },
             "SSO_LOGIN_URL": {
               "Ref": "SSOLoginUrl"
+            },
+            "TEAM_APP_URL": {
+              "Ref": "TeamAppUrl"
             },
             "APPROVER_TABLE_NAME": {
               "Fn::ImportValue": {

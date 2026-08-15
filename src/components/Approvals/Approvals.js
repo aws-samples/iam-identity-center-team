@@ -2,7 +2,7 @@
 // This AWS Content is provided subject to the terms of the AWS Customer Agreement available at
 // http://aws.amazon.com/agreement or other written agreement between Customer and either
 // Amazon Web Services, Inc. or Amazon Web Services EMEA SARL or both.
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Box,
   Button,
@@ -25,7 +25,7 @@ import {
   onCreateRequests,
 } from "../../graphql/subscriptions";
 import { updateStatus, sessions, getRequest, getSetting } from "../Shared/RequestService";
-import { useHistory } from "react-router-dom";
+import { useHistory, useParams } from "react-router-dom";
 import Status from "../Shared/Status";
 import "../../index.css";
 
@@ -207,13 +207,12 @@ function Approvals(props) {
     },
     pagination: { pageSize: preferences.pageSize },
     sorting: {},
-    selection: {
-      trackBy: "id",
-    },
   });
 
-  const { selectedItems } = collectionProps;
+  const [selectedItems, setSelectedItems] = useState([]);
   const history = useHistory();
+  const { id: deepLinkId } = useParams();
+  const autoOpenedRef = useRef(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [refreshLoading, setRefreshLoading] = useState(false);
   const [tableLoading, setTableLoading] = useState(true);
@@ -233,6 +232,31 @@ function Approvals(props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    if (autoOpenedRef.current) return;
+    if (!deepLinkId) return;
+    if (tableLoading) return;
+    autoOpenedRef.current = true;
+    const item = allItems.find((i) => i.id === deepLinkId);
+    if (item) {
+      setSelectedItems([item]);
+      setAction("approved");
+      setmodalHeader("Approve");
+      setVisible(true);
+    } else {
+      props.addNotification([
+        {
+          type: "info",
+          content:
+            "This approval request is not in your pending list. It may have been actioned, expired, or isn't assigned to you.",
+          dismissible: true,
+          onDismiss: () => props.addNotification([]),
+        },
+      ]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allItems, tableLoading, deepLinkId]);
+
   function views() {
     let filter = {
       and: [{ email: { ne: props.user } }, { status: { eq: "pending" } }, { approvers: { contains: props.user } }],
@@ -245,6 +269,7 @@ function Approvals(props) {
       setVisible(false);
       setRefreshLoading(false);
       setComment();
+      setSelectedItems([]);
     });
   }
 
@@ -420,6 +445,10 @@ function Approvals(props) {
         items={items}
         selectionType="single"
         trackBy="id"
+        selectedItems={selectedItems}
+        onSelectionChange={({ detail }) =>
+          setSelectedItems(detail.selectedItems)
+        }
       />
       <div>
         {selectedItems.length ? (
