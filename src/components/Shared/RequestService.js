@@ -166,6 +166,43 @@ export async function getSessionList() {
   }
 }
 
+// Query the requests table by `status` using the byStatus GSI instead of
+// scanning the whole table via listRequests. `status` may be a single value
+// or an array of statuses (each queried and merged). This keeps reads scoped
+// to the small, current status partitions (e.g. pending / in progress).
+// An optional `filter` is passed through to AppSync so it is applied by
+// DynamoDB rather than in the browser.
+export async function getRequestsByStatus(status, filter) {
+  const statuses = Array.isArray(status) ? status : [status];
+  let data = [];
+  try {
+    for (const s of statuses) {
+      let nextToken = null;
+      do {
+        const variables = { status: s, nextToken };
+        if (filter) variables.filter = filter;
+        const requests = await API.graphql(
+          graphqlOperation(requestByStatus, variables)
+        );
+        data = data.concat(requests.data.requestByStatus.items);
+        nextToken = requests.data.requestByStatus.nextToken;
+      } while (nextToken);
+    }
+    return data;
+  } catch (err) {
+    console.log("error fetching requests by status", err);
+    return { error: err };
+  }
+}
+
+// Active sessions for the given user: the "scheduled" and "in progress"
+// partitions, limited to rows the user owns or can approve.
+export async function getActiveSessions(user) {
+  return getRequestsByStatus(["scheduled", "in progress"], {
+    or: [{ email: { eq: user } }, { approvers: { contains: user } }],
+  });
+}
+
 export async function getRequest(id) {
   try {
     const request = await API.graphql(
@@ -214,31 +251,15 @@ export async function sessions(filter) {
   }
 }
 
+// Pending approvals queue for the given approver: the "pending" partition,
+// limited to requests the user did not raise but is an eligible approver for.
 export async function getPendingRequests(userEmail) {
-  let nextToken = null;
-  let data = [];
-  try {
-    do {
-      const request = await API.graphql(
-        graphqlOperation(requestByStatus, {
-          status: "pending",
-          filter: {
-            and: [
-              { email: { ne: userEmail } },
-              { approvers: { contains: userEmail } },
-            ],
-          },
-          nextToken,
-        })
-      );
-      data = data.concat(request.data.requestByStatus.items);
-      nextToken = request.data.requestByStatus.nextToken;
-    } while (nextToken);
-    return data;
-  } catch (err) {
-    console.log("error fetching pending requests");
-    return { error: err };
-  }
+  return getRequestsByStatus("pending", {
+    and: [
+      { email: { ne: userEmail } },
+      { approvers: { contains: userEmail } },
+    ],
+  });
 }
 
 export async function fetchLogs(args) {
