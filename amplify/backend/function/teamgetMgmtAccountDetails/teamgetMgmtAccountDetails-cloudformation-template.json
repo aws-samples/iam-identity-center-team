@@ -15,6 +15,11 @@
     },
     "s3Key": {
       "Type": "String"
+    },
+    "IdentityCenterKmsKeyArn": {
+      "Type": "String",
+      "Default": "",
+      "Description": "Optional KMS key ARN for IAM Identity Center CMK encryption. Required when Identity Center uses customer managed keys."
     }
   },
   "Conditions": {
@@ -24,6 +29,11 @@
           "Ref": "env"
         },
         "NONE"
+      ]
+    },
+    "HasIdentityCenterKmsKey": {
+      "Fn::Not": [
+        { "Fn::Equals": [{ "Ref": "IdentityCenterKmsKeyArn" }, ""] }
       ]
     }
   },
@@ -204,6 +214,33 @@
             "Ref": "LambdaExecutionRole"
           }
         ]
+      },
+      "DependsOn": "LambdaExecutionRole"
+    },
+    "IdentityCenterKmsPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Condition": "HasIdentityCenterKmsKey",
+      "Properties": {
+        "PolicyName": "identity-center-kms-policy",
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": "kms:Decrypt",
+              "Resource": { "Ref": "IdentityCenterKmsKeyArn" },
+              "Condition": {
+                "StringLike": {
+                  "kms:ViaService": [
+                    "sso.*.amazonaws.com",
+                    "identitystore.*.amazonaws.com"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "Roles": [{ "Ref": "LambdaExecutionRole" }]
       },
       "DependsOn": "LambdaExecutionRole"
     }

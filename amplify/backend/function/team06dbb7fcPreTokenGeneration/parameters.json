@@ -1,4 +1,5 @@
 {
     "teamAdminGroup": "team-admin",
-    "teamAuditorGroup": "team auditor"
+    "teamAuditorGroup": "team auditor",
+    "IdentityCenterKmsKeyArn": ""
 }
