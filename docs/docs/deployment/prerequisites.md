@@ -35,7 +35,12 @@ parent: Solution deployment
 
 ### Cloudtrail Lake organization event datastore
 TEAM uses AWS CloudTrail Lake for querying, auditing and logging API activities and actions performed by a user during the period of elevated access.
-Create a Cloudtrail Lake organization event datastore in the dedicated TEAM account that stores all log events for all AWS account in your organization
+Create a Cloudtrail Lake organization event datastore in the dedicated TEAM account that stores all log events for all AWS account in your organization.
+
+Alternatively, you can use **Amazon Athena** to query audit logs directly from the S3 bucket of an existing Organization CloudTrail Trail in the Log Archive account. See the [Athena Audit deployment section]({% link docs/deployment/deployment_process.md %}#deploy-athena-audit-stack-alternative-to-cloudtrail-lake) for details.
+
+  > CloudTrail Lake and Athena are mutually exclusive — configure only one audit backend.
+  {: .note}
 
 ## AWS Secrets Manager
 TEAM allows you to use external repositories for deploying the solution. 

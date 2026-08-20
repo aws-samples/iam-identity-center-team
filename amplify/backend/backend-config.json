@@ -290,6 +290,26 @@
       "providerPlugin": "awscloudformation",
       "service": "LambdaLayer"
     },
+    "teamBedrockAnalyzer": {
+      "build": true,
+      "dependsOn": [
+        {
+          "attributes": [
+            "GraphQLAPIIdOutput",
+            "GraphQLAPIEndpointOutput"
+          ],
+          "category": "api",
+          "resourceName": "team"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
+    "teamJustificationCheck": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
     "teamgetAccounts": {
       "build": true,
       "providerPlugin": "awscloudformation",
@@ -374,6 +394,13 @@
           ],
           "category": "custom",
           "resourceName": "cloudtrailLake"
+        },
+        {
+          "attributes": [
+            "Arn"
+          ],
+          "category": "function",
+          "resourceName": "teamBedrockAnalyzer"
         }
       ],
       "providerPlugin": "awscloudformation",
@@ -594,6 +621,38 @@
         {
           "category": "function",
           "resourceName": "teamapplicationboto3layer"
+        }
+      ]
+    },
+    "AMPLIFY_function_teamBedrockAnalyzer_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teamBedrockAnalyzer"
+        }
+      ]
+    },
+    "AMPLIFY_function_teamBedrockAnalyzer_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teamBedrockAnalyzer"
+        }
+      ]
+    },
+    "AMPLIFY_function_teamJustificationCheck_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teamJustificationCheck"
+        }
+      ]
+    },
+    "AMPLIFY_function_teamJustificationCheck_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "teamJustificationCheck"
         }
       ]
     },

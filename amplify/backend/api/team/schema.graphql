@@ -138,6 +138,27 @@ type sessions
   queryId: String
   expireAt: AWSTimestamp @ttl
 }
+type AnalysisReport
+  @model(subscriptions: { level: off })
+  @auth(
+    rules: [
+      { allow: groups, groups: ["Auditors"], operations: [read] }
+      { allow: groups, groups: ["Admin"], operations: [read] }
+      { allow: private, provider: iam, operations: [create, read, update] }
+    ]
+  ) {
+  id: ID!
+  sessionId: String! @index(name: "bySessionId", queryField: "analysisReportBySessionId")
+  requestId: String
+  analyzedAt: AWSDateTime!
+  status: String!
+  summary: AWSJSON
+  coherenceCheck: AWSJSON
+  securityReview: AWSJSON
+  hasSecurityFindings: Boolean
+  hasCoherenceFindings: Boolean
+  error: String
+}
 type Approvers
   @model
   @auth(
@@ -183,6 +204,9 @@ type Settings
   teamAdminGroup: String
   teamAuditorGroup: String
   useOUCache: Boolean
+  bedrockAutoAnalysisEnabled: Boolean
+  bedrockJustificationCheckEnabled: Boolean
+  bedrockAutoAnalysisDelay: Int
 }
 type data @aws_iam @aws_cognito_user_pools {
   name: String
@@ -246,6 +270,10 @@ type InvalidateCacheResult @aws_cognito_user_pools {
 type RequestValidationResult @aws_iam @aws_cognito_user_pools {
   valid: Boolean!
   reason: String
+}
+type JustificationCheckResult @aws_iam @aws_cognito_user_pools {
+  adequate: Boolean!
+  suggestion: String
 }
 type Entitlement @aws_iam @aws_cognito_user_pools {
   accounts: [data]
@@ -419,5 +447,11 @@ type Query {
   ): OUAccountsBatch
     @function(name: "teamgetOUAccounts-${env}")
     @auth(rules: [{ allow: private, provider: iam} { allow: private }])
+  analyzeSession(sessionId: String!, requestId: String!): AnalysisReport
+    @function(name: "teamBedrockAnalyzer-${env}")
+    @auth(rules: [{ allow: groups, groups: ["Auditors"] }])
+  checkJustification(justification: String!, accountName: String!, role: String!): JustificationCheckResult
+    @function(name: "teamJustificationCheck-${env}")
+    @auth(rules: [{ allow: private }])
 }
 

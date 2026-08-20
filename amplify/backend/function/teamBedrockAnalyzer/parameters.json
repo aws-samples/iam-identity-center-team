@@ -1,0 +1,5 @@
+{
+    "BedrockAuditEnabled": "true",
+    "BedrockModelId": "amazon.nova-lite-v1:0",
+    "BedrockRegion": ""
+}

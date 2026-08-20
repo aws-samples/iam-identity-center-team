@@ -1,0 +1,368 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >
+  Athena Audit Satellite Stack - Deployed in the Log Archive account.
+  Creates cross-account IAM role, Athena workgroup, results bucket,
+  Glue database and CloudTrail table with partition projection.
+
+Parameters:
+  TeamAccountId:
+    Type: String
+    Description: TEAM deployment account ID for cross-account trust policy
+    AllowedPattern: "\\d{12}"
+    ConstraintDescription: Must be a valid 12-digit AWS account ID
+
+  CloudTrailBucket:
+    Type: String
+    Description: S3 bucket containing organizational CloudTrail logs
+
+  CloudTrailPrefix:
+    Type: String
+    Description: Optional S3 prefix for CloudTrail logs
+    Default: ""
+
+  OrganizationId:
+    Type: String
+    Description: AWS Organization ID used in the S3 path structure
+    AllowedPattern: "o-[a-z0-9]{10,32}"
+    ConstraintDescription: Must be a valid AWS Organization ID
+
+  WorkgroupName:
+    Type: String
+    Description: Name for the Athena workgroup
+    Default: "team-audit"
+
+  DatabaseName:
+    Type: String
+    Description: Name for the Glue database
+    Default: "team_cloudtrail_db"
+
+  TableName:
+    Type: String
+    Description: Name for the CloudTrail external table
+    Default: "cloudtrail_logs"
+
+  CreateResources:
+    Type: String
+    Description: Whether to create Athena resources (workgroup, bucket, database, table). Set to false if they already exist.
+    AllowedValues:
+      - "true"
+      - "false"
+    Default: "true"
+
+  ExistingResultsBucket:
+    Type: String
+    Description: Existing S3 bucket for query results (required when CreateResources is false)
+    Default: ""
+
+  KmsKeyArn:
+    Type: String
+    Description: Optional KMS key ARN for decrypting encrypted CloudTrail logs
+    Default: ""
+
+  LakeFormationEnabled:
+    Type: String
+    Description: Set to true if Lake Formation governs access to the Glue catalog in this account
+    AllowedValues:
+      - "true"
+      - "false"
+    Default: "false"
+
+Conditions:
+  ShouldCreateResources: !Equals [!Ref CreateResources, "true"]
+  HasKmsKey: !Not [!Equals [!Ref KmsKeyArn, ""]]
+  HasCloudTrailPrefix: !Not [!Equals [!Ref CloudTrailPrefix, ""]]
+  UseLakeFormation: !Equals [!Ref LakeFormationEnabled, "true"]
+
+Resources:
+  CrossAccountRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: team-audit-cross-account-athena-role
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${TeamAccountId}:root"
+            Action: "sts:AssumeRole"
+            Condition:
+              ArnLike:
+                "aws:PrincipalArn": !Sub "arn:aws:iam::${TeamAccountId}:role/team*applicationLambdaRole*"
+      Policies:
+        - PolicyName: AthenaQueryExecution
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: AthenaQueryAccess
+                Effect: Allow
+                Action:
+                  - athena:StartQueryExecution
+                  - athena:GetQueryExecution
+                  - athena:GetQueryResults
+                  - athena:StopQueryExecution
+                Resource:
+                  - !Sub "arn:aws:athena:${AWS::Region}:${AWS::AccountId}:workgroup/${WorkgroupName}"
+              - Sid: GlueCatalogRead
+                Effect: Allow
+                Action:
+                  - glue:GetDatabase
+                  - glue:GetTable
+                  - glue:GetPartitions
+                Resource:
+                  - !Sub "arn:aws:glue:${AWS::Region}:${AWS::AccountId}:catalog"
+                  - !Sub "arn:aws:glue:${AWS::Region}:${AWS::AccountId}:database/${DatabaseName}"
+                  - !Sub "arn:aws:glue:${AWS::Region}:${AWS::AccountId}:table/${DatabaseName}/${TableName}"
+              - Sid: S3CloudTrailRead
+                Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:ListBucket
+                  - s3:GetBucketLocation
+                Resource:
+                  - !Sub "arn:aws:s3:::${CloudTrailBucket}"
+                  - !Sub "arn:aws:s3:::${CloudTrailBucket}/*"
+              - Sid: S3ResultsBucketAccess
+                Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:ListBucket
+                  - s3:GetBucketLocation
+                  - s3:AbortMultipartUpload
+                Resource:
+                  - !Sub
+                    - "arn:aws:s3:::${BucketName}"
+                    - BucketName: !If [ShouldCreateResources, !Ref ResultsBucket, !Ref ExistingResultsBucket]
+                  - !Sub
+                    - "arn:aws:s3:::${BucketName}/*"
+                    - BucketName: !If [ShouldCreateResources, !Ref ResultsBucket, !Ref ExistingResultsBucket]
+        - !If
+          - HasKmsKey
+          - PolicyName: KmsDecrypt
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: Allow
+                  Action: kms:Decrypt
+                  Resource: !Ref KmsKeyArn
+          - !Ref "AWS::NoValue"
+
+  AthenaWorkgroup:
+    Type: AWS::Athena::WorkGroup
+    Condition: ShouldCreateResources
+    DeletionPolicy: Retain
+    Properties:
+      Name: !Ref WorkgroupName
+      Description: TEAM audit query workgroup
+      State: ENABLED
+      WorkGroupConfiguration:
+        EnforceWorkGroupConfiguration: true
+        ResultConfiguration:
+          OutputLocation: !Sub "s3://${ResultsBucket}/team-query-results/"
+          EncryptionConfiguration:
+            EncryptionOption: SSE_S3
+
+  ResultsBucket:
+    Type: AWS::S3::Bucket
+    Condition: ShouldCreateResources
+    DeletionPolicy: Retain
+    Properties:
+      BucketName: !Sub "team-athena-results-${AWS::AccountId}-${AWS::Region}"
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      LifecycleConfiguration:
+        Rules:
+          - Id: ExpireQueryResults
+            Status: Enabled
+            ExpirationInDays: 7
+
+  ResultsBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Condition: ShouldCreateResources
+    Properties:
+      Bucket: !Ref ResultsBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: DenyUnencryptedUploads
+            Effect: Deny
+            Principal: "*"
+            Action: s3:PutObject
+            Resource: !Sub "arn:aws:s3:::${ResultsBucket}/*"
+            Condition:
+              StringNotEquals:
+                "s3:x-amz-server-side-encryption": "AES256"
+          - Sid: DenyInsecureTransport
+            Effect: Deny
+            Principal: "*"
+            Action: "s3:*"
+            Resource:
+              - !Sub "arn:aws:s3:::${ResultsBucket}"
+              - !Sub "arn:aws:s3:::${ResultsBucket}/*"
+            Condition:
+              Bool:
+                "aws:SecureTransport": "false"
+
+  GlueDatabase:
+    Type: AWS::Glue::Database
+    Condition: ShouldCreateResources
+    Properties:
+      CatalogId: !Ref "AWS::AccountId"
+      DatabaseInput:
+        Name: !Ref DatabaseName
+        Description: TEAM CloudTrail audit logs database
+
+  GlueTable:
+    Type: AWS::Glue::Table
+    Condition: ShouldCreateResources
+    DependsOn: GlueDatabase
+    Properties:
+      CatalogId: !Ref "AWS::AccountId"
+      DatabaseName: !Ref DatabaseName
+      TableInput:
+        Name: !Ref TableName
+        Description: Organization CloudTrail logs with partition projection (account_id injected)
+        TableType: EXTERNAL_TABLE
+        Parameters:
+          EXTERNAL: "TRUE"
+          projection.enabled: "true"
+          projection.account_id.type: "injected"
+          projection.region.type: "enum"
+          projection.region.values: "us-east-1,us-east-2,us-west-1,us-west-2,eu-west-1,eu-west-2,eu-west-3,eu-central-1,eu-north-1,ap-southeast-1,ap-southeast-2,ap-northeast-1,ap-northeast-2,ap-south-1,sa-east-1,ca-central-1"
+          projection.year.type: "integer"
+          projection.year.range: "2020,2030"
+          projection.year.digits: "4"
+          projection.month.type: "integer"
+          projection.month.range: "1,12"
+          projection.month.digits: "2"
+          projection.day.type: "integer"
+          projection.day.range: "1,31"
+          projection.day.digits: "2"
+          storage.location.template: !If
+            - HasCloudTrailPrefix
+            - !Sub "s3://${CloudTrailBucket}/${CloudTrailPrefix}/AWSLogs/${OrganizationId}/${!account_id}/CloudTrail/${!region}/${!year}/${!month}/${!day}"
+            - !Sub "s3://${CloudTrailBucket}/AWSLogs/${OrganizationId}/${!account_id}/CloudTrail/${!region}/${!year}/${!month}/${!day}"
+        StorageDescriptor:
+          Location: !If
+            - HasCloudTrailPrefix
+            - !Sub "s3://${CloudTrailBucket}/${CloudTrailPrefix}/AWSLogs/${OrganizationId}/"
+            - !Sub "s3://${CloudTrailBucket}/AWSLogs/${OrganizationId}/"
+          InputFormat: com.amazon.emr.cloudtrail.CloudTrailInputFormat
+          OutputFormat: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+          SerdeInfo:
+            SerializationLibrary: org.apache.hive.hcatalog.data.JsonSerDe
+          Columns:
+            - Name: eventversion
+              Type: string
+            - Name: useridentity
+              Type: "struct<type:string,principalId:string,arn:string,accountId:string,invokedBy:string,accessKeyId:string,userName:string,sessionContext:struct<attributes:struct<mfaAuthenticated:string,creationDate:string>,sessionIssuer:struct<type:string,principalId:string,arn:string,accountId:string,userName:string>>>"
+            - Name: eventtime
+              Type: string
+            - Name: eventsource
+              Type: string
+            - Name: eventname
+              Type: string
+            - Name: awsregion
+              Type: string
+            - Name: sourceipaddress
+              Type: string
+            - Name: useragent
+              Type: string
+            - Name: errorcode
+              Type: string
+            - Name: errormessage
+              Type: string
+            - Name: requestparameters
+              Type: string
+            - Name: responseelements
+              Type: string
+            - Name: additionaleventdata
+              Type: string
+            - Name: requestid
+              Type: string
+            - Name: eventid
+              Type: string
+            - Name: readonly
+              Type: string
+            - Name: resources
+              Type: "array<struct<arn:string,accountId:string,type:string>>"
+            - Name: eventtype
+              Type: string
+            - Name: apiversion
+              Type: string
+            - Name: recipientaccountid
+              Type: string
+            - Name: serviceeventdetails
+              Type: string
+            - Name: sharedeventid
+              Type: string
+            - Name: vpcendpointid
+              Type: string
+        PartitionKeys:
+          - Name: account_id
+            Type: string
+          - Name: region
+            Type: string
+          - Name: year
+            Type: string
+          - Name: month
+            Type: string
+          - Name: day
+            Type: string
+
+  LakeFormationDbPermission:
+    Type: AWS::LakeFormation::Permissions
+    Condition: UseLakeFormation
+    DependsOn: CrossAccountRole
+    Properties:
+      DataLakePrincipal:
+        DataLakePrincipalIdentifier: !GetAtt CrossAccountRole.Arn
+      Resource:
+        DatabaseResource:
+          Name: !Ref DatabaseName
+      Permissions:
+        - DESCRIBE
+
+  LakeFormationTablePermission:
+    Type: AWS::LakeFormation::Permissions
+    Condition: UseLakeFormation
+    DependsOn: CrossAccountRole
+    Properties:
+      DataLakePrincipal:
+        DataLakePrincipalIdentifier: !GetAtt CrossAccountRole.Arn
+      Resource:
+        TableResource:
+          DatabaseName: !Ref DatabaseName
+          Name: !Ref TableName
+      Permissions:
+        - SELECT
+
+Outputs:
+  CrossAccountRoleArn:
+    Description: ARN of the cross-account IAM role for TEAM Athena access
+    Value: !GetAtt CrossAccountRole.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}-CrossAccountRoleArn"
+
+  AthenaWorkgroupName:
+    Description: Name of the Athena workgroup
+    Value: !Ref WorkgroupName
+
+  ResultsBucketName:
+    Description: Name of the query results S3 bucket
+    Value: !If [ShouldCreateResources, !Ref ResultsBucket, !Ref ExistingResultsBucket]
+
+  DatabaseName:
+    Description: Name of the Glue database
+    Value: !Ref DatabaseName
+
+  TableName:
+    Description: Name of the CloudTrail table
+    Value: !Ref TableName

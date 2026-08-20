@@ -26,6 +26,73 @@
     "apiteamGraphQLAPIEndpointOutput": {
       "Type": "String",
       "Default": "apiteamGraphQLAPIEndpointOutput"
+    },
+    "AuditMode": {
+      "Type": "String",
+      "Default": "cloudtrail_lake",
+      "AllowedValues": ["cloudtrail_lake", "athena", "none"],
+      "Description": "Audit backend mode: cloudtrail_lake, athena, or none to disable"
+    },
+    "AthenaRoleArn": {
+      "Type": "String",
+      "Default": "",
+      "Description": "ARN of the cross-account IAM role for Athena access"
+    },
+    "AthenaWorkgroup": {
+      "Type": "String",
+      "Default": "team-audit",
+      "Description": "Athena workgroup name"
+    },
+    "AthenaDatabase": {
+      "Type": "String",
+      "Default": "team_cloudtrail_db",
+      "Description": "Athena Glue database name"
+    },
+    "AthenaTable": {
+      "Type": "String",
+      "Default": "cloudtrail_logs",
+      "Description": "Athena Glue table name"
+    },
+    "AthenaResultsBucket": {
+      "Type": "String",
+      "Default": "",
+      "Description": "S3 bucket for Athena query results"
+    },
+    "AthenaCloudTrailBucket": {
+      "Type": "String",
+      "Default": "",
+      "Description": "S3 bucket containing CloudTrail logs"
+    },
+    "AthenaCloudTrailPrefix": {
+      "Type": "String",
+      "Default": "",
+      "Description": "S3 prefix for CloudTrail logs"
+    },
+    "AthenaKmsKeyArn": {
+      "Type": "String",
+      "Default": "",
+      "Description": "KMS key ARN for Athena encryption"
+    },
+    "BedrockAuditEnabled": {
+      "Type": "String",
+      "Default": "false",
+      "AllowedValues": ["true", "false"],
+      "Description": "Whether Bedrock AI audit feature is enabled"
+    },
+    "BedrockModelId": {
+      "Type": "String",
+      "Default": "anthropic.claude-3-haiku-20240307-v1:0",
+      "Description": "Amazon Bedrock model identifier"
+    },
+    "BedrockRegion": {
+      "Type": "String",
+      "Default": "",
+      "Description": "AWS region for Bedrock API calls"
+    },
+    "functionteamBedrockAnalyzerArn": {
+      "Type": "String",
+      "Default": "",
+      "Description": "ARN of the teamBedrockAnalyzer Lambda function (from Amplify dependency)"
     }
   },
   "Conditions": {
@@ -35,6 +102,22 @@
           "Ref": "env"
         },
         "NONE"
+      ]
+    },
+    "IsAthenaMode": {
+      "Fn::Equals": [
+        {
+          "Ref": "AuditMode"
+        },
+        "athena"
+      ]
+    },
+    "IsBedrockEnabled": {
+      "Fn::Equals": [
+        {
+          "Ref": "BedrockAuditEnabled"
+        },
+        "true"
       ]
     }
   },
@@ -97,6 +180,51 @@
               "Fn::ImportValue": {
                 "Fn::Sub": "${apiteamGraphQLAPIIdOutput}:GetAtt:sessionsTable:Name"
               }
+            },
+            "AUDIT_MODE": {
+              "Ref": "AuditMode"
+            },
+            "ATHENA_ROLE_ARN": {
+              "Ref": "AthenaRoleArn"
+            },
+            "ATHENA_WORKGROUP": {
+              "Ref": "AthenaWorkgroup"
+            },
+            "ATHENA_DATABASE": {
+              "Ref": "AthenaDatabase"
+            },
+            "ATHENA_TABLE": {
+              "Ref": "AthenaTable"
+            },
+            "ATHENA_RESULTS_BUCKET": {
+              "Ref": "AthenaResultsBucket"
+            },
+            "ATHENA_CLOUDTRAIL_BUCKET": {
+              "Ref": "AthenaCloudTrailBucket"
+            },
+            "ATHENA_CLOUDTRAIL_PREFIX": {
+              "Ref": "AthenaCloudTrailPrefix"
+            },
+            "ATHENA_KMS_KEY_ARN": {
+              "Ref": "AthenaKmsKeyArn"
+            },
+            "BEDROCK_AUDIT_ENABLED": {
+              "Ref": "BedrockAuditEnabled"
+            },
+            "BEDROCK_ANALYZER_FUNCTION_ARN": {
+              "Ref": "functionteamBedrockAnalyzerArn"
+            },
+            "BEDROCK_SCHEDULER_ROLE_ARN": {
+              "Fn::If": [
+                "IsBedrockEnabled",
+                {
+                  "Fn::GetAtt": [
+                    "BedrockAutoAnalysisSchedulerRole",
+                    "Arn"
+                  ]
+                },
+                ""
+              ]
             }
           }
         },
@@ -372,6 +500,140 @@
         ]
       },
       "DependsOn": "LambdaExecutionRole"
+    },
+    "AthenaAssumeRolePolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Condition": "IsAthenaMode",
+      "DependsOn": [
+        "LambdaExecutionRole"
+      ],
+      "Properties": {
+        "PolicyName": "athena-assume-role-policy",
+        "Roles": [
+          {
+            "Ref": "LambdaExecutionRole"
+          }
+        ],
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "sts:AssumeRole"
+              ],
+              "Resource": [
+                {
+                  "Ref": "AthenaRoleArn"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "BedrockAutoAnalysisSchedulerRole": {
+      "Type": "AWS::IAM::Role",
+      "Condition": "IsBedrockEnabled",
+      "Properties": {
+        "RoleName": {
+          "Fn::If": [
+            "ShouldNotCreateEnvResources",
+            "teamBedrockAutoAnalysisSchedulerRole",
+            {
+              "Fn::Join": [
+                "",
+                [
+                  "teamBedrockAutoAnalysisSchedulerRole",
+                  "-",
+                  {
+                    "Ref": "env"
+                  }
+                ]
+              ]
+            }
+          ]
+        },
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "scheduler.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "InvokeBedrockAnalyzerLambda",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": "lambda:InvokeFunction",
+                  "Resource": {
+                    "Ref": "functionteamBedrockAnalyzerArn"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "BedrockSchedulerPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Condition": "IsBedrockEnabled",
+      "DependsOn": [
+        "LambdaExecutionRole"
+      ],
+      "Properties": {
+        "PolicyName": "bedrock-scheduler-policy",
+        "Roles": [
+          {
+            "Ref": "LambdaExecutionRole"
+          }
+        ],
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "scheduler:CreateSchedule"
+              ],
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:scheduler:${AWS::Region}:${AWS::AccountId}:schedule/default/team-auto-analysis-*"
+                }
+              ]
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "iam:PassRole"
+              ],
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "BedrockAutoAnalysisSchedulerRole",
+                    "Arn"
+                  ]
+                }
+              ],
+              "Condition": {
+                "StringEquals": {
+                  "iam:PassedToService": "scheduler.amazonaws.com"
+                }
+              }
+            }
+          ]
+        }
+      }
     }
   },
   "Outputs": {

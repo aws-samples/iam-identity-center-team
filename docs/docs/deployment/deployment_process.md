@@ -151,6 +151,62 @@ Go to Amplify console: **AWS Amplify -> All apps -> TEAM-IDC-APP -> Hosting envi
 ### 🚀 Next Step: [Configure TEAM Application]({% link docs/deployment/configuration/index.md %})
 {: .no_toc}
 
+## Use Athena Audit (alternative to CloudTrail Lake)
+
+The `deployment/athena-audit.yml` template provisions the required resources in the **Log Archive account** (the account hosting the Organization Trail S3 bucket). It creates a cross-account IAM role, and optionally the Athena workgroup, results bucket, database, and table if they do not already exist.
+
+### Deployment steps
+
+1. **Deploy the Athena stack** in the Log Archive account:
+
+```sh
+aws cloudformation deploy \
+  --template-file deployment/athena-audit.yml \
+  --stack-name team-athena-audit \
+  --capabilities CAPABILITY_NAMED_IAM \
+  --parameter-overrides \
+    TeamAccountId=<TEAM_ACCOUNT_ID> \
+    CloudTrailBucket=<CLOUDTRAIL_BUCKET_NAME> \
+    OrganizationId=<ORG_ID> \
+  --profile <LOG_ARCHIVE_PROFILE>
+```
+
+   If your trail uses an S3 prefix (e.g. the org ID for Control Tower), add `CloudTrailPrefix=<PREFIX>`. If CloudTrail logs are KMS-encrypted, add `KmsKeyArn=<KEY_ARN>`. If the account uses Lake Formation, add `LakeFormationEnabled=true`.
+   
+   To skip resource creation and use existing workgroup, bucket, database, and table, set `CreateResources=false` and provide `ExistingResultsBucket=<BUCKET_NAME>`,`WorkgroupName`, `DatabaseName`, and `TableName`.
+
+2. **Update `parameters.sh`** with the Athena parameters:
+
+```sh
+ATHENA_CLOUDTRAIL_BUCKET=<CloudTrail bucket name>
+ATHENA_LOGGING_ACCOUNT_ID=<Logging account ID>
+```
+
+   Do not set `CLOUDTRAIL_AUDIT_LOGS` when using Athena. Add `ATHENA_CLOUDTRAIL_PREFIX` if your trail uses a prefix, and `ATHENA_KMS_KEY_ARN` if logs are encrypted.
+   
+   If the Athena resources already existed with custom names, also set `ATHENA_RESULTS_BUCKET`, `ATHENA_WORKGROUP`, `ATHENA_DATABASE`, or `ATHENA_TABLE` to override the defaults. 
+
+3. **Follow the standard deployment steps** above (run `./deploy.sh`).
+
+### KMS prerequisites
+
+> If the Organization Trail S3 bucket is encrypted with a customer-managed KMS key, the key policy must grant `kms:Decrypt` to the cross-account role (`arn:aws:iam::<log-archive-account>:role/team-audit-cross-account-athena-role`). The `athena-audit.yml` template creates the IAM policy on the role side via the `KmsKeyArn` parameter, but the KMS key policy itself must be updated separately by the key administrator.
+{: .important}
+
+### Cleanup / Decommissioning
+
+When deleting the `team-athena-audit` stack, the Athena workgroup and results S3 bucket are **retained** (`DeletionPolicy: Retain`) to avoid `DELETE_FAILED` errors caused by non-empty buckets or active workgroup history. After stack deletion, manually remove:
+
+1. The Athena workgroup (default: `team-audit`)
+2. The results S3 bucket (default: `team-athena-results-<account>-<region>`)
+3. The Glue database and table (if created by the stack)
+
+### Table schema
+
+The expected Glue table schema (columns, partition keys, partition projection configuration) is defined in `deployment/athena-audit.yml`. Use the CloudFormation template as the source of truth for the table structure.
+
+---
+
 ## Deploying TEAM into management account
 > We strongly recommend and encourage deploying TEAM into a **delegated admin account** (**not management account**) as per [AWS best practice](https://docs.aws.amazon.com/organizations/latest/userguide/orgs_best-practices_mgmt-acct.html#best-practices_mgmt-use). If you have a valid use case for deploying in the management account, please proceed with caution and consider the necessity of stringent management account access controls.
 {: .warning}

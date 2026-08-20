@@ -1,0 +1,540 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Lambda Function resource stack creation using Amplify CLI",
+  "Parameters": {
+    "CloudWatchRule": {
+      "Type": "String",
+      "Default": "NONE",
+      "Description": " Schedule Expression"
+    },
+    "deploymentBucketName": {
+      "Type": "String"
+    },
+    "env": {
+      "Type": "String"
+    },
+    "s3Key": {
+      "Type": "String"
+    },
+    "apiteamGraphQLAPIIdOutput": {
+      "Type": "String",
+      "Default": "apiteamGraphQLAPIIdOutput"
+    },
+    "apiteamGraphQLAPIEndpointOutput": {
+      "Type": "String",
+      "Default": "apiteamGraphQLAPIEndpointOutput"
+    },
+    "BedrockAuditEnabled": {
+      "Type": "String",
+      "Default": "false",
+      "AllowedValues": ["true", "false"],
+      "Description": "Whether Bedrock AI audit feature is enabled"
+    },
+    "BedrockModelId": {
+      "Type": "String",
+      "Default": "anthropic.claude-haiku-4-5-20251001-v1:0",
+      "Description": "Amazon Bedrock model identifier"
+    },
+    "BedrockRegion": {
+      "Type": "String",
+      "Default": "",
+      "Description": "AWS region for Bedrock invocation"
+    },
+    "AthenaRoleArn": {
+      "Type": "String",
+      "Default": "",
+      "Description": "ARN of the cross-account IAM role for Athena access"
+    },
+    "AthenaWorkgroup": {
+      "Type": "String",
+      "Default": "team-audit",
+      "Description": "Athena workgroup name"
+    },
+    "AthenaDatabase": {
+      "Type": "String",
+      "Default": "team_cloudtrail_db",
+      "Description": "Athena Glue database name"
+    },
+    "AthenaTable": {
+      "Type": "String",
+      "Default": "cloudtrail_logs",
+      "Description": "Athena Glue table name"
+    },
+    "AthenaResultsBucket": {
+      "Type": "String",
+      "Default": "",
+      "Description": "S3 bucket for Athena query results"
+    }
+  },
+  "Conditions": {
+    "ShouldNotCreateEnvResources": {
+      "Fn::Equals": [
+        {
+          "Ref": "env"
+        },
+        "NONE"
+      ]
+    },
+    "IsBedrockEnabled": {
+      "Fn::Equals": [
+        {
+          "Ref": "BedrockAuditEnabled"
+        },
+        "true"
+      ]
+    }
+  },
+  "Resources": {
+    "LambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Metadata": {
+        "aws:asset:path": "./src",
+        "aws:asset:property": "Code"
+      },
+      "Properties": {
+        "Architectures": [
+          "arm64"
+        ],
+        "Code": {
+          "S3Bucket": {
+            "Ref": "deploymentBucketName"
+          },
+          "S3Key": {
+            "Ref": "s3Key"
+          }
+        },
+        "Handler": "index.handler",
+        "FunctionName": {
+          "Fn::If": [
+            "ShouldNotCreateEnvResources",
+            "teamBedrockAnalyzer",
+            {
+              "Fn::Join": [
+                "",
+                [
+                  "teamBedrockAnalyzer",
+                  "-",
+                  {
+                    "Ref": "env"
+                  }
+                ]
+              ]
+            }
+          ]
+        },
+        "Environment": {
+          "Variables": {
+            "ENV": {
+              "Ref": "env"
+            },
+            "REGION": {
+              "Ref": "AWS::Region"
+            },
+            "BEDROCK_AUDIT_ENABLED": {
+              "Ref": "BedrockAuditEnabled"
+            },
+            "BEDROCK_MODEL_ID": {
+              "Ref": "BedrockModelId"
+            },
+            "BEDROCK_REGION": {
+              "Fn::If": [
+                "ShouldNotCreateEnvResources",
+                {
+                  "Ref": "AWS::Region"
+                },
+                {
+                  "Ref": "BedrockRegion"
+                }
+              ]
+            },
+            "API_AWSPIM_GRAPHQLAPIIDOUTPUT": {
+              "Ref": "apiteamGraphQLAPIIdOutput"
+            },
+            "API_TEAM_GRAPHQLAPIENDPOINTOUTPUT": {
+              "Ref": "apiteamGraphQLAPIEndpointOutput"
+            },
+            "ATHENA_ROLE_ARN": {
+              "Ref": "AthenaRoleArn"
+            },
+            "ATHENA_WORKGROUP": {
+              "Ref": "AthenaWorkgroup"
+            },
+            "ATHENA_DATABASE": {
+              "Ref": "AthenaDatabase"
+            },
+            "ATHENA_TABLE": {
+              "Ref": "AthenaTable"
+            },
+            "ATHENA_RESULTS_BUCKET": {
+              "Ref": "AthenaResultsBucket"
+            },
+            "BEDROCK_GUARDRAIL_ID": {
+              "Fn::If": [
+                "IsBedrockEnabled",
+                {
+                  "Fn::GetAtt": [
+                    "BedrockGuardrail",
+                    "GuardrailId"
+                  ]
+                },
+                ""
+              ]
+            },
+            "BEDROCK_GUARDRAIL_VERSION": {
+              "Fn::If": [
+                "IsBedrockEnabled",
+                {
+                  "Fn::GetAtt": [
+                    "BedrockGuardrailVersion",
+                    "Version"
+                  ]
+                },
+                "DRAFT"
+              ]
+            }
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "LambdaExecutionRole",
+            "Arn"
+          ]
+        },
+        "Runtime": "nodejs22.x",
+        "Layers": [],
+        "Timeout": 300
+      }
+    },
+    "LambdaExecutionRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": {
+          "Fn::If": [
+            "ShouldNotCreateEnvResources",
+            "teamBedrockAnalyzerapplicationLambdaRole",
+            {
+              "Fn::Join": [
+                "",
+                [
+                  "teamBedrockAnalyzerapplicationLambdaRole",
+                  "-",
+                  {
+                    "Ref": "env"
+                  }
+                ]
+              ]
+            }
+          ]
+        },
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "lambda.amazonaws.com"
+                ]
+              },
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "lambdaexecutionpolicy": {
+      "DependsOn": [
+        "LambdaExecutionRole"
+      ],
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "lambda-execution-policy",
+        "Roles": [
+          {
+            "Ref": "LambdaExecutionRole"
+          }
+        ],
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+              ],
+              "Resource": {
+                "Fn::Sub": [
+                  "arn:aws:logs:${region}:${account}:log-group:/aws/lambda/${lambda}:log-stream:*",
+                  {
+                    "region": {
+                      "Ref": "AWS::Region"
+                    },
+                    "account": {
+                      "Ref": "AWS::AccountId"
+                    },
+                    "lambda": {
+                      "Ref": "LambdaFunction"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    "AmplifyResourcesPolicy": {
+      "DependsOn": [
+        "LambdaExecutionRole"
+      ],
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "amplify-lambda-execution-policy",
+        "Roles": [
+          {
+            "Ref": "LambdaExecutionRole"
+          }
+        ],
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "appsync:GraphQL"
+              ],
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:appsync:",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      ":",
+                      {
+                        "Ref": "AWS::AccountId"
+                      },
+                      ":apis/",
+                      {
+                        "Ref": "apiteamGraphQLAPIIdOutput"
+                      },
+                      "/types/Query/*"
+                    ]
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:appsync:",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      ":",
+                      {
+                        "Ref": "AWS::AccountId"
+                      },
+                      ":apis/",
+                      {
+                        "Ref": "apiteamGraphQLAPIIdOutput"
+                      },
+                      "/types/Mutation/*"
+                    ]
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "BedrockInvokePolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Condition": "IsBedrockEnabled",
+      "DependsOn": [
+        "LambdaExecutionRole"
+      ],
+      "Properties": {
+        "PolicyName": "bedrock-invoke-policy",
+        "Roles": [
+          {
+            "Ref": "LambdaExecutionRole"
+          }
+        ],
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "bedrock:InvokeModel",
+                "bedrock:Converse"
+              ],
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:bedrock:*:*:foundation-model/${BedrockModelId}"
+                },
+                "arn:aws:bedrock:*:*:inference-profile/*"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "AthenaAssumeRolePolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Condition": "IsBedrockEnabled",
+      "DependsOn": [
+        "LambdaExecutionRole"
+      ],
+      "Properties": {
+        "PolicyName": "athena-assume-role-policy",
+        "Roles": [
+          {
+            "Ref": "LambdaExecutionRole"
+          }
+        ],
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "sts:AssumeRole"
+              ],
+              "Resource": [
+                {
+                  "Ref": "AthenaRoleArn"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "BedrockGuardrail": {
+      "Type": "AWS::Bedrock::Guardrail",
+      "Condition": "IsBedrockEnabled",
+      "Properties": {
+        "Name": {
+          "Fn::If": [
+            "ShouldNotCreateEnvResources",
+            "team-bedrock-analyzer-guardrail",
+            {
+              "Fn::Join": [
+                "",
+                [
+                  "team-bedrock-analyzer-guardrail",
+                  "-",
+                  {
+                    "Ref": "env"
+                  }
+                ]
+              ]
+            }
+          ]
+        },
+        "Description": "Prompt injection protection for TEAM Bedrock Analyzer input requests",
+        "BlockedInputMessaging": "Request blocked: potential prompt injection detected in input data.",
+        "BlockedOutputsMessaging": "Response blocked by guardrail policy.",
+        "ContentPolicyConfig": {
+          "FiltersConfig": [
+            {
+              "Type": "PROMPT_ATTACK",
+              "InputStrength": "HIGH",
+              "OutputStrength": "NONE"
+            }
+          ]
+        }
+      }
+    },
+    "BedrockGuardrailVersion": {
+      "Type": "AWS::Bedrock::GuardrailVersion",
+      "Condition": "IsBedrockEnabled",
+      "DependsOn": "BedrockGuardrail",
+      "Properties": {
+        "GuardrailIdentifier": {
+          "Fn::GetAtt": [
+            "BedrockGuardrail",
+            "GuardrailId"
+          ]
+        },
+        "Description": "Initial version"
+      }
+    },
+    "BedrockGuardrailPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Condition": "IsBedrockEnabled",
+      "DependsOn": [
+        "LambdaExecutionRole",
+        "BedrockGuardrail"
+      ],
+      "Properties": {
+        "PolicyName": "bedrock-guardrail-policy",
+        "Roles": [
+          {
+            "Ref": "LambdaExecutionRole"
+          }
+        ],
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "bedrock:ApplyGuardrail"
+              ],
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "BedrockGuardrail",
+                    "GuardrailArn"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "Name": {
+      "Value": {
+        "Ref": "LambdaFunction"
+      }
+    },
+    "Arn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "LambdaFunction",
+          "Arn"
+        ]
+      }
+    },
+    "Region": {
+      "Value": {
+        "Ref": "AWS::Region"
+      }
+    },
+    "LambdaExecutionRole": {
+      "Value": {
+        "Ref": "LambdaExecutionRole"
+      }
+    },
+    "LambdaExecutionRoleArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "LambdaExecutionRole",
+          "Arn"
+        ]
+      }
+    }
+  }
+}

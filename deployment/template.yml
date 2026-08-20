@@ -40,10 +40,62 @@ Parameters:
     Type: Number
     Description: Cache TTL in seconds for OU accounts cache
     Default: 604800
+  AthenaLoggingAccountId:
+    Type: String
+    Description: Logging account ID (used to derive default Athena role ARN and results bucket)
+    Default: ''
+  AthenaRoleArn:
+    Type: String
+    Description: Cross-account IAM role ARN in the Log Archive account for Athena access
+    Default: ''
+  AthenaWorkgroup:
+    Type: String
+    Description: Athena workgroup name in the Log Archive account
+    Default: 'team-audit'
+  AthenaDatabase:
+    Type: String
+    Description: Glue database name containing the CloudTrail table
+    Default: 'team_cloudtrail_db'
+  AthenaTable:
+    Type: String
+    Description: Glue table name for CloudTrail logs
+    Default: 'cloudtrail_logs'
+  AthenaResultsBucket:
+    Type: String
+    Description: S3 bucket for Athena query results in the Log Archive account
+    Default: ''
+  AthenaCloudTrailBucket:
+    Type: String
+    Description: S3 bucket containing CloudTrail logs in the Log Archive account
+    Default: ''
+  AthenaCloudTrailPrefix:
+    Type: String
+    Description: Optional S3 prefix for CloudTrail logs
+    Default: ''
+  AthenaKmsKeyArn:
+    Type: String
+    Description: Optional KMS key ARN for encrypted CloudTrail logs
+    Default: ''
+  BedrockAuditEnabled:
+    Type: String
+    Description: Enable Bedrock AI audit feature
+    AllowedValues:
+      - 'true'
+      - 'false'
+    Default: 'false'
+  BedrockModelId:
+    Type: String
+    Description: Amazon Bedrock model identifier for AI analysis
+    Default: 'anthropic.claude-haiku-4-5-20251001-v1:0'
+  BedrockRegion:
+    Type: String
+    Description: AWS region for Bedrock API calls (defaults to deployment region if empty)
+    Default: ''
 
 Conditions:
   IsEmptyCloudTrailAuditLogs: !Equals [!Ref CloudTrailAuditLogs, ""]
   UseExternalRepo: !Equals [!Ref customRepository, 'Yes']
+  IsBedrockEnabled: !Equals [!Ref BedrockAuditEnabled, 'true']
 
 Resources:
   TriggerAmplifyBuild:
@@ -170,6 +222,30 @@ Resources:
           Value: !Ref customAmplifyDomain
         - Name: CACHE_TTL
           Value: !Ref cacheTTL
+        - Name: ATHENA_LOGGING_ACCOUNT_ID
+          Value: !Ref AthenaLoggingAccountId
+        - Name: ATHENA_ROLE_ARN
+          Value: !Ref AthenaRoleArn
+        - Name: ATHENA_WORKGROUP
+          Value: !Ref AthenaWorkgroup
+        - Name: ATHENA_DATABASE
+          Value: !Ref AthenaDatabase
+        - Name: ATHENA_TABLE
+          Value: !Ref AthenaTable
+        - Name: ATHENA_RESULTS_BUCKET
+          Value: !Ref AthenaResultsBucket
+        - Name: ATHENA_CLOUDTRAIL_BUCKET
+          Value: !Ref AthenaCloudTrailBucket
+        - Name: ATHENA_CLOUDTRAIL_PREFIX
+          Value: !Ref AthenaCloudTrailPrefix
+        - Name: ATHENA_KMS_KEY_ARN
+          Value: !Ref AthenaKmsKeyArn
+        - Name: BEDROCK_AUDIT_ENABLED
+          Value: !Ref BedrockAuditEnabled
+        - Name: BEDROCK_MODEL_ID
+          Value: !Ref BedrockModelId
+        - Name: BEDROCK_REGION
+          Value: !Ref BedrockRegion
         - Name: _CUSTOM_IMAGE
           Value: amplify:al2023
       Tags:

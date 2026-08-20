@@ -11,6 +11,7 @@ import Header from "@awsui/components-react/header";
 import SpaceBetween from "@awsui/components-react/space-between";
 import Button from "@awsui/components-react/button";
 import Textarea from "@awsui/components-react/textarea";
+import Alert from "@awsui/components-react/alert";
 import moment from "moment";
 import { DatePicker } from "antd";
 import "../../index.css";
@@ -28,6 +29,7 @@ import {
 import { useHistory } from "react-router-dom";
 import { API, graphqlOperation } from "aws-amplify";
 import { onPublishPolicy } from "../../graphql/subscriptions";
+import { checkJustification } from "../../graphql/queries";
 import params from "../../parameters.json";
 
 function Request(props) {
@@ -66,6 +68,8 @@ function Request(props) {
   const [maxDuration, setMaxDuration] = useState(9);
   const [ticketRequired, setTicketRequired] = useState(true);
   const [approvalRequired, setApprovalRequired] = useState(true);
+
+  const [bedrockJustificationCheckEnabled, setBedrockJustificationCheckEnabled] = useState(false);
 
   const history = useHistory();
 
@@ -153,6 +157,9 @@ function Request(props) {
         setMaxDuration(parseInt(data.duration));
         setTicketRequired(data.ticketNo);
         setApprovalRequired(data.approval);
+        if (data.bedrockJustificationCheckEnabled != null) {
+          setBedrockJustificationCheckEnabled(data.bedrockJustificationCheckEnabled);
+        }
       }
     });
   }
@@ -161,6 +168,38 @@ function Request(props) {
     getMgmtAccountPs().then((data) => {
       setMgmtPs(data);
     });
+  }
+
+  async function performJustificationCheck(justificationText) {
+    // Only invoke when bedrockJustificationCheckEnabled is true AND bedrockAuditEnabled is true AND Athena mode is active
+    if (!bedrockJustificationCheckEnabled || params.bedrockAuditEnabled !== true || params.auditMode !== 'athena') {
+      return null;
+    }
+    // Don't check empty justifications (handled by standard validation)
+    if (!justificationText || !justificationText.trim()) {
+      return null;
+    }
+    // Need account and role to be selected
+    if (!account.label || !role.label) {
+      return null;
+    }
+    try {
+      const result = await API.graphql(
+        graphqlOperation(checkJustification, {
+          justification: justificationText,
+          accountName: account.label,
+          role: role.label,
+        })
+      );
+      const data = result.data.checkJustification;
+      if (data && data.adequate === false && data.suggestion) {
+        return data.suggestion;
+      }
+      return null;
+    } catch (err) {
+      // On any check failure, fail-open (don't block submission)
+      return null;
+    }
   }
 
   useEffect(() => {
@@ -290,6 +329,13 @@ function Request(props) {
     if (!justification || !/[\p{L}\p{N}]/u.test(justification[0])) {
       setJustificationError("Enter valid business justification");
       error = true;
+    } else {
+      // Run AI justification quality check (blocking)
+      const suggestion = await performJustificationCheck(justification);
+      if (suggestion) {
+        setJustificationError(suggestion);
+        error = true;
+      }
     }
     if ((!ticketNo && ticketRequired) || !/^[a-zA-Z0-9]+$/.test(ticketNo[0])) {
       setTicketError("Enter valid change management ticket number");
