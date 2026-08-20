@@ -4,6 +4,10 @@ Parameters:
   Login:
     Type: String
     Description: IAM IDC Login URL
+  NotificationButtonUrl:
+    Type: String
+    Default: ""
+    Description: Optional override for the "Open TEAM" button URL in notifications. When empty, the SSO login URL is used (default behaviour).
   CloudTrailAuditLogs:
     Type: "String"
     AllowedPattern: "(read_write|read|write|none|arn.*)"
@@ -153,6 +157,8 @@ Resources:
       EnvironmentVariables: 
         - Name: SSO_LOGIN
           Value: !Ref Login
+        - Name: NOTIFICATION_BUTTON_URL
+          Value: !Ref NotificationButtonUrl
         - Name: TEAM_ACCOUNT
           Value: !Ref teamAccount
         - Name: CLOUDTRAIL_AUDIT_LOGS
