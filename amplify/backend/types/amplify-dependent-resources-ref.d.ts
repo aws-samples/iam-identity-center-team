@@ -87,9 +87,6 @@ export type AmplifyDependentResourcesAttributes = {
       "Name": "string",
       "Region": "string"
     },
-    "teamapplicationboto3layer": {
-      "Arn": "string"
-    },
     "teamgetAccounts": {
       "Arn": "string",
       "LambdaExecutionRole": "string",

@@ -168,15 +168,6 @@
     },
     "teamListGroups": {
       "build": true,
-      "dependsOn": [
-        {
-          "attributes": [
-            "Arn"
-          ],
-          "category": "function",
-          "resourceName": "teamapplicationboto3layer"
-        }
-      ],
       "providerPlugin": "awscloudformation",
       "service": "Lambda"
     },
@@ -284,11 +275,6 @@
       ],
       "providerPlugin": "awscloudformation",
       "service": "Lambda"
-    },
-    "teamapplicationboto3layer": {
-      "build": true,
-      "providerPlugin": "awscloudformation",
-      "service": "LambdaLayer"
     },
     "teamgetAccounts": {
       "build": true,
@@ -578,22 +564,6 @@
         {
           "category": "function",
           "resourceName": "teamStatus"
-        }
-      ]
-    },
-    "AMPLIFY_function_teamapplicationboto3layer_deploymentBucketName": {
-      "usedBy": [
-        {
-          "category": "function",
-          "resourceName": "teamapplicationboto3layer"
-        }
-      ]
-    },
-    "AMPLIFY_function_teamapplicationboto3layer_s3Key": {
-      "usedBy": [
-        {
-          "category": "function",
-          "resourceName": "teamapplicationboto3layer"
         }
       ]
     },

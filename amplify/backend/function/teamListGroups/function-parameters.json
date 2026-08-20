@@ -1,11 +1,3 @@
 {
-  "lambdaLayers": [
-    {
-      "type": "ProjectLayer",
-      "resourceName": "awspamapplicationboto3layer",
-      "env": "master",
-      "version": "Always choose latest version",
-      "isLatestVersionSelected": true
-    }
-  ]
+  "lambdaLayers": []
 }
