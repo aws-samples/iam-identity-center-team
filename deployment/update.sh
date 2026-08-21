@@ -42,6 +42,7 @@ if [ -z "$SECRET_NAME" ]; then
           teamAccount="$TEAM_ACCOUNT" \
           cacheTTL=$CACHE_TTL \
           customAmplifyDomain="$UI_DOMAIN" \
+          disableLandingPage="$DISABLE_LANDING_PAGE" \
         --tags $TAGS \
         --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
     else
@@ -55,6 +56,7 @@ if [ -z "$SECRET_NAME" ]; then
           tags="$TAGS" \
           teamAccount="$TEAM_ACCOUNT" \
           cacheTTL=$CACHE_TTL \
+          disableLandingPage="$DISABLE_LANDING_PAGE" \
         --tags $TAGS \
         --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
     fi
@@ -71,6 +73,7 @@ if [ -z "$SECRET_NAME" ]; then
           cacheTTL=$CACHE_TTL \
           tags="$TAGS" \
           customAmplifyDomain="$UI_DOMAIN" \
+          disableLandingPage="$DISABLE_LANDING_PAGE" \
         --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
     else
       aws cloudformation deploy --region $REGION --template-file template.yml \
@@ -82,6 +85,7 @@ if [ -z "$SECRET_NAME" ]; then
           teamAuditGroup="$TEAM_AUDITOR_GROUP" \
           teamAccount="$TEAM_ACCOUNT" \
           cacheTTL=$CACHE_TTL \
+          disableLandingPage="$DISABLE_LANDING_PAGE" \
         --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
     fi
   fi
@@ -102,6 +106,7 @@ else
           teamAccount="$TEAM_ACCOUNT" \
           customAmplifyDomain="$UI_DOMAIN" \
           cacheTTL=$CACHE_TTL \
+          disableLandingPage="$DISABLE_LANDING_PAGE" \
           customRepository="Yes" \
           customRepositorySecretName="$SECRET_NAME" \
         --tags $TAGS \
@@ -119,6 +124,7 @@ else
           cacheTTL=$CACHE_TTL \
           customRepository="Yes" \
           customRepositorySecretName="$SECRET_NAME" \
+          disableLandingPage="$DISABLE_LANDING_PAGE" \
         --tags $TAGS \
         --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
     fi
@@ -137,6 +143,7 @@ else
           tags="$TAGS" \
           customAmplifyDomain="$UI_DOMAIN" \
           cacheTTL=$CACHE_TTL \
+          disableLandingPage="$DISABLE_LANDING_PAGE" \
         --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
     else
       aws cloudformation deploy --region $REGION --template-file template.yml \
@@ -150,6 +157,7 @@ else
           customRepositorySecretName="$SECRET_NAME" \
           teamAccount="$TEAM_ACCOUNT" \
           cacheTTL=$CACHE_TTL \
+          disableLandingPage="$DISABLE_LANDING_PAGE" \
         --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
     fi
   fi

@@ -40,6 +40,13 @@ Parameters:
     Type: Number
     Description: Cache TTL in seconds for OU accounts cache
     Default: 604800
+  disableLandingPage:
+    Type: String
+    Description: When true, bypass the landing page and redirect unauthenticated users directly to SSO
+    AllowedValues:
+      - 'true'
+      - 'false'
+    Default: 'false'
 
 Conditions:
   IsEmptyCloudTrailAuditLogs: !Equals [!Ref CloudTrailAuditLogs, ""]
@@ -172,6 +179,8 @@ Resources:
           Value: !Ref cacheTTL
         - Name: _CUSTOM_IMAGE
           Value: amplify:al2023
+        - Name: DISABLE_LANDING_PAGE
+          Value: !Ref disableLandingPage
       Tags:
         - Key: Branch
           Value: main
