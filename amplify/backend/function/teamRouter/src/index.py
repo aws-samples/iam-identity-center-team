@@ -436,8 +436,13 @@ def list_group_membership(groupId):
             all_groups.extend(page["GroupMemberships"])
         return all_groups
     except ClientError as e:
-        print(e.response['Error']['Message'])
-        
+        error_code = e.response.get('Error', {}).get('Code')
+        error_message = e.response.get('Error', {}).get('Message', str(e))
+        print(f"{error_code}: {error_message}")
+        if error_code == 'ResourceNotFoundException':
+            return []
+        raise
+
 async def get_approvers_details(accountId):
     approver_groups = get_approver_group_ids(accountId)
     approvers = []
