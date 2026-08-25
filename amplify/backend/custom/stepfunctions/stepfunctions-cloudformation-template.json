@@ -1092,19 +1092,6 @@
                 },
                 {
                   "Effect": "Allow",
-                  "Action": [
-                    "iam:Get*",
-                    "iam:List*",
-                    "iam:CreateRole",
-                    "iam:DeleteRole",
-                    "iam:DetachRolePolicy",
-                    "iam:AttachRolePolicy",
-                    "iam:PutRolePolicy"
-                  ],
-                  "Resource": "*"
-                },
-                {
-                  "Effect": "Allow",
                   "Action": ["lambda:InvokeFunction"],
                   "Resource": {
                     "Ref": "functionteamStatusArn"
@@ -1182,17 +1169,6 @@
                   "Resource": {
                     "Fn::Sub": "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/requests*"
                   }
-                },
-                {
-                  "Effect": "Allow",
-                  "Action": [
-                    "iam:Get*",
-                    "iam:List*",
-                    "iam:CreateRole",
-                    "iam:DeleteRole",
-                    "iam:DetachRolePolicy"
-                  ],
-                  "Resource": "*"
                 },
                 {
                   "Effect": "Allow",
