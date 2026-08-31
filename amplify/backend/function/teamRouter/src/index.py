@@ -439,18 +439,27 @@ def list_group_membership(groupId):
         print(e.response['Error']['Message'])
         
 async def get_approvers_details(accountId):
-    approver_groups = get_approver_group_ids(accountId)
+    item = approver_table.get_item(Key={"id": accountId}).get("Item", {})
+    individual_ids = item.get("individualApproverIds") or []
     approvers = []
     approver_ids = []
-    if approver_groups:
-        for group in approver_groups:
-            approvers_data = [get_approvers(result["MemberId"]["UserId"])
-                for result in list_group_membership(group)]
-            for data in approvers_data:
-                if data["approver"] not in approvers:
-                    approvers.append(data["approver"])
-                    approver_ids.append(data["approver_id"].lower())
-    return {"approvers":approvers, "approver_ids":approver_ids}
+    if individual_ids:
+        for user_id in individual_ids:
+            data = get_approvers(user_id)
+            if data["approver"] not in approvers:
+                approvers.append(data["approver"])
+                approver_ids.append(data["approver_id"].lower())
+    else:
+        approver_groups = get_approver_group_ids(accountId)
+        if approver_groups:
+            for group in approver_groups:
+                approvers_data = [get_approvers(result["MemberId"]["UserId"])
+                    for result in list_group_membership(group)]
+                for data in approvers_data:
+                    if data["approver"] not in approvers:
+                        approvers.append(data["approver"])
+                        approver_ids.append(data["approver_id"].lower())
+    return {"approvers": approvers, "approver_ids": approver_ids}
 
 async def updateRequestDetails(request_id, username, accountId, roleId):
     email = get_email(username)
