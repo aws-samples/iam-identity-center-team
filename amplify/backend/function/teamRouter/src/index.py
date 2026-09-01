@@ -445,7 +445,12 @@ async def get_approvers_details(accountId):
     approver_ids = []
     if individual_ids:
         for user_id in individual_ids:
-            data = get_approvers(user_id)
+            try:
+                data = get_approvers(user_id)
+            except ClientError as e:
+                # Stale/removed IDC user shouldn't break approver resolution for the account.
+                print(f"Skipping individual approver {user_id}: {e.response['Error']['Message']}")
+                continue
             if data["approver"] not in approvers:
                 approvers.append(data["approver"])
                 approver_ids.append(data["approver_id"].lower())
