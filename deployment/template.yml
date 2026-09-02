@@ -6,8 +6,13 @@ Parameters:
     Description: IAM IDC Login URL
   CloudTrailAuditLogs:
     Type: "String"
-    AllowedPattern: "(read_write|read|write|none|arn.*)"
-    Description: Which events should be logged on the TEAM Application Cloudtrail Lake EventDataStore.  Acceptable values are "read","write","read_write", and "none".  You may also enter the arn of an existing Cloudtrail Lake EDS.
+    AllowedPattern: "(read_write|read|write|none|arn.*|cwlogs://[A-Za-z0-9_./#-]+)"
+    Description: Which audit log backend TEAM should use. Acceptable values are "read", "write", "read_write" (TEAM creates its own Cloudtrail Lake EDS), "none" (audit lookups disabled), an existing Cloudtrail Lake EDS ARN, or "cwlogs://<log-group-name>" (query an existing CloudWatch Log Group via CloudWatch Logs Insights).
+  CWLogsAssumeRoleArn:
+    Type: String
+    AllowedPattern: "(|arn:.*)"
+    Description: Optional. ARN of a role in another AWS account that TEAM's audit-log Lambdas will assume before running CloudWatch Logs Insights queries. Used when the log group referenced by CloudTrailAuditLogs (cwlogs://<log-group-name>) lives in a different account than TEAM (e.g. Control Tower's aws-controltower/CloudTrailLogs in the management account). See docs/deployment/configuration/cwlogs.md for the trust policy and permissions this role needs. Leave empty for same-account queries.
+    Default: ""
   teamAdminGroup:
     Type: String
     Description: TEAM application Admin group
@@ -160,6 +165,8 @@ Resources:
             - IsEmptyCloudTrailAuditLogs
             - "read_write"
             - !Ref CloudTrailAuditLogs
+        - Name: CWLOGS_ASSUME_ROLE_ARN
+          Value: !Ref CWLogsAssumeRoleArn
         - Name: TEAM_ADMIN_GROUP
           Value: !Ref teamAdminGroup
         - Name: TEAM_AUDITOR_GROUP

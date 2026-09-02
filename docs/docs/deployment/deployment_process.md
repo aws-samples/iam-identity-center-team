@@ -54,7 +54,10 @@ Update the parameters in the **parameters.sh** file as follows:
 - **TEAM_ACCOUNT_PROFILE** - Named profile for TEAM Application deployment Account
 - **TEAM_ADMIN_GROUP** - Name of IAM Identity Center group for TEAM administrators
 - **TEAM_AUDITOR_GROUP** - Name of IAM Identity Center group for TEAM auditors
-- **CLOUDTRAIL_AUDIT_LOGS** - ARN of organization CloudTrail Lake event datastore
+- **CLOUDTRAIL_AUDIT_LOGS** - Which audit log backend TEAM should use. Accepts:
+  - `read`, `write`, or `read_write` - TEAM creates and manages its own CloudTrail Lake event data store recording the corresponding management events
+  - the ARN of an existing CloudTrail Lake event data store
+  - `cwlogs://<log-group-name>` - query an existing CloudTrail-fed CloudWatch Log Group via CloudWatch Logs Insights instead of CloudTrail Lake. See [CloudWatch Logs audit log configuration]({% link docs/deployment/configuration/cwlogs.md %}) for the one-time setup this requires.
 - **SECRET_NAME** - Name of the Secret stored in AWS Secret Manager
 > When using Github as the external repository ensure you use Tokens (classic) (https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#personal-access-tokens-classic) instead of Fine-grained tokens
 
@@ -63,6 +66,7 @@ Update the parameters in the **parameters.sh** file as follows:
 - **TAGS** - Tags that should be propagated to nested stacks and underlying resources
 - **UI_DOMAIN** - Custom domain for Amplify hosted frontend application (should only be included if you have setup a custom domain for the frontend application)
 - **CACHE_TTL** - Cache time-to-live in seconds for organizational unit (OU) account lists (default: 604800 = 1 week). Cached entries automatically expire after this duration. Consider increasing this value (e.g., 2592000 = 30 days) for organizations with infrequent account changes. Administrators can also manually invalidate specific OU cache entries or disable caching entirely via the Settings page.
+- **CWLOGS_ASSUME_ROLE_ARN** - Only used when `CLOUDTRAIL_AUDIT_LOGS` is a `cwlogs://` URI. ARN of a role in another AWS account that TEAM's audit-log Lambdas will assume before running CloudWatch Logs Insights queries. Required when the CloudWatch Log Group lives in a different account than TEAM (typical for AWS Control Tower). See [CloudWatch Logs audit log configuration]({% link docs/deployment/configuration/cwlogs.md %}).
 
 For example:
 
