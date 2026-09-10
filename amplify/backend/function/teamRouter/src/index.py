@@ -464,6 +464,8 @@ def list_group_membership(groupId):
         print(e.response['Error']['Message'])
         
 async def get_approvers_details(accountId):
+    # An approver policy may combine both approver groups and individual approvers;
+    # both are valid simultaneously (union), one is never a fallback for the other.
     approvers = []
     approver_ids = []
 
