@@ -153,6 +153,8 @@ type Approvers
   type: String
   approvers: [String]
   groupIds: [String]
+  individualApprovers: [String]
+  individualApproverIds: [String]
   ticketNo: String
   modifiedBy: String
 }

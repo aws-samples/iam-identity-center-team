@@ -411,6 +411,31 @@ def get_approver_group_ids(accountId):
         approvers.extend(list_approvers(ou["Id"]))
     return approvers
 
+def list_individual_approvers(id):
+    try:
+        response = approver_table.get_item(
+            Key={
+                'id': id
+            }
+        )
+        if "Item" in response.keys():
+            return response['Item'].get('individualApproverIds', [])
+        else:
+            return []
+    except ClientError as e:
+        print(e.response['Error']['Message'])
+        return []
+
+def get_individual_approver_ids(accountId):
+    # Mirrors get_approver_group_ids: an account inherits individual approvers
+    # set on its parent OU, same as it does for approver groups.
+    individual_ids = []
+    individual_ids.extend(list_individual_approvers(accountId))
+    ou = get_ou(accountId)
+    if ou:
+        individual_ids.extend(list_individual_approvers(ou["Id"]))
+    return individual_ids
+
 def get_approvers(userId):
     client = boto3.client('identitystore')
     response = client.describe_user(
@@ -439,31 +464,30 @@ def list_group_membership(groupId):
         print(e.response['Error']['Message'])
         
 async def get_approvers_details(accountId):
-    item = approver_table.get_item(Key={"id": accountId}).get("Item", {})
-    individual_ids = item.get("individualApproverIds") or []
     approvers = []
     approver_ids = []
-    if individual_ids:
-        for user_id in individual_ids:
-            try:
-                data = get_approvers(user_id)
-            except ClientError as e:
-                # Stale/removed IDC user shouldn't break approver resolution for the account.
-                print(f"Skipping individual approver {user_id}: {e.response['Error']['Message']}")
-                continue
-            if data["approver"] not in approvers:
-                approvers.append(data["approver"])
-                approver_ids.append(data["approver_id"].lower())
-    else:
-        approver_groups = get_approver_group_ids(accountId)
-        if approver_groups:
-            for group in approver_groups:
-                approvers_data = [get_approvers(result["MemberId"]["UserId"])
-                    for result in list_group_membership(group)]
-                for data in approvers_data:
-                    if data["approver"] not in approvers:
-                        approvers.append(data["approver"])
-                        approver_ids.append(data["approver_id"].lower())
+
+    def add_approver(data):
+        if data["approver"] not in approvers:
+            approvers.append(data["approver"])
+            approver_ids.append(data["approver_id"].lower())
+
+    # Individual (per-person) approvers, in addition to group-based approvers below.
+    for user_id in get_individual_approver_ids(accountId):
+        try:
+            add_approver(get_approvers(user_id))
+        except ClientError as e:
+            # Stale/removed IDC user shouldn't break approver resolution for the account.
+            print(f"Skipping individual approver {user_id}: {e.response['Error']['Message']}")
+
+    approver_groups = get_approver_group_ids(accountId)
+    if approver_groups:
+        for group in approver_groups:
+            approvers_data = [get_approvers(result["MemberId"]["UserId"])
+                for result in list_group_membership(group)]
+            for data in approvers_data:
+                add_approver(data)
+
     return {"approvers": approvers, "approver_ids": approver_ids}
 
 async def updateRequestDetails(request_id, username, accountId, roleId):
