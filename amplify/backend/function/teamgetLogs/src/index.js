@@ -20,10 +20,18 @@ import {
   StartQueryCommand,
   DescribeQueryCommand,
 } from "@aws-sdk/client-cloudtrail"
+import {
+  AthenaClient,
+  StartQueryExecutionCommand,
+  GetQueryExecutionCommand,
+} from "@aws-sdk/client-athena"
 
 const { Sha256 } = crypto;
 const REGION = process.env.REGION;
-const EventDataStore = (process.env.EVENT_DATA_STORE).split("/").pop();
+const RAW_EVENT_DATA_STORE = process.env.EVENT_DATA_STORE;
+const IS_ATHENA = RAW_EVENT_DATA_STORE.startsWith("athena://");
+const IS_AUDIT_DISABLED = RAW_EVENT_DATA_STORE === "none";
+const EventDataStore = (IS_ATHENA || IS_AUDIT_DISABLED) ? RAW_EVENT_DATA_STORE : RAW_EVENT_DATA_STORE.split("/").pop();
 const GRAPHQL_ENDPOINT = process.env.API_TEAM_GRAPHQLAPIENDPOINTOUTPUT;
 
 // const {
@@ -33,6 +41,7 @@ const GRAPHQL_ENDPOINT = process.env.API_TEAM_GRAPHQLAPIENDPOINTOUTPUT;
 // } = require("@aws-sdk/client-cloudtrail");
 
 const client = new CloudTrailClient({ region: REGION });
+const athenaClient = new AthenaClient({ region: REGION });
 
 const query = /* GraphQL */ `
   mutation UpdateSessions(
@@ -151,11 +160,92 @@ const start_query = async (event) => {
   }
 };
 
+// athena:// URIs are validated by the CloudTrailAuditLogs AllowedPattern, but the
+// values interpolated into the query below (accountId, username, role, times) come
+// from a user-supplied request record, so they are escaped/validated explicitly.
+const escapeSqlLiteral = (value) => `'${String(value).replace(/'/g, "''")}'`;
+
+const parseAthenaTarget = (target) => {
+  const [workgroup, database, table] = target.slice("athena://".length).split("/");
+  return { workgroup, database, table };
+};
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const start_query_athena = async (event) => {
+  const startTime = event["startTime"]["S"];
+  const endTime = event["endTime"]["S"];
+  const username = event["username"]["S"].replace('idc_', '');
+  const accountId = event["accountId"]["S"];
+  const role = event["role"]["S"];
+
+  if (!/^\d{12}$/.test(accountId)) {
+    console.log("Error", new Error(`Invalid accountId for Athena query: ${accountId}`));
+    return;
+  }
+
+  const { workgroup, database, table } = parseAthenaTarget(EventDataStore);
+  const startDate = startTime.slice(0, 10).replace(/-/g, "/");
+  const endDate = endTime.slice(0, 10).replace(/-/g, "/");
+
+  try {
+    const input = {
+      QueryString: `SELECT eventid AS "eventID", eventname AS "eventName", eventsource AS "eventSource", eventtime AS "eventTime" FROM "${database}"."${table}" WHERE account = ${escapeSqlLiteral(accountId)} AND date BETWEEN ${escapeSqlLiteral(startDate)} AND ${escapeSqlLiteral(endDate)} AND eventtime > ${escapeSqlLiteral(startTime)} AND eventtime < ${escapeSqlLiteral(endTime)} AND lower(useridentity.principalid) LIKE ${escapeSqlLiteral(`%:${username}%`)} AND useridentity.sessioncontext.sessionissuer.arn LIKE ${escapeSqlLiteral(`%${role}%`)} AND recipientaccountid = ${escapeSqlLiteral(accountId)}`,
+      WorkGroup: workgroup,
+      QueryExecutionContext: { Database: database },
+    };
+    const command = new StartQueryExecutionCommand(input);
+    const response = await athenaClient.send(command);
+    return response.QueryExecutionId;
+  } catch (err) {
+    console.log("Error", err);
+  }
+};
+
+const get_query_status_athena = async (queryExecutionId) => {
+  try {
+    const input = { QueryExecutionId: queryExecutionId };
+    const command = new GetQueryExecutionCommand(input);
+    const response = await athenaClient.send(command);
+    return response.QueryExecution.Status.State;
+  } catch (err) {
+    console.log("Error", err);
+  }
+};
+
+const poll_query_athena = async (queryExecutionId) => {
+  let status = await get_query_status_athena(queryExecutionId);
+  while (status === "QUEUED" || status === "RUNNING") {
+    console.log(status);
+    await sleep(1000);
+    status = await get_query_status_athena(queryExecutionId);
+  }
+  return status;
+};
+
 export const handler = async (event) => {
   let data = event["Records"].pop()
   data = data["dynamodb"]["NewImage"]
   const id = data["id"]["S"]
   console.log("Event", data);
+
+  if (IS_AUDIT_DISABLED) {
+    console.log("CloudTrailAuditLogs is set to 'none'; skipping audit query for this session.");
+    return;
+  }
+
+  if (IS_ATHENA) {
+    const queryExecutionId = await start_query_athena(data);
+    const status = await poll_query_athena(queryExecutionId);
+    if (status === "SUCCEEDED") {
+      console.log("Athena query succeeded - queryExecutionId:", queryExecutionId);
+      const response = await updateItem(id, queryExecutionId);
+      return response;
+    }
+    console.log("Athena query did not succeed - status:", status);
+    return;
+  }
+
   const queryId = await start_query(data);
   let status = await get_query_status(queryId);
   while (status) {

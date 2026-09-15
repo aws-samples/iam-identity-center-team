@@ -6,8 +6,20 @@ Parameters:
     Description: IAM IDC Login URL
   CloudTrailAuditLogs:
     Type: "String"
-    AllowedPattern: "(read_write|read|write|none|arn.*)"
-    Description: Which events should be logged on the TEAM Application Cloudtrail Lake EventDataStore.  Acceptable values are "read","write","read_write", and "none".  You may also enter the arn of an existing Cloudtrail Lake EDS.
+    AllowedPattern: "(read_write|read|write|none|arn.*|athena://.*)"
+    Description: Which events should be logged on the TEAM Application Cloudtrail Lake EventDataStore.  Acceptable values are "read","write","read_write", and "none".  You may also enter the arn of an existing Cloudtrail Lake EDS, or an athena://<workgroup>/<database>/<table> URI to query an existing organization trail via Athena instead of Cloudtrail Lake.
+  AthenaTrailBucketArn:
+    Type: String
+    Description: ARN of the S3 bucket holding the organization Cloudtrail trail Athena will query. Required only when CloudTrailAuditLogs is an athena:// URI.
+    Default: ""
+  AthenaResultsBucketArn:
+    Type: String
+    Description: ARN of the S3 bucket configured as the Athena workgroup's query results location. Required only when CloudTrailAuditLogs is an athena:// URI.
+    Default: ""
+  AthenaTrailKmsKeyArn:
+    Type: String
+    Description: ARN of the KMS key used to encrypt the Cloudtrail trail bucket, if any. Only needed when the trail bucket is CMK-encrypted.
+    Default: ""
   teamAdminGroup:
     Type: String
     Description: TEAM application Admin group
@@ -160,6 +172,12 @@ Resources:
             - IsEmptyCloudTrailAuditLogs
             - "read_write"
             - !Ref CloudTrailAuditLogs
+        - Name: ATHENA_TRAIL_BUCKET_ARN
+          Value: !Ref AthenaTrailBucketArn
+        - Name: ATHENA_RESULTS_BUCKET_ARN
+          Value: !Ref AthenaResultsBucketArn
+        - Name: ATHENA_TRAIL_KMS_KEY_ARN
+          Value: !Ref AthenaTrailKmsKeyArn
         - Name: TEAM_ADMIN_GROUP
           Value: !Ref teamAdminGroup
         - Name: TEAM_AUDITOR_GROUP

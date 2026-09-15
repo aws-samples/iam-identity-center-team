@@ -20,6 +20,11 @@ TEAM_AUDITOR_GROUP="team_auditor_group_name"
 TAGS="project=iam-identity-center-team environment=prod"
 CLOUDTRAIL_AUDIT_LOGS=read_write
 SECRET_NAME=TEAM-IDC-APP
+
+# Uncomment the next three lines only if CLOUDTRAIL_AUDIT_LOGS is an athena://<workgroup>/<database>/<table> URI
+# ATHENA_TRAIL_BUCKET_ARN=arn:aws:s3:::my-org-trail-bucket
+# ATHENA_RESULTS_BUCKET_ARN=arn:aws:s3:::my-athena-results-bucket
+# ATHENA_TRAIL_KMS_KEY_ARN=arn:aws:kms:us-east-1:123456789101:key/00000000-0000-0000-0000-000000000000
 # Uncomment the next line only if you have a custom domain
 # UI_DOMAIN=portal.teamtest.online
 
