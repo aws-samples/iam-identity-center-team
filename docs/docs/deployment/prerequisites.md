@@ -35,7 +35,10 @@ parent: Solution deployment
 
 ### Cloudtrail Lake organization event datastore
 TEAM uses AWS CloudTrail Lake for querying, auditing and logging API activities and actions performed by a user during the period of elevated access.
-Create a Cloudtrail Lake organization event datastore in the dedicated TEAM account that stores all log events for all AWS account in your organization
+Create a Cloudtrail Lake organization event datastore in the dedicated TEAM account that stores all log events for all AWS account in your organization.
+
+> AWS closed CloudTrail Lake to new customers on May 31, 2026. Existing CloudTrail Lake customers can continue using it, but `CreateEventDataStore` now fails for accounts that never had a Lake event data store before. If you cannot create a CloudTrail Lake event data store, set `CLOUDTRAIL_AUDIT_LOGS=none` in `parameters.sh` to deploy TEAM without audit log querying. Elevated-access grants and revokes still work; the only feature disabled is the per-session audit log lookup shown in the UI.
+{: .important}
 
 ## AWS Secrets Manager
 TEAM allows you to use external repositories for deploying the solution. 
