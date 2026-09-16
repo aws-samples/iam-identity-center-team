@@ -5,6 +5,8 @@
 from botocore.exceptions import ClientError
 import boto3
 from operator import itemgetter
+from datetime import datetime
+
 
 def get_identiy_store_id():
     client = boto3.client('sso-admin')
@@ -26,9 +28,22 @@ def list_idc_groups(IdentityStoreId):
         all_groups = []
         for page in paginator:
             all_groups.extend(page["Groups"])
-        return sorted(all_groups, key=itemgetter('DisplayName'))
+        groups = sorted(all_groups, key=itemgetter('DisplayName'))
+        # Sanitize datetime objects to strings so Lambda can serialize the response
+        return sanitize(groups)
     except ClientError as e:
         print(e.response['Error']['Message'])
+
+
+def sanitize(obj):
+    """Recursively convert datetime objects to ISO format strings."""
+    if isinstance(obj, datetime):
+        return obj.isoformat()
+    elif isinstance(obj, dict):
+        return {k: sanitize(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [sanitize(i) for i in obj]
+    return obj
 
 
 def handler(event, context):

@@ -1,6 +1,5 @@
 FROM mcr.microsoft.com/devcontainers/base:noble
-RUN apt-get update
-RUN apt-get install -y apt-transport-https ca-certificates curl gnupg python3 python3-pip python3-venv git-credential-oauth
+RUN apt-get update && apt-get install -y --fix-missing apt-transport-https ca-certificates curl gnupg python3 python3-pip python3-venv git-credential-oauth
 RUN apt-get install -y iputils-ping dnsutils libglib2.0-bin libnss3 libdbus-1-3 libatk1.0-dev libatk-bridge2.0-dev 
 RUN apt-get install -y libcups2-dev libxkbcommon-dev libxcomposite-dev xserver-xorg libpango-1.0-0 libasound2-dev
 RUN install -m 0755 -d /etc/apt/keyrings
@@ -21,15 +20,26 @@ RUN echo "deb [trusted=yes] https://repo.terramate.io/apt/ /" \
 RUN apt update
 RUN apt install terramate
 
-RUN python3 -m pip install --break-system-packages pipx boto3 sslib pillow qrcode pyotp cryptography
+RUN python3 -m pip install --break-system-packages "packaging>=26" && \
+    python3 -m pip install --break-system-packages pipx boto3 sslib pillow qrcode pyotp cryptography
 RUN python3 -m pipx ensurepath
 RUN python3 -m pipx install --global aws-sso-util
 
-RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+RUN ARCH=$(dpkg --print-architecture) && \
+    if [ "$ARCH" = "arm64" ]; then \
+      curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip"; \
+    else \
+      curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"; \
+    fi
 RUN unzip awscliv2.zip
 RUN ./aws/install
 
-RUN curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb" -o "session-manager-plugin.deb"
+RUN ARCH=$(dpkg --print-architecture) && \
+    if [ "$ARCH" = "arm64" ]; then \
+      curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_arm64/session-manager-plugin.deb" -o "session-manager-plugin.deb"; \
+    else \
+      curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb" -o "session-manager-plugin.deb"; \
+    fi
 RUN dpkg -i session-manager-plugin.deb
 
 RUN apt-get update && apt-get install -y gnupg software-properties-common
@@ -54,10 +64,12 @@ directory = /workspaces/io.idnow.infrastructure.common\n\
         oauthTokenURL = /oauth/token\n\
         oauthDeviceAuthURL = /oauth/authorize_device" > /etc/gitconfig
 
-RUN export PROVIDER=aws
-RUN curl -LO "https://github.com/GoogleCloudPlatform/terraformer/releases/download/$(curl -s https://api.github.com/repos/GoogleCloudPlatform/terraformer/releases/latest | grep tag_name | cut -d '"' -f 4)/terraformer-${PROVIDER}-linux-amd64"
-RUN chmod +x terraformer-${PROVIDER}-linux-amd64
-RUN mv terraformer-${PROVIDER}-linux-amd64 /usr/local/bin/terraformer
+RUN ARCH=$(dpkg --print-architecture) && \
+    PROVIDER=aws && \
+    TERRAFORMER_VERSION=$(curl -s https://api.github.com/repos/GoogleCloudPlatform/terraformer/releases/latest | grep tag_name | cut -d '"' -f 4) && \
+    curl -LO "https://github.com/GoogleCloudPlatform/terraformer/releases/download/${TERRAFORMER_VERSION}/terraformer-${PROVIDER}-linux-${ARCH}" && \
+    chmod +x "terraformer-${PROVIDER}-linux-${ARCH}" && \
+    mv "terraformer-${PROVIDER}-linux-${ARCH}" /usr/local/bin/terraformer
 
 ENV NVM_DIR=/usr/local/nvm
 RUN mkdir -p $NVM_DIR \
