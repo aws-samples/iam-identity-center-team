@@ -32,7 +32,9 @@
         "Ref": "snsNotificationTopic"
       },
       "Export": {
-        "Name": "NotificationTopicArn"
+        "Name": {
+          "Fn::Sub": "NotificationTopicArn-${AWS::StackName}"
+        }
       }
     }
   }

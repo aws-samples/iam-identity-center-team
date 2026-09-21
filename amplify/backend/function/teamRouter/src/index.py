@@ -4,12 +4,14 @@
 # Amazon Web Services, Inc. or Amazon Web Services EMEA SARL or both.
 import os
 import json
+import time
 import boto3
 import requests
 from botocore.exceptions import ClientError
 from requests_aws_sign import AWSV4Sign
 import asyncio
 from botocore.config import Config
+from concurrent.futures import ThreadPoolExecutor
     
 policy_table_name = os.getenv("POLICY_TABLE_NAME")
 settings_table_name = os.getenv("SETTINGS_TABLE_NAME")
@@ -30,6 +32,8 @@ notification_topic_arn = os.getenv("NOTIFICATION_TOPIC_ARN")
 sso_login_url = os.getenv("SSO_LOGIN_URL")
 fn_teamstatus_arn = os.getenv("FN_TEAMSTATUS_ARN")
 fn_teamnotifications_arn = os.getenv("FN_TEAMNOTIFICATIONS_ARN")
+_ou_accounts_cache = {}
+OU_ACCOUNTS_CACHE_TTL = 300  # seconds
 team_config = {
     "sso_login_url": sso_login_url,
     "requests_table": requests_table_name,
@@ -42,6 +46,11 @@ team_config = {
 
 
 def list_account_for_ou(ouId):
+    now = time.time()
+    cached = _ou_accounts_cache.get(ouId)
+    if cached and (now - cached["fetched_at"]) < OU_ACCOUNTS_CACHE_TTL:
+        return cached["data"]
+
     account = []
     client = boto3.client('organizations')
     try:
@@ -51,9 +60,11 @@ def list_account_for_ou(ouId):
         for page in paginator:
             for acct in page['Accounts']:
                 account.extend([{"name": acct['Name'], 'id':acct['Id']}])
+        _ou_accounts_cache[ouId] = {"data": account, "fetched_at": now}
         return account
     except ClientError as e:
         print(e.response['Error']['Message'])
+        return cached["data"] if cached else []
 
 
 def get_entitlements(id):
@@ -87,11 +98,13 @@ def getEntitlements(userId, groupIds):
             maxDuration = int(duration)
         policy = {}
         policy['accounts'] = entitlement['Item']['accounts']
-        
-        for ou in entitlement["Item"]["ous"]:
-            data = list_account_for_ou(ou["id"])
-            policy['accounts'].extend(data)
-            
+
+        ou_ids = [ou["id"] for ou in entitlement["Item"]["ous"]]
+        if ou_ids:
+            with ThreadPoolExecutor(max_workers=len(ou_ids)) as executor:
+                for data in executor.map(list_account_for_ou, ou_ids):
+                    policy['accounts'].extend(data or [])
+
         policy['permissions'] = entitlement['Item']['permissions']
         policy['approvalRequired'] = entitlement['Item']['approvalRequired']
         policy['duration'] = str(maxDuration)
@@ -464,18 +477,38 @@ def list_group_membership(groupId):
     except ClientError as e:
         print(e.response['Error']['Message'])
         
+def get_individual_approver_ids(accountId):
+    try:
+        response = approver_table.get_item(Key={'id': accountId})
+        return response.get('Item', {}).get('individualApproverIds', [])
+    except ClientError as e:
+        print(e.response['Error']['Message'])
+        return []
+
 async def get_approvers_details(accountId):
-    approver_groups = get_approver_group_ids(accountId)
+    # Prefer explicit per-person approvers (individualApproverIds) over expanding the
+    # whole approver group, so approval enforcement matches the named team lead/manager
+    # rather than every member of a broader governance group. Falls back to the group
+    # when no individual approvers are configured for this account.
+    individual_ids = get_individual_approver_ids(accountId)
     approvers = []
     approver_ids = []
-    if approver_groups:
-        for group in approver_groups:
-            approvers_data = [get_approvers(result["MemberId"]["UserId"])
-                for result in list_group_membership(group)]
-            for data in approvers_data:
-                if data["approver"] not in approvers:
-                    approvers.append(data["approver"])
-                    approver_ids.append(data["approver_id"].lower())
+    if individual_ids:
+        for user_id in individual_ids:
+            data = get_approvers(user_id)
+            if data["approver"] not in approvers:
+                approvers.append(data["approver"])
+                approver_ids.append(data["approver_id"].lower())
+    else:
+        approver_groups = get_approver_group_ids(accountId)
+        if approver_groups:
+            for group in approver_groups:
+                approvers_data = [get_approvers(result["MemberId"]["UserId"])
+                    for result in list_group_membership(group)]
+                for data in approvers_data:
+                    if data["approver"] not in approvers:
+                        approvers.append(data["approver"])
+                        approver_ids.append(data["approver_id"].lower())
     return {"approvers":approvers, "approver_ids":approver_ids}
 
 async def updateRequestDetails(request_id, username, accountId, roleId):
