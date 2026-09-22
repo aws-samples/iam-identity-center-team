@@ -23,7 +23,9 @@ import {
 
 const { Sha256 } = crypto;
 const REGION = process.env.REGION;
-const EventDataStore = (process.env.EVENT_DATA_STORE).split("/").pop();
+const RAW_EVENT_DATA_STORE = process.env.EVENT_DATA_STORE;
+const IS_AUDIT_DISABLED = RAW_EVENT_DATA_STORE === "none";
+const EventDataStore = IS_AUDIT_DISABLED ? RAW_EVENT_DATA_STORE : RAW_EVENT_DATA_STORE.split("/").pop();
 const GRAPHQL_ENDPOINT = process.env.API_TEAM_GRAPHQLAPIENDPOINTOUTPUT;
 
 // const {
@@ -156,6 +158,12 @@ export const handler = async (event) => {
   data = data["dynamodb"]["NewImage"]
   const id = data["id"]["S"]
   console.log("Event", data);
+
+  if (IS_AUDIT_DISABLED) {
+    console.log("CloudTrailAuditLogs is set to 'none'; skipping audit query for this session.");
+    return;
+  }
+
   const queryId = await start_query(data);
   let status = await get_query_status(queryId);
   while (status) {
