@@ -16,7 +16,8 @@ The TEAM solution consists of numerous AWS serverless services. As cost is accru
 - [AWS Lambda](https://aws.amazon.com/lambda/pricing)
 - [AWS Step Functions](https://aws.amazon.com/step-functions/pricing)
 - [Amazon Cognito](https://aws.amazon.com/cognito/pricing)
-- [AWS CloudTrail Lake](https://aws.amazon.com/cloudtrail/pricing/)
+- [AWS CloudTrail Lake](https://aws.amazon.com/cloudtrail/pricing/) (only when `CLOUDTRAIL_AUDIT_LOGS` is `read`/`write`/`read_write` or an existing event data store ARN)
+- [Amazon CloudWatch Logs](https://aws.amazon.com/cloudwatch/pricing/) (only when `CLOUDTRAIL_AUDIT_LOGS` is a `cwlogs://` URI; you pay per query based on data scanned)
 - [AWS IAM Identity Center](https://aws.amazon.com/iam/identity-center/) (free)
 - [AWS Secret Manager](https://aws.amazon.com/secrets-manager/)
 
@@ -25,3 +26,7 @@ The TEAM solution consists of numerous AWS serverless services. As cost is accru
 TEAM uses [AWS CloudTrail Lake](https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-lake.html) for querying, auditing and logging API activities and actions performed by a user during the period of elevated access. For CloudTrail Lake, you pay for ingestion and storage together, where the billing is based on the amount of uncompressed data ingested during the month. When you run queries in Lake, you pay based upon the amount of data scanned. 
 
 TEAM CloudTrail lake event datastore records all [management events](https://docs.aws.amazon.com/awscloudtrail/latest/userguide/logging-management-events-with-cloudtrail.html) and no [data events](https://docs.aws.amazon.com/awscloudtrail/latest/userguide/logging-data-events-with-cloudtrail.html) by default. Depending on your organization's auditing and compliance requirement, you can chose to either log all events or specific events (read-only, write, read-write, management, data events). Recording only specific events can help to reduce the overall cost of running the TEAM solution. For more information about managing CloudTrail lake costs, see [Managing CloudTrail Lake costs](https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-lake-manage-costs.html).
+
+## Managing CloudWatch Logs audit log cost
+
+If you configure TEAM to query an existing CloudTrail-fed CloudWatch Log Group via CloudWatch Logs Insights (see [CloudWatch Logs audit log configuration]({% link docs/deployment/configuration/cwlogs.md %})), you pay per query based on the amount of data scanned rather than for ingestion and storage. Each session lookup is scoped to a single log group and the session's time window, so per-query data-scanned volume is bounded to the log group's events for that session's duration - typically well under a cent per lookup. Total cost scales with elevated-access session volume, not with organization trail volume.
