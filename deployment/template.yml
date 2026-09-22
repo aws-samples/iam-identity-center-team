@@ -120,9 +120,14 @@ Resources:
             build:
               commands:
                 - npm i -S graphql-ttl-transformer
+                - '# AL2023 preinstalls only python 3.8-3.11 (3.10 global); install the target runtime'
+                - pyenv install -s 3.13
+                - pyenv global 3.13
+                - python --version
                 - '# Execute Amplify CLI with the helper script'
-                - pip3 install --user pipenv==2023.6.12
+                - pip3 install --user pipenv==2026.7.1
                 - export PATH=$HOME/.local/bin:$PATH
+                - pipenv --version
                 - amplifyPush --simple --allow-destructive-graphql-schema-update
         frontend:
           phases:
@@ -180,7 +185,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       Handler: index.handler
-      Runtime: python3.10
+      Runtime: python3.13
       Role: !GetAtt AmplifyLambdaRole.Arn
       Timeout: 120
       Architectures:
