@@ -6,7 +6,7 @@
     },
     "CloudTrailAuditLogs":{
       "Type":"String",
-      "AllowedPattern": "(read_write|read|write|none|arn.*)"
+      "AllowedPattern": "(read_write|read|write|none|arn.*|athena://.*)"
     }
   },
   "Conditions":{
@@ -48,14 +48,6 @@
     },
     "CreateEventDataStore": {
       "Fn::Or": [
-        {
-          "Fn::Equals": [
-            "none",
-            {
-              "Ref": "CloudTrailAuditLogs"
-            }
-          ]
-        },
         {
           "Fn::Equals": [
             "read",

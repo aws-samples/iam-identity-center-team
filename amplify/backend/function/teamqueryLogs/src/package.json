@@ -12,6 +12,7 @@
   },
   "author": "",
   "dependencies": {
+    "@aws-sdk/client-athena": "^3.777.0",
     "@aws-sdk/client-cloudtrail": "^3.777.0"
   }
 }
