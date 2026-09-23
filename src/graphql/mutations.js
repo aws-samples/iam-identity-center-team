@@ -183,6 +183,8 @@ export const createApprovers = /* GraphQL */ `
       type
       approvers
       groupIds
+      individualApprovers
+      individualApproverIds
       ticketNo
       modifiedBy
       createdAt
@@ -202,6 +204,8 @@ export const updateApprovers = /* GraphQL */ `
       type
       approvers
       groupIds
+      individualApprovers
+      individualApproverIds
       ticketNo
       modifiedBy
       createdAt
@@ -221,6 +225,8 @@ export const deleteApprovers = /* GraphQL */ `
       type
       approvers
       groupIds
+      individualApprovers
+      individualApproverIds
       ticketNo
       modifiedBy
       createdAt
