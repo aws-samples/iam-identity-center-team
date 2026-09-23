@@ -54,7 +54,7 @@ Resources:
       branchName: main
       branch: !GetAtt AmplifyBranch.Arn
 
-  AmplifyRole:
+  AmplifyRoleV2:
     Type: AWS::IAM::Role
     Metadata:
       cfn_nag:
@@ -81,7 +81,7 @@ Resources:
   AmplifyApp:
     Type: "AWS::Amplify::App"
     Properties:
-      Name: TEAM-IDC-APP
+      Name: TEAM-IDC-APP-V2
       Repository: !If
         - UseExternalRepo
         - !Sub >-
@@ -142,7 +142,7 @@ Resources:
       Tags:
         - Key: Name
           Value: TEAM
-      IAMServiceRole: !GetAtt AmplifyRole.Arn
+      IAMServiceRole: !GetAtt AmplifyRoleV2.Arn
 
   AmplifyBranch:
     Type: AWS::Amplify::Branch

@@ -32,7 +32,7 @@ if [ -z "$SECRET_NAME" ]; then
   if [[ ! -z "$TAGS" ]]; then
     if [[ ! -z "$UI_DOMAIN" ]]; then
       aws cloudformation deploy --region $REGION --template-file template.yml \
-        --stack-name TEAM-IDC-APP \
+        --stack-name TEAM-IDC-APP-V2 \
         --parameter-overrides \
           Login=$IDC_LOGIN_URL \
           CloudTrailAuditLogs=$CLOUDTRAIL_AUDIT_LOGS \
@@ -46,7 +46,7 @@ if [ -z "$SECRET_NAME" ]; then
         --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
     else
       aws cloudformation deploy --region $REGION --template-file template.yml \
-        --stack-name TEAM-IDC-APP \
+        --stack-name TEAM-IDC-APP-V2 \
         --parameter-overrides \
           Login=$IDC_LOGIN_URL \
           CloudTrailAuditLogs=$CLOUDTRAIL_AUDIT_LOGS \
@@ -61,7 +61,7 @@ if [ -z "$SECRET_NAME" ]; then
   else
     if [[ ! -z "$UI_DOMAIN" ]]; then
       aws cloudformation deploy --region $REGION --template-file template.yml \
-        --stack-name TEAM-IDC-APP \
+        --stack-name TEAM-IDC-APP-V2 \
         --parameter-overrides \
           Login=$IDC_LOGIN_URL \
           CloudTrailAuditLogs=$CLOUDTRAIL_AUDIT_LOGS \
@@ -74,7 +74,7 @@ if [ -z "$SECRET_NAME" ]; then
         --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
     else
       aws cloudformation deploy --region $REGION --template-file template.yml \
-        --stack-name TEAM-IDC-APP \
+        --stack-name TEAM-IDC-APP-V2 \
         --parameter-overrides \
           Login=$IDC_LOGIN_URL \
           CloudTrailAuditLogs=$CLOUDTRAIL_AUDIT_LOGS \
@@ -92,7 +92,7 @@ else
   if [[ ! -z "$TAGS" ]]; then
     if [[ ! -z "$UI_DOMAIN" ]]; then
       aws cloudformation deploy --region $REGION --template-file template.yml \
-        --stack-name TEAM-IDC-APP \
+        --stack-name TEAM-IDC-APP-V2 \
         --parameter-overrides \
           Login=$IDC_LOGIN_URL \
           CloudTrailAuditLogs=$CLOUDTRAIL_AUDIT_LOGS \
@@ -108,7 +108,7 @@ else
         --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
     else
       aws cloudformation deploy --region $REGION --template-file template.yml \
-        --stack-name TEAM-IDC-APP \
+        --stack-name TEAM-IDC-APP-V2 \
         --parameter-overrides \
           Login=$IDC_LOGIN_URL \
           CloudTrailAuditLogs=$CLOUDTRAIL_AUDIT_LOGS \
@@ -125,7 +125,7 @@ else
   else
     if [[ ! -z "$UI_DOMAIN" ]]; then
       aws cloudformation deploy --region $REGION --template-file template.yml \
-        --stack-name TEAM-IDC-APP \
+        --stack-name TEAM-IDC-APP-V2 \
         --parameter-overrides \
           Login=$IDC_LOGIN_URL \
           CloudTrailAuditLogs=$CLOUDTRAIL_AUDIT_LOGS \
@@ -140,7 +140,7 @@ else
         --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
     else
       aws cloudformation deploy --region $REGION --template-file template.yml \
-        --stack-name TEAM-IDC-APP \
+        --stack-name TEAM-IDC-APP-V2 \
         --parameter-overrides \
           Login=$IDC_LOGIN_URL \
           CloudTrailAuditLogs=$CLOUDTRAIL_AUDIT_LOGS \
