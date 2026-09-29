@@ -19,6 +19,11 @@
     "SSOLoginUrl": {
       "Type": "String"
     },
+    "NotificationButtonUrl": {
+      "Type": "String",
+      "Default": "",
+      "Description": "Optional override for the URL used as the 'Open TEAM' button in notifications. Falls back to SSOLoginUrl when empty."
+    },
     "customstepfunctionsGrantSMOutput": {
       "Type": "String",
       "Default": "customstepfunctionsGrantSMOutput"
@@ -153,6 +158,9 @@
             },
             "SSO_LOGIN_URL": {
               "Ref": "SSOLoginUrl"
+            },
+            "NOTIFICATION_BUTTON_URL": {
+              "Ref": "NotificationButtonUrl"
             },
             "APPROVER_TABLE_NAME": {
               "Fn::ImportValue": {

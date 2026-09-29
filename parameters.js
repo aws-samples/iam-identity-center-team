@@ -6,7 +6,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const { AWS_APP_ID, AWS_BRANCH, SSO_LOGIN, TEAM_ADMIN_GROUP, TEAM_AUDITOR_GROUP, TAGS, CLOUDTRAIL_AUDIT_LOGS, TEAM_ACCOUNT, AMPLIFY_CUSTOM_DOMAIN } = process.env;
+const { AWS_APP_ID, AWS_BRANCH, SSO_LOGIN, NOTIFICATION_BUTTON_URL, TEAM_ADMIN_GROUP, TEAM_AUDITOR_GROUP, TAGS, CLOUDTRAIL_AUDIT_LOGS, TEAM_ACCOUNT, AMPLIFY_CUSTOM_DOMAIN } = process.env;
 
 async function update_auth_parameters() {
   console.log(`updating amplify config for branch "${AWS_BRANCH}"...`);
@@ -91,6 +91,9 @@ async function update_router_parameters() {
   const routerParametersJson = require(routerParametersJsonPath);
 
   routerParametersJson.SSOLoginUrl = SSO_LOGIN;
+  // Optional override for the "Open TEAM" button URL in notifications.
+  // Empty string means "fall back to SSOLoginUrl" (default behaviour).
+  routerParametersJson.NotificationButtonUrl = NOTIFICATION_BUTTON_URL || "";
 
   fs.writeFileSync(
     routerParametersJsonPath,
