@@ -35,6 +35,7 @@ import {
   delApprover,
   editApprover,
   fetchIdCGroups,
+  fetchUsers,
   getSetting
 } from "../Shared/RequestService";
 import "../../index.css";
@@ -83,6 +84,21 @@ const COLUMN_DEFINITIONS = [
     ),
     width: 300,
   },
+  {
+    id: "individualApprovers",
+    sortingField: "individualApprovers",
+    header: "Individual approvers",
+    cell: (item) => (
+      <TextContent>
+        <ul>
+          {(item.individualApprovers || []).map((data) => (
+            <li>{data}</li>
+          ))}
+        </ul>
+      </TextContent>
+    ),
+    width: 300,
+  },
 ];
 
 const MyCollectionPreferences = ({ preferences, setPreferences }) => {
@@ -115,8 +131,7 @@ const MyCollectionPreferences = ({ preferences, setPreferences }) => {
               { id: "name", label: "name" },
               { id: "type", label: "type" },
               { id: "ticketNo", label: "ticketNo" },
-              { id: "approvers", label: "approvers" },
-            ],
+              { id: "approvers", label: "approvers" },              { id: "individualApprovers", label: "individualApprovers" },            ],
           },
         ],
       }}
@@ -151,6 +166,7 @@ function Approvers(props) {
       "type",
       "ticketNo",
       "approvers",
+      "individualApprovers",
     ],
   });
 
@@ -256,11 +272,16 @@ function Approvers(props) {
   const [approver, setApprover] = useState([]);
   const [ticketRequired, setTicketRequired] = useState(true);
 
+  const [userList, setUserList] = useState([]);
+  const [userStatus, setUserStatus] = useState("finished");
+  const [individualApprover, setIndividualApprover] = useState([]);
+
 
   useEffect(() => {
     views();
     props.addNotification([]);
     getGroups();
+    getUsers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -323,6 +344,8 @@ function Approvers(props) {
           id: selectedItems[0].id,
           approvers: approver.map(({ label }) => label),
           groupIds: approver.map(({ value }) => value),
+          individualApprovers: individualApprover.map(({ label }) => label),
+          individualApproverIds: individualApprover.map(({ value }) => value),
           ticketNo: ticketNo,
         };
         editApprover(data).then(() => {
@@ -351,6 +374,16 @@ function Approvers(props) {
         };
       })
     );
+    setIndividualApprover(
+      (selectedItems[0].individualApprovers || []).map((email, index) => {
+        let userId = (selectedItems[0].individualApproverIds || [])[index];
+        return {
+          label: email,
+          value: userId,
+          description: userId,
+        };
+      })
+    );
     setEditVisible(true);
   }
 
@@ -376,6 +409,14 @@ function Approvers(props) {
     });
   }
 
+  function getUsers() {
+    setUserStatus("loading");
+    fetchUsers().then((data) => {
+      setUserList(data || []);
+      setUserStatus("finished");
+    });
+  }
+
   function getOUs() {
     setOUStatus("loading");
     fetchOUs().then(() =>{
@@ -398,9 +439,9 @@ function Approvers(props) {
 
   async function validate(action) {
     let valid = true;
-    if (approver.length < 1) {
+    if (approver.length < 1 && individualApprover.length < 1) {
       valid = false;
-      setApproverError("Select Valid Approver email");
+      setApproverError("Select at least one approver group or individual approver");
     }
     if ((!ticketNo && ticketRequired) || !(/^[a-zA-Z0-9]+$/.test(ticketNo[0]))) {
       setTicketError("Enter valid change management ticket number");
@@ -428,6 +469,8 @@ function Approvers(props) {
             name: item.label,
             approvers: approver.map(({ label }) => label),
             groupIds: approver.map(({ value }) => value),
+            individualApprovers: individualApprover.map(({ label }) => label),
+            individualApproverIds: individualApprover.map(({ value }) => value),
             id: item.value,
             ticketNo: ticketNo,
           };
@@ -457,6 +500,7 @@ function Approvers(props) {
     setResourceError("");
     setApprover([]);
     setApproverError("");
+    setIndividualApprover([]);
     setTicketNo("");
     setTicketError("");
   }
@@ -678,6 +722,32 @@ function Approvers(props) {
                 deselectAriaLabel={(e) => `Remove ${e.label}`}
               />
             </FormField>
+            <FormField
+              label="Individual Approvers"
+              stretch
+              description="Optional: specific people who can approve, in addition to the approver groups above"
+              errorText={approverError}
+            >
+              <Multiselect
+                statusType={userStatus}
+                placeholder="Select individual approvers"
+                loadingText="Loading users"
+                filteringType="auto"
+                empty="No options"
+                options={userList.map((user) => ({
+                  label: user.UserName,
+                  value: user.UserId,
+                  description: user.UserId,
+                }))}
+                selectedOptions={individualApprover}
+                onChange={({ detail }) => {
+                  setApproverError();
+                  setIndividualApprover(detail.selectedOptions);
+                }}
+                selectedAriaLabel="selected"
+                deselectAriaLabel={(e) => `Remove ${e.label}`}
+              />
+            </FormField>
           </SpaceBetween>
         </Form>
       </Modal>
@@ -785,6 +855,32 @@ function Approvers(props) {
                 onChange={({ detail }) => {
                   setApproverError();
                   setApprover(detail.selectedOptions);
+                }}
+                selectedAriaLabel="selected"
+                deselectAriaLabel={(e) => `Remove ${e.label}`}
+              />
+            </FormField>
+            <FormField
+              label="Individual Approvers"
+              stretch
+              description="Optional: specific people who can approve, in addition to the approver groups above"
+              errorText={approverError}
+            >
+              <Multiselect
+                statusType={userStatus}
+                placeholder="Select individual approvers"
+                loadingText="Loading users"
+                filteringType="auto"
+                empty="No options"
+                options={userList.map((user) => ({
+                  label: user.UserName,
+                  value: user.UserId,
+                  description: user.UserId,
+                }))}
+                selectedOptions={individualApprover}
+                onChange={({ detail }) => {
+                  setApproverError();
+                  setIndividualApprover(detail.selectedOptions);
                 }}
                 selectedAriaLabel="selected"
                 deselectAriaLabel={(e) => `Remove ${e.label}`}

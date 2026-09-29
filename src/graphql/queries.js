@@ -275,6 +275,8 @@ export const getApprovers = /* GraphQL */ `
       type
       approvers
       groupIds
+      individualApprovers
+      individualApproverIds
       ticketNo
       modifiedBy
       createdAt
@@ -296,6 +298,8 @@ export const listApprovers = /* GraphQL */ `
         type
         approvers
         groupIds
+        individualApprovers
+        individualApproverIds
         ticketNo
         modifiedBy
         createdAt
