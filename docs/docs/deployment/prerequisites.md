@@ -35,7 +35,10 @@ parent: Solution deployment
 
 ### Cloudtrail Lake organization event datastore
 TEAM uses AWS CloudTrail Lake for querying, auditing and logging API activities and actions performed by a user during the period of elevated access.
-Create a Cloudtrail Lake organization event datastore in the dedicated TEAM account that stores all log events for all AWS account in your organization
+Create a Cloudtrail Lake organization event datastore in the dedicated TEAM account that stores all log events for all AWS account in your organization.
+
+> AWS closed CloudTrail Lake to new customers on May 31, 2026. New adopters can query an existing CloudTrail-fed CloudWatch Log Group (for example, AWS Control Tower's `aws-controltower/CloudTrailLogs`) via CloudWatch Logs Insights instead. See [CloudWatch Logs audit log configuration]({% link docs/deployment/configuration/cwlogs.md %}) for the one-time setup required before deployment.
+{: .important}
 
 ## AWS Secrets Manager
 TEAM allows you to use external repositories for deploying the solution. 

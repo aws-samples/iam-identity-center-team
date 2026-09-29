@@ -36,6 +36,7 @@ if [ -z "$SECRET_NAME" ]; then
         --parameter-overrides \
           Login=$IDC_LOGIN_URL \
           CloudTrailAuditLogs=$CLOUDTRAIL_AUDIT_LOGS \
+          CWLogsAssumeRoleArn="$CWLOGS_ASSUME_ROLE_ARN" \
           teamAdminGroup="$TEAM_ADMIN_GROUP" \
           teamAuditGroup="$TEAM_AUDITOR_GROUP" \
           tags="$TAGS" \
@@ -50,6 +51,7 @@ if [ -z "$SECRET_NAME" ]; then
         --parameter-overrides \
           Login=$IDC_LOGIN_URL \
           CloudTrailAuditLogs=$CLOUDTRAIL_AUDIT_LOGS \
+          CWLogsAssumeRoleArn="$CWLOGS_ASSUME_ROLE_ARN" \
           teamAdminGroup="$TEAM_ADMIN_GROUP" \
           teamAuditGroup="$TEAM_AUDITOR_GROUP" \
           tags="$TAGS" \
@@ -65,6 +67,7 @@ if [ -z "$SECRET_NAME" ]; then
         --parameter-overrides \
           Login=$IDC_LOGIN_URL \
           CloudTrailAuditLogs=$CLOUDTRAIL_AUDIT_LOGS \
+          CWLogsAssumeRoleArn="$CWLOGS_ASSUME_ROLE_ARN" \
           teamAdminGroup="$TEAM_ADMIN_GROUP" \
           teamAuditGroup="$TEAM_AUDITOR_GROUP" \
           teamAccount="$TEAM_ACCOUNT" \
@@ -78,6 +81,7 @@ if [ -z "$SECRET_NAME" ]; then
         --parameter-overrides \
           Login=$IDC_LOGIN_URL \
           CloudTrailAuditLogs=$CLOUDTRAIL_AUDIT_LOGS \
+          CWLogsAssumeRoleArn="$CWLOGS_ASSUME_ROLE_ARN" \
           teamAdminGroup="$TEAM_ADMIN_GROUP" \
           teamAuditGroup="$TEAM_AUDITOR_GROUP" \
           teamAccount="$TEAM_ACCOUNT" \
@@ -96,6 +100,7 @@ else
         --parameter-overrides \
           Login=$IDC_LOGIN_URL \
           CloudTrailAuditLogs=$CLOUDTRAIL_AUDIT_LOGS \
+          CWLogsAssumeRoleArn="$CWLOGS_ASSUME_ROLE_ARN" \
           teamAdminGroup="$TEAM_ADMIN_GROUP" \
           teamAuditGroup="$TEAM_AUDITOR_GROUP" \
           tags="$TAGS" \
@@ -112,6 +117,7 @@ else
         --parameter-overrides \
           Login=$IDC_LOGIN_URL \
           CloudTrailAuditLogs=$CLOUDTRAIL_AUDIT_LOGS \
+          CWLogsAssumeRoleArn="$CWLOGS_ASSUME_ROLE_ARN" \
           teamAdminGroup="$TEAM_ADMIN_GROUP" \
           teamAuditGroup="$TEAM_AUDITOR_GROUP" \
           tags="$TAGS" \
@@ -129,6 +135,7 @@ else
         --parameter-overrides \
           Login=$IDC_LOGIN_URL \
           CloudTrailAuditLogs=$CLOUDTRAIL_AUDIT_LOGS \
+          CWLogsAssumeRoleArn="$CWLOGS_ASSUME_ROLE_ARN" \
           teamAdminGroup="$TEAM_ADMIN_GROUP" \
           teamAuditGroup="$TEAM_AUDITOR_GROUP" \
           teamAccount="$TEAM_ACCOUNT" \
@@ -144,6 +151,7 @@ else
         --parameter-overrides \
           Login=$IDC_LOGIN_URL \
           CloudTrailAuditLogs=$CLOUDTRAIL_AUDIT_LOGS \
+          CWLogsAssumeRoleArn="$CWLOGS_ASSUME_ROLE_ARN" \
           teamAdminGroup="$TEAM_ADMIN_GROUP" \
           teamAuditGroup="$TEAM_AUDITOR_GROUP" \
           customRepository="Yes" \
