@@ -38,24 +38,8 @@
         "read"
       ]
     },
-    "IsAuditLogsDisabled":{
-      "Fn::Equals":[
-        {
-          "Ref":"CloudTrailAuditLogs"
-        },
-        "none"
-      ]
-    },
     "CreateEventDataStore": {
       "Fn::Or": [
-        {
-          "Fn::Equals": [
-            "none",
-            {
-              "Ref": "CloudTrailAuditLogs"
-            }
-          ]
-        },
         {
           "Fn::Equals": [
             "read",
@@ -92,13 +76,7 @@
           "Ref":"AWS::StackName"
         },
         "MultiRegionEnabled":true,
-        "IngestionEnabled":{
-          "Fn::If":[
-            "IsAuditLogsDisabled",
-            false,
-            true
-          ]
-        },
+        "IngestionEnabled":true,
         "RetentionPeriod":7,
         "OrganizationEnabled":{
           "Fn::If":[
