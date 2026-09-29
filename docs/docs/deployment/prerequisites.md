@@ -33,9 +33,15 @@ parent: Solution deployment
   [As per AWS best practice](https://docs.aws.amazon.com/organizations/latest/userguide/orgs_best-practices_mgmt-acct.html#best-practices_mgmt-use), it is not recommended to deploy resources in the organization management account. Designate a dedicated account for deploying the TEAM solution. We recommend that you do not deploy any other workloads in this account, and carefully manage users with access to this account based on a need-to-do principle.
   {: .note}
 
-### Cloudtrail Lake organization event datastore
-TEAM uses AWS CloudTrail Lake for querying, auditing and logging API activities and actions performed by a user during the period of elevated access.
-Create a Cloudtrail Lake organization event datastore in the dedicated TEAM account that stores all log events for all AWS account in your organization
+### Audit log backend
+TEAM queries an audit log backend to show which API calls a user made during a period of elevated access. You can choose between two backends:
+
+- **CloudTrail Lake** - Create a Cloudtrail Lake organization event datastore in the dedicated TEAM account that stores all log events for all AWS account in your organization.
+
+  > AWS closed CloudTrail Lake to new customers on May 31, 2026. Existing CloudTrail Lake customers can continue using it, but `CreateEventDataStore` now fails for accounts that never had a Lake event data store before. New adopters must use the Athena backend, or set `CloudTrailAuditLogs=none` to deploy without audit log querying.
+  {: .important}
+
+- **Amazon Athena** - Query an existing AWS Organizations CloudTrail trail already delivering logs to S3, via Athena. See [Athena audit log configuration]({% link docs/deployment/configuration/athena.md %}) for the one-time setup required before deployment.
 
 ## AWS Secrets Manager
 TEAM allows you to use external repositories for deploying the solution. 

@@ -54,7 +54,11 @@ Update the parameters in the **parameters.sh** file as follows:
 - **TEAM_ACCOUNT_PROFILE** - Named profile for TEAM Application deployment Account
 - **TEAM_ADMIN_GROUP** - Name of IAM Identity Center group for TEAM administrators
 - **TEAM_AUDITOR_GROUP** - Name of IAM Identity Center group for TEAM auditors
-- **CLOUDTRAIL_AUDIT_LOGS** - ARN of organization CloudTrail Lake event datastore
+- **CLOUDTRAIL_AUDIT_LOGS** - Which audit log backend TEAM should use. Accepts:
+  - `read`, `write`, or `read_write` - TEAM creates and manages its own CloudTrail Lake event data store
+  - the ARN of an existing CloudTrail Lake event data store
+  - `none` - audit log querying is disabled
+  - `athena://<workgroup>/<database>/<table>` - query an existing AWS Organizations CloudTrail trail via Amazon Athena, instead of CloudTrail Lake. See [Athena audit log configuration]({% link docs/deployment/configuration/athena.md %}) for the one-time table setup this requires.
 - **SECRET_NAME** - Name of the Secret stored in AWS Secret Manager
 > When using Github as the external repository ensure you use Tokens (classic) (https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#personal-access-tokens-classic) instead of Fine-grained tokens
 
@@ -63,6 +67,7 @@ Update the parameters in the **parameters.sh** file as follows:
 - **TAGS** - Tags that should be propagated to nested stacks and underlying resources
 - **UI_DOMAIN** - Custom domain for Amplify hosted frontend application (should only be included if you have setup a custom domain for the frontend application)
 - **CACHE_TTL** - Cache time-to-live in seconds for organizational unit (OU) account lists (default: 604800 = 1 week). Cached entries automatically expire after this duration. Consider increasing this value (e.g., 2592000 = 30 days) for organizations with infrequent account changes. Administrators can also manually invalidate specific OU cache entries or disable caching entirely via the Settings page.
+- **ATHENA_TRAIL_BUCKET_ARN**, **ATHENA_RESULTS_BUCKET_ARN**, **ATHENA_TRAIL_KMS_KEY_ARN** - Required only when **CLOUDTRAIL_AUDIT_LOGS** is an `athena://` URI. See [Athena audit log configuration]({% link docs/deployment/configuration/athena.md %}).
 
 For example:
 

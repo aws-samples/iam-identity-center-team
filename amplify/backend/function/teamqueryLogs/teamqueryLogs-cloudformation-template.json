@@ -18,6 +18,18 @@
     },
     "customcloudtrailLakeEventDataStoreOutput": {
       "Type": "String"
+    },
+    "AthenaTrailBucketArn": {
+      "Type": "String",
+      "Default": ""
+    },
+    "AthenaResultsBucketArn": {
+      "Type": "String",
+      "Default": ""
+    },
+    "AthenaTrailKmsKeyArn": {
+      "Type": "String",
+      "Default": ""
     }
   },
   "Conditions": {
@@ -27,6 +39,18 @@
           "Ref": "env"
         },
         "NONE"
+      ]
+    },
+    "IsAthenaEnabled": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "AthenaTrailBucketArn"
+            },
+            ""
+          ]
+        }
       ]
     }
   },
@@ -187,6 +211,132 @@
               ],
               "Resource": [
                 "*"
+              ],
+              "Effect": "Allow"
+            }
+          ]
+        },
+        "Roles": [
+          {
+            "Ref": "LambdaExecutionRole"
+          }
+        ]
+      },
+      "DependsOn": "LambdaExecutionRole"
+    },
+    "AthenaResultsPolicy": {
+      "Condition": "IsAthenaEnabled",
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "athena-results-policy",
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Action": [
+                "athena:GetQueryResults"
+              ],
+              "Resource": [
+                {
+                  "Fn::Sub": [
+                    "arn:${AWS::Partition}:athena:${AWS::Region}:${AWS::AccountId}:workgroup/${workgroup}",
+                    {
+                      "workgroup": {
+                        "Fn::Select": [
+                          2,
+                          {
+                            "Fn::Split": [
+                              "/",
+                              {
+                                "Ref": "customcloudtrailLakeEventDataStoreOutput"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              ],
+              "Effect": "Allow"
+            },
+            {
+              "Action": [
+                "glue:GetTable",
+                "glue:GetDatabase"
+              ],
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:${AWS::Partition}:glue:${AWS::Region}:${AWS::AccountId}:catalog"
+                },
+                {
+                  "Fn::Sub": [
+                    "arn:${AWS::Partition}:glue:${AWS::Region}:${AWS::AccountId}:database/${database}",
+                    {
+                      "database": {
+                        "Fn::Select": [
+                          3,
+                          {
+                            "Fn::Split": [
+                              "/",
+                              {
+                                "Ref": "customcloudtrailLakeEventDataStoreOutput"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                },
+                {
+                  "Fn::Sub": [
+                    "arn:${AWS::Partition}:glue:${AWS::Region}:${AWS::AccountId}:table/${database}/${table}",
+                    {
+                      "database": {
+                        "Fn::Select": [
+                          3,
+                          {
+                            "Fn::Split": [
+                              "/",
+                              {
+                                "Ref": "customcloudtrailLakeEventDataStoreOutput"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "table": {
+                        "Fn::Select": [
+                          4,
+                          {
+                            "Fn::Split": [
+                              "/",
+                              {
+                                "Ref": "customcloudtrailLakeEventDataStoreOutput"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              ],
+              "Effect": "Allow"
+            },
+            {
+              "Action": [
+                "s3:GetObject",
+                "s3:ListBucket"
+              ],
+              "Resource": [
+                {
+                  "Ref": "AthenaResultsBucketArn"
+                },
+                {
+                  "Fn::Sub": "${AthenaResultsBucketArn}/*"
+                }
               ],
               "Effect": "Allow"
             }

@@ -26,6 +26,18 @@
     "apiteamGraphQLAPIEndpointOutput": {
       "Type": "String",
       "Default": "apiteamGraphQLAPIEndpointOutput"
+    },
+    "AthenaTrailBucketArn": {
+      "Type": "String",
+      "Default": ""
+    },
+    "AthenaResultsBucketArn": {
+      "Type": "String",
+      "Default": ""
+    },
+    "AthenaTrailKmsKeyArn": {
+      "Type": "String",
+      "Default": ""
     }
   },
   "Conditions": {
@@ -35,6 +47,30 @@
           "Ref": "env"
         },
         "NONE"
+      ]
+    },
+    "IsAthenaEnabled": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "AthenaTrailBucketArn"
+            },
+            ""
+          ]
+        }
+      ]
+    },
+    "IsAthenaTrailKmsKeySet": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "AthenaTrailKmsKeyArn"
+            },
+            ""
+          ]
+        }
       ]
     }
   },
@@ -360,6 +396,179 @@
               ],
               "Resource": [
                 "*"
+              ],
+              "Effect": "Allow"
+            }
+          ]
+        },
+        "Roles": [
+          {
+            "Ref": "LambdaExecutionRole"
+          }
+        ]
+      },
+      "DependsOn": "LambdaExecutionRole"
+    },
+    "AthenaExecutionPolicy": {
+      "Condition": "IsAthenaEnabled",
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "athena-execution-policy",
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Action": [
+                "athena:StartQueryExecution",
+                "athena:GetQueryExecution"
+              ],
+              "Resource": [
+                {
+                  "Fn::Sub": [
+                    "arn:${AWS::Partition}:athena:${AWS::Region}:${AWS::AccountId}:workgroup/${workgroup}",
+                    {
+                      "workgroup": {
+                        "Fn::Select": [
+                          2,
+                          {
+                            "Fn::Split": [
+                              "/",
+                              {
+                                "Ref": "customcloudtrailLakeEventDataStoreOutput"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              ],
+              "Effect": "Allow"
+            },
+            {
+              "Action": [
+                "glue:GetTable",
+                "glue:GetDatabase",
+                "glue:GetPartitions"
+              ],
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:${AWS::Partition}:glue:${AWS::Region}:${AWS::AccountId}:catalog"
+                },
+                {
+                  "Fn::Sub": [
+                    "arn:${AWS::Partition}:glue:${AWS::Region}:${AWS::AccountId}:database/${database}",
+                    {
+                      "database": {
+                        "Fn::Select": [
+                          3,
+                          {
+                            "Fn::Split": [
+                              "/",
+                              {
+                                "Ref": "customcloudtrailLakeEventDataStoreOutput"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                },
+                {
+                  "Fn::Sub": [
+                    "arn:${AWS::Partition}:glue:${AWS::Region}:${AWS::AccountId}:table/${database}/${table}",
+                    {
+                      "database": {
+                        "Fn::Select": [
+                          3,
+                          {
+                            "Fn::Split": [
+                              "/",
+                              {
+                                "Ref": "customcloudtrailLakeEventDataStoreOutput"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "table": {
+                        "Fn::Select": [
+                          4,
+                          {
+                            "Fn::Split": [
+                              "/",
+                              {
+                                "Ref": "customcloudtrailLakeEventDataStoreOutput"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              ],
+              "Effect": "Allow"
+            },
+            {
+              "Action": [
+                "s3:GetObject",
+                "s3:ListBucket"
+              ],
+              "Resource": [
+                {
+                  "Ref": "AthenaTrailBucketArn"
+                },
+                {
+                  "Fn::Sub": "${AthenaTrailBucketArn}/*"
+                }
+              ],
+              "Effect": "Allow"
+            },
+            {
+              "Action": [
+                "s3:GetObject",
+                "s3:PutObject",
+                "s3:ListBucket"
+              ],
+              "Resource": [
+                {
+                  "Ref": "AthenaResultsBucketArn"
+                },
+                {
+                  "Fn::Sub": "${AthenaResultsBucketArn}/*"
+                }
+              ],
+              "Effect": "Allow"
+            }
+          ]
+        },
+        "Roles": [
+          {
+            "Ref": "LambdaExecutionRole"
+          }
+        ]
+      },
+      "DependsOn": "LambdaExecutionRole"
+    },
+    "AthenaTrailKmsPolicy": {
+      "Condition": "IsAthenaTrailKmsKeySet",
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "athena-trail-kms-policy",
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Action": [
+                "kms:Decrypt"
+              ],
+              "Resource": [
+                {
+                  "Ref": "AthenaTrailKmsKeyArn"
+                }
               ],
               "Effect": "Allow"
             }
