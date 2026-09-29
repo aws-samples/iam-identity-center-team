@@ -32,6 +32,11 @@
             ]
           ]
         },
+        "DefinitionSubstitutions": {
+          "partition": {
+            "Ref": "AWS::Partition"
+          }
+        },
         "Definition": {
           "Comment": "Temporary Elevated Access Management - Grant state machine",
           "StartAt": "Grant Permission",
@@ -52,7 +57,7 @@
                 "TableName.$": "$.requests_table",
                 "UpdateExpression": "SET startTime = :time"
               },
-              "Resource": "arn:aws:states:::dynamodb:updateItem",
+              "Resource": "arn:${partition}:states:::dynamodb:updateItem",
               "ResultPath": "$.lastTaskResult",
               "Type": "Task"
             },
@@ -86,7 +91,7 @@
                 "TargetId.$": "$.accountId",
                 "TargetType": "AWS_ACCOUNT"
               },
-              "Resource": "arn:aws:states:::aws-sdk:ssoadmin:createAccountAssignment",
+              "Resource": "arn:${partition}:states:::aws-sdk:ssoadmin:createAccountAssignment",
               "ResultPath": "$.grant",
               "Retry": [
                 {
@@ -104,7 +109,7 @@
                 "FunctionName.$": "$.fn_teamnotifications_arn",
                 "Payload.$": "$"
               },
-              "Resource": "arn:aws:states:::lambda:invoke",
+              "Resource": "arn:${partition}:states:::lambda:invoke",
               "ResultPath": "$.lastTaskResult",
               "Retry": [
                 {
@@ -136,7 +141,7 @@
                 "FunctionName.$": "$.fn_teamnotifications_arn",
                 "Payload.$": "$"
               },
-              "Resource": "arn:aws:states:::lambda:invoke",
+              "Resource": "arn:${partition}:states:::lambda:invoke",
               "ResultPath": "$.lastTaskResult",
               "Retry": [
                 {
@@ -159,7 +164,7 @@
                 "Input.$": "$",
                 "StateMachineArn.$": "$.revoke_sm"
               },
-              "Resource": "arn:aws:states:::states:startExecution",
+              "Resource": "arn:${partition}:states:::states:startExecution",
               "Type": "Task"
             },
             "Update Request Status - in progress": {
@@ -168,7 +173,7 @@
                 "FunctionName.$": "$.fn_teamstatus_arn",
                 "Payload.$": "$"
               },
-              "Resource": "arn:aws:states:::lambda:invoke",
+              "Resource": "arn:${partition}:states:::lambda:invoke",
               "ResultPath": "$.lastTaskResult",
               "Retry": [
                 {
@@ -227,6 +232,11 @@
             ]
           ]
         },
+        "DefinitionSubstitutions": {
+          "partition": {
+            "Ref": "AWS::Partition"
+          }
+        },
         "Definition": {
           "Comment": "Temporary Elevated Access Management - Schedule state machine",
           "StartAt": "Update Request Status - scheduled",
@@ -241,7 +251,7 @@
                 },
                 "TableName.$": "$.requests_table"
               },
-              "Resource": "arn:aws:states:::dynamodb:getItem",
+              "Resource": "arn:${partition}:states:::dynamodb:getItem",
               "ResultPath": "$.result",
               "Type": "Task"
             },
@@ -251,7 +261,7 @@
                 "Input.$": "$",
                 "StateMachineArn.$": "$.grant_sm"
               },
-              "Resource": "arn:aws:states:::states:startExecution",
+              "Resource": "arn:${partition}:states:::states:startExecution",
               "Type": "Task"
             },
             "Notify Requester Scheduled": {
@@ -269,7 +279,7 @@
                 "FunctionName.$": "$.fn_teamnotifications_arn",
                 "Payload.$": "$"
               },
-              "Resource": "arn:aws:states:::lambda:invoke",
+              "Resource": "arn:${partition}:states:::lambda:invoke",
               "ResultPath": "$.lastTaskResult",
               "Retry": [
                 {
@@ -312,7 +322,7 @@
                 "FunctionName.$": "$.fn_teamstatus_arn",
                 "Payload.$": "$"
               },
-              "Resource": "arn:aws:states:::lambda:invoke",
+              "Resource": "arn:${partition}:states:::lambda:invoke",
               "ResultPath": "$.lastTaskResult",
               "Retry": [
                 {
@@ -366,6 +376,11 @@
             ]
           ]
         },
+        "DefinitionSubstitutions": {
+          "partition": {
+            "Ref": "AWS::Partition"
+          }
+        },
         "Definition": {
           "Comment": "Temporary Elevated Access Management - Reject state machine",
           "StartAt": "Status?",
@@ -385,7 +400,7 @@
                 "FunctionName.$": "$.fn_teamnotifications_arn",
                 "Payload.$": "$"
               },
-              "Resource": "arn:aws:states:::lambda:invoke",
+              "Resource": "arn:${partition}:states:::lambda:invoke",
               "ResultPath": "$.lastTaskResult",
               "Retry": [
                 {
@@ -417,7 +432,7 @@
                 "FunctionName.$": "$.fn_teamnotifications_arn",
                 "Payload.$": "$"
               },
-              "Resource": "arn:aws:states:::lambda:invoke",
+              "Resource": "arn:${partition}:states:::lambda:invoke",
               "ResultPath": "$.lastTaskResult",
               "Retry": [
                 {
@@ -489,6 +504,11 @@
             ]
           ]
         },
+        "DefinitionSubstitutions": {
+          "partition": {
+            "Ref": "AWS::Partition"
+          }
+        },
         "Definition": {
           "Comment": "Temporary Elevated Access Management - Revoke state machine",
           "StartAt": "DynamoDB GetStatus",
@@ -503,7 +523,7 @@
                 },
                 "TableName.$": "$.requests_table"
               },
-              "Resource": "arn:aws:states:::dynamodb:getItem",
+              "Resource": "arn:${partition}:states:::dynamodb:getItem",
               "ResultPath": "$.data",
               "Type": "Task"
             },
@@ -523,7 +543,7 @@
                 "TableName.$": "$.requests_table",
                 "UpdateExpression": "SET endTime = :time"
               },
-              "Resource": "arn:aws:states:::dynamodb:updateItem",
+              "Resource": "arn:${partition}:states:::dynamodb:updateItem",
               "Type": "Task"
             },
             "Notify Error": {
@@ -532,7 +552,7 @@
                 "FunctionName.$": "$.fn_teamnotifications_arn",
                 "Payload.$": "$"
               },
-              "Resource": "arn:aws:states:::lambda:invoke",
+              "Resource": "arn:${partition}:states:::lambda:invoke",
               "ResultPath": "$.lastTaskResult",
               "Retry": [
                 {
@@ -564,7 +584,7 @@
                 "FunctionName.$": "$.fn_teamnotifications_arn",
                 "Payload.$": "$"
               },
-              "Resource": "arn:aws:states:::lambda:invoke",
+              "Resource": "arn:${partition}:states:::lambda:invoke",
               "ResultPath": "$.lastTaskResult",
               "Retry": [
                 {
@@ -615,7 +635,7 @@
                 "TargetId.$": "$.accountId",
                 "TargetType": "AWS_ACCOUNT"
               },
-              "Resource": "arn:aws:states:::aws-sdk:ssoadmin:deleteAccountAssignment",
+              "Resource": "arn:${partition}:states:::aws-sdk:ssoadmin:deleteAccountAssignment",
               "ResultPath": "$.revoke",
               "Retry": [
                 {
@@ -663,7 +683,7 @@
                 "FunctionName.$": "$.fn_teamstatus_arn",
                 "Payload.$": "$"
               },
-              "Resource": "arn:aws:states:::lambda:invoke",
+              "Resource": "arn:${partition}:states:::lambda:invoke",
               "ResultPath": "$.lastTaskResult",
               "Retry": [
                 {
@@ -717,6 +737,11 @@
             ]
           ]
         },
+        "DefinitionSubstitutions": {
+          "partition": {
+            "Ref": "AWS::Partition"
+          }
+        },
         "Definition": {
           "Comment": "Temporary Elevated Access Management -  Approval state machine",
           "StartAt": "Notify Approvers Pending",
@@ -731,7 +756,7 @@
                 },
                 "TableName.$": "$.requests_table"
               },
-              "Resource": "arn:aws:states:::dynamodb:getItem",
+              "Resource": "arn:${partition}:states:::dynamodb:getItem",
               "ResultPath": "$.result",
               "Type": "Task"
             },
@@ -750,7 +775,7 @@
                 "FunctionName.$": "$.fn_teamnotifications_arn",
                 "Payload.$": "$"
               },
-              "Resource": "arn:aws:states:::lambda:invoke",
+              "Resource": "arn:${partition}:states:::lambda:invoke",
               "ResultPath": "$.lastTaskResult",
               "Type": "Task"
             },
@@ -769,7 +794,7 @@
                 "FunctionName.$": "$.fn_teamnotifications_arn",
                 "Payload.$": "$"
               },
-              "Resource": "arn:aws:states:::lambda:invoke",
+              "Resource": "arn:${partition}:states:::lambda:invoke",
               "ResultPath": "$.lastTaskResult",
               "Type": "Task"
             },
@@ -794,7 +819,7 @@
                 "FunctionName.$": "$.fn_teamstatus_arn",
                 "Payload.$": "$"
               },
-              "Resource": "arn:aws:states:::lambda:invoke",
+              "Resource": "arn:${partition}:states:::lambda:invoke",
               "ResultPath": "$.Payload",
               "Retry": [
                 {
