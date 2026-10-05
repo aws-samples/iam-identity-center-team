@@ -17,7 +17,7 @@
     "aws-amplify": "^5.3.33",
     "graphql-ttl-transformer": "^2.0.1",
     "hermes-engine": "0.11.0",
-    "moment": "^2.29.1",
+    "moment": "^2.31.0",
     "postcss-flexbugs-fixes": "^5.0.2",
     "react": "^17.0.2",
     "react-csv": "^2.2.2",
