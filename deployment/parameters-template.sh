@@ -24,6 +24,12 @@ CLOUDTRAIL_AUDIT_LOGS=arn:aws:cloudtrail:us-east-1:123456789101:eventdatastore/e
 SECRET_NAME=TEAM-IDC-APP
 CACHE_TTL=604800
 
+# Amplify app / CFN stack name, as deployed - must match template.yml's AmplifyApp.Name
+STACK_NAME=TEAM-IDC-APP-V2
+
+# Amplify branch the app is deployed on - only needed if not 'main'
+BRANCH_NAME=main
+
 # Uncomment the next line only if you have a custom domain
 # UI_DOMAIN=portal.teamtest.online
 

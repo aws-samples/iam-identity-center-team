@@ -1,0 +1,42 @@
+# TEAM approver policies — source of truth, synced to DynamoDB by scripts/sync_team_policies.py.
+# Explicit entries here are written as OU-level records (teamRouter resolves approvers from account-level records only).
+# When GITHUB_TOKEN is set, the sync script also writes per-account entries derived from
+# each account's admin_team_name tag → governance_group_name in team-resource-mapping.yaml.
+# Per-account entries take precedence over these OU-level fallbacks.
+#
+# Non-production OUs (Sandbox, Staging, Security, Suspended) are intentionally omitted —
+# TEAM eligibility is restricted to production and zone OUs only.
+
+approver_mappings:
+  # Root and production/zone OUs — CET is the fallback approver for any account
+  # that does not have a per-account owner entry written by the sync script.
+  - ou_id: "r-c0au"
+    approvers:
+      - "SGU-CM-TeamCloudEnablement"
+  - ou_id: "ou-c0au-rb7od08q"
+    approvers:
+      - "SGU-CM-TeamCloudEnablement"
+  - ou_id: "ou-c0au-4pauetly"
+    approvers:
+      - "SGU-CM-TeamCloudEnablement"
+  - ou_id: "ou-c0au-dau1fvhk"
+    approvers:
+      - "SGU-CM-TeamCloudEnablement"
+  - ou_id: "ou-c0au-xwpsjxoo"
+    approvers:
+      - "SGU-CM-TeamCloudEnablement"
+  - ou_id: "ou-c0au-su7jde0e"
+    approvers:
+      - "SGU-CM-TeamCloudEnablement"
+  - ou_id: "ou-c0au-25oc0u9i"
+    approvers:
+      - "SGU-CM-TeamCloudEnablement"
+  - ou_id: "ou-c0au-lrz2m367"
+    approvers:
+      - "SGU-CM-TeamCloudEnablement"
+  - ou_id: "ou-c0au-xwgeun2j"
+    approvers:
+      - "SGU-CM-TeamCloudEnablement"
+  - ou_id: "ou-c0au-w9ylk394"
+    approvers:
+      - "SGU-CM-TeamCloudEnablement"

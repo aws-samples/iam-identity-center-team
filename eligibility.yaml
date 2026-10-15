@@ -1,0 +1,119 @@
+# TEAM eligibility policies — source of truth, synced to DynamoDB by scripts/sync_team_policies.py.
+# Fields: permission_sets (list) or permission_set (single), (account_id | ou_ids), max_duration (ISO 8601), requestable_by, approval_required
+#
+# NOTE: User-level eligibility policies (e.g. SAmle@flexera.com) are managed directly
+# via the TEAM admin UI and are NOT managed here. Only group-level policies are managed as code.
+#
+# OU IDs (production and zone only — sandbox/staging/security/suspended are excluded):
+#   r-c0au              = Root (avoid — causes 40s+ load time due to full org traversal)
+#   ou-c0au-rb7od08q    = Account Type: Production
+#   ou-c0au-4pauetly    = Zone: APAC
+#   ou-c0au-dau1fvhk    = Zone: APAC-UnrestrictedRegions
+#   ou-c0au-xwpsjxoo    = Zone: EU
+#   ou-c0au-su7jde0e    = Zone: EU-UnrestrictedRegions
+#   ou-c0au-25oc0u9i    = Zone: US
+#   ou-c0au-lrz2m367    = Zone: US-UnrestrictedRegions
+
+eligibilities:
+  # Engineering team (all engineering teams' EKS/service access) — covers cloud-enablement
+  # too, since all cloud-enablement members are also members of this group. Previously an
+  # Admin-UI-managed policy (ticket FSRE-14357) with a stale "Zone: Global" OU
+  # reference (staging accounts). Moved to code so the OU list stays consistent
+  # and auditable. Writing this entry overwrites the old Admin-UI item in
+  # DynamoDB (same IDC group -> same key).
+  - permission_sets:
+      # Temporarily restricted to a single permission set while JIT rollout is validated.
+      # All others below are commented out (not deleted) — uncomment to re-enable.
+      # - "nimbusEKS"
+      # - "Vulnerability-Scanning-Dashboard"
+      # - "ViewOnlyFinancialAccess"
+      # - "ViewOnlyAccessWithKMS"
+      # - "ViewOnlyAccess"
+      # - "TurtlesEKS"
+      # - "TitanTeamEKS"
+      # - "TestViewOnlyAccess"
+      # - "TeapotEKS"
+      # - "SupportAccess"
+      # - "SparksEKS"
+      # - "SelaContractorSupplemental"
+      # - "SecurityAudit"
+      # - "SecOpsIncidentManagement"
+      # - "SageMakerBedrockFullAccess"
+      # - "SaaSPiratesEKS"
+      # - "SESSupportAccess"
+      # - "RocketEKS"
+      # - "RDSIAMAuthentication"
+      # - "PowerUserWithReadOnlyIAMAccess"
+      # - "PowerUserAccess"
+      # - "PlatformFileManagerS3ReadOnly"
+      # - "PlatformdataservicesEKS"
+      # - "PapapapaEKS"
+      # - "Osmium-SREEKS"
+      # - "OptimaLogsCLIReadOnly"
+      # - "NomadsEKS"
+      # - "NitroEKS"
+      # - "NetEngReadOnlySupport"
+      # - "MetaEKSAccessCloudEnablement"
+      # - "MarketplaceFullAccess"
+      # - "MagiciansEKS"
+      # - "InventoryDataReadOnly"
+      # - "IndigoEKS"
+      # - "IdefixEKS"
+      # - "HcleaglesEKS"
+      # - "HCLMonarch"
+      # - "H2OEKS"
+      # - "GrootEKS"
+      # - "FusionSupportS3ReadOnly"
+      # - "FusionStagingOptimaBuckets"
+      # - "FusionProdOptimaBuckets"
+      # - "FinOpsTeam"
+      # - "FrostbyteEKS"
+      # - "ECRPowerUser"
+      # - "DynamicMonetizationMaintenance"
+      # - "DisEKS"
+      # - "ECR-Image-Scan-Dashboard"
+      # - "DeveloperReadOnly"
+      # - "DatabricksOwnerAccess"
+      # - "CortexEKS"
+      # - "CoralogixLogsReadOnly"
+      # - "CodeArtifactUser"
+      # - "CodeArtifactReadOnly"
+      # - "CodeArtifactAdmin"
+      # - "CocomelonEKS"
+      # - "CloudWatchLogsReadOnlyAccess"
+      # - "CloudRidersEKS"
+      # - "CloudMonkesEKS"
+      # - "CloudEnablementEKS"
+      # - "CatalystEKS"
+      # - "ButterflyEffectEKS"
+      # - "BravoEKS"
+      # - "AtlasGoaEKS"
+      # - "AthenaFullAccess"
+      # - "AthenaCURReadOnly"
+      # - "ArchSandboxS3Import"
+      # - "AmazonECRReadOnly"
+      - "AdministratorAccess-JIT"
+      # - "AWSServiceCatalogEndUserAccess"
+      # - "AWSServiceCatalogAdminFullAccess"
+      # - "AWSReadOnlyAccess"
+      # - "AWSPowerUserAccess"
+      # - "AWSOrganizationsFullAccess"
+      # - "AWSConfigReadOnly"
+      # - "AWSAdministratorAccess-JIT"
+    ou_ids:
+      - "ou-c0au-rb7od08q"  # Account Type: Production
+      - "ou-c0au-4pauetly"  # Zone: APAC
+      # "ou-c0au-dau1fvhk" (Zone: APAC-UnrestrictedRegions) intentionally excluded —
+      # contains ~85 "*-sandbox" accounts, no production accounts.
+      - "ou-c0au-xwpsjxoo"  # Zone: EU
+      - "ou-c0au-su7jde0e"  # Zone: EU-UnrestrictedRegions
+      - "ou-c0au-25oc0u9i"  # Zone: US
+      - "ou-c0au-lrz2m367"  # Zone: US-UnrestrictedRegions
+      # "ou-c0au-xwgeun2j" (Zone: Global) intentionally excluded — contains only
+      # "*-staging" accounts (41 confirmed), no production accounts.
+      - "ou-c0au-w9ylk394"  # Zone: (additional production zone) — verified production-only
+    max_duration: "PT24H"
+    requestable_by:
+      - "SGU-CM-TeamEngineering"
+    approval_required: true
+    description: "JIT elevated access for all engineering teams across production and zone OUs only."

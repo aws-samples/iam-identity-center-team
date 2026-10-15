@@ -477,22 +477,16 @@ def list_group_membership(groupId):
     except ClientError as e:
         print(e.response['Error']['Message'])
         
-def get_individual_approver_ids(accountId):
-    try:
-        response = approver_table.get_item(Key={'id': accountId})
-        return response.get('Item', {}).get('individualApproverIds', [])
-    except ClientError as e:
-        print(e.response['Error']['Message'])
-        return []
-
 async def get_approvers_details(accountId):
-    # Prefer explicit per-person approvers (individualApproverIds) over expanding the
-    # whole approver group, so approval enforcement matches the named team lead/manager
-    # rather than every member of a broader governance group. Falls back to the group
-    # when no individual approvers are configured for this account.
-    individual_ids = get_individual_approver_ids(accountId)
+    # Prefer per-person approvers (individualApproverIds) over expanding whole groups.
+    # Fallback is the account-level group only; OU-level groups are deliberately not added.
+    # DynamoDB errors propagate so the request fails instead of widening the approver set.
+    item = approver_table.get_item(Key={"id": accountId}).get("Item", {})
+    individual_ids = item.get("individualApproverIds") or []
+
     approvers = []
     approver_ids = []
+
     if individual_ids:
         for user_id in individual_ids:
             data = get_approvers(user_id)
@@ -500,16 +494,14 @@ async def get_approvers_details(accountId):
                 approvers.append(data["approver"])
                 approver_ids.append(data["approver_id"].lower())
     else:
-        approver_groups = get_approver_group_ids(accountId)
-        if approver_groups:
-            for group in approver_groups:
-                approvers_data = [get_approvers(result["MemberId"]["UserId"])
-                    for result in list_group_membership(group)]
-                for data in approvers_data:
-                    if data["approver"] not in approvers:
-                        approvers.append(data["approver"])
-                        approver_ids.append(data["approver_id"].lower())
-    return {"approvers":approvers, "approver_ids":approver_ids}
+        for group in list_approvers(accountId):
+            for result in list_group_membership(group):
+                data = get_approvers(result["MemberId"]["UserId"])
+                if data["approver"] not in approvers:
+                    approvers.append(data["approver"])
+                    approver_ids.append(data["approver_id"].lower())
+
+    return {"approvers": approvers, "approver_ids": approver_ids}
 
 async def updateRequestDetails(request_id, username, accountId, roleId):
     email = get_email(username)

@@ -30,15 +30,15 @@ cognitouserpoolhostedUIdomain=`aws cognito-idp describe-user-pool --region $REGI
 cognitoClientWebClientID=`aws cognito-idp list-user-pool-clients --region $REGION --user-pool-id $cognitoUserpoolId --output json | jq -r '.UserPoolClients[] | select(.ClientName | contains("clientWeb")) | .ClientId'`
 cognitoHostedUIdomain=$cognitouserpoolhostedUIdomain.auth.$REGION.amazoncognito.com
 
-amplifyAppId=`aws amplify list-apps --region $REGION --output json | jq -r '.apps[] | select(.name=="TEAM-IDC-APP-V2") | .appId'`
-amplifyDomain=`aws amplify list-apps --region $REGION --output json | jq -r '.apps[] | select(.name=="TEAM-IDC-APP-V2") | .defaultDomain'`
-amplifyDomain="main.$amplifyDomain"
+amplifyAppId=`aws amplify list-apps --region $REGION --output json | jq -r --arg name "$STACK_NAME" '.apps[] | select(.name==$name) | .appId'`
+amplifyDomain=`aws amplify list-apps --region $REGION --output json | jq -r --arg name "$STACK_NAME" '.apps[] | select(.name==$name) | .defaultDomain'`
+amplifyDomain="${BRANCH_NAME:-main}.$amplifyDomain"
 
 amplifyCustomDomains=`aws amplify list-domain-associations --region $REGION --app-id $amplifyAppId --output json`
 amplifyCustomDomain=`echo $amplifyCustomDomains | jq -r 'select(.domainAssociations | length > 0) | .domainAssociations[0].domainName'`
 
 if [ -n "$amplifyCustomDomain" ]; then
-  amplifyCustomDomainPrefix=$(echo $amplifyCustomDomains | jq -r 'select(.domainAssociations | length > 0) | .domainAssociations[0].subDomains[] | select(.subDomainSetting.branchName=="main") | .subDomainSetting.prefix')
+  amplifyCustomDomainPrefix=$(echo $amplifyCustomDomains | jq -r --arg branch "${BRANCH_NAME:-main}" 'select(.domainAssociations | length > 0) | .domainAssociations[0].subDomains[] | select(.subDomainSetting.branchName==$branch) | .subDomainSetting.prefix')
   amplifyDomain=$([ -z "$amplifyCustomDomainPrefix" ] && echo $amplifyCustomDomain || echo $amplifyCustomDomainPrefix.$amplifyCustomDomain)
 fi
 
