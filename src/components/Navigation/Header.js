@@ -7,7 +7,7 @@ import React, { useState } from "react";
 import Alert from "@awsui/components-react/alert";
 import "../../index.css";
 import params from "../../parameters.json";
-import { Auth } from "aws-amplify";
+import { signOut as amplifySignOut } from "aws-amplify/auth";
 import TopNavigation from "@awsui/components-react/top-navigation";
 import { useHistory } from "react-router-dom";
 
@@ -17,7 +17,7 @@ function Header(props) {
 
   async function signOut() {
     try {
-      await Auth.signOut();
+      await amplifySignOut();
     } catch (error) {
       console.log("error signing out");
     }

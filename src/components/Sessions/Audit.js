@@ -20,11 +20,13 @@ import {
 import { useCollection } from "@awsui/collection-hooks";
 import { Divider } from "antd";
 import { sessions } from "../Shared/RequestService";
-import { API, graphqlOperation } from "aws-amplify";
+import { generateClient } from "aws-amplify/api";
 import { onUpdateRequests } from "../../graphql/subscriptions";
 import Status from "../Shared/Status";
 import "../../index.css";
 import Logs from "../Sessions/Logs";
+
+const client = generateClient();
 
 function convertAwsDateTime(awsDateTime) {
   // Parse AWS datetime string into a Date object
@@ -284,9 +286,9 @@ function Audit(props) {
   }
 
   function approveEvent() {
-    API.graphql(graphqlOperation(onUpdateRequests)).subscribe({
-      next: ({ value }) => {
-        if (value.data.onUpdateRequests.status === "ended") views();
+    client.graphql({ query: onUpdateRequests }).subscribe({
+      next: ({ data }) => {
+        if (data.onUpdateRequests.status === "ended") views();
       },
       error: (error) => console.warn(error),
     });

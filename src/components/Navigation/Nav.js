@@ -35,7 +35,7 @@ function Nav(props) {
 
   async function fetchUser() {
     try {
-      setUser(props.user.attributes.email);
+      setUser(props.user.email);
       setGroup(
         props.groups
       )
