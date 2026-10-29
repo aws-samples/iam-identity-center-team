@@ -3,19 +3,15 @@
 // http://aws.amazon.com/agreement or other written agreement between Customer and either
 // Amazon Web Services, Inc. or Amazon Web Services EMEA SARL or both.
 import React, { useEffect, useState } from "react";
-import { Amplify } from "aws-amplify";
 import { fetchAuthSession, signInWithRedirect } from "aws-amplify/auth";
 import { Hub } from "aws-amplify/utils";
 import { Spin, Layout } from "antd";
-import awsconfig from "./aws-exports";
 import Nav from "./components/Navigation/Nav";
 import home from "./media/Home.svg";
 import "./index.css";
 import { Button } from "@awsui/components-react";
 
 const { Header, Content } = Layout;
-
-Amplify.configure(awsconfig);
 
 function Home(props) {
   return (
@@ -85,6 +81,12 @@ function App() {
       if (!tokens?.idToken) throw new Error("Not signed in");
       return tokens.idToken.payload;
     } catch {
+      // IdP-initiated sign-in from the IAM Identity Center access portal returns
+      // ?code= without Amplify's state, which v6 ignores; restart from Amplify.
+      const params = new URLSearchParams(window.location.search);
+      if (params.has("code") && !params.has("state")) {
+        return signInWithRedirect({ provider: { idpIdentifier: "team" } });
+      }
       setLoading(false);
       return console.log("Not signed in");
     }
