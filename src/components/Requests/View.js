@@ -17,12 +17,14 @@ import {
 } from "@awsui/components-react";
 import { useCollection } from "@awsui/collection-hooks";
 import { getUserRequests, updateStatus, getSetting } from "../Shared/RequestService";
-import { API, graphqlOperation } from "aws-amplify";
+import { generateClient } from "aws-amplify/api";
 import { onUpdateRequests, onCreateRequests} from "../../graphql/subscriptions";
 import Status from "../Shared/Status";
 import Details from "../Shared/Details";
 import "../../index.css";
 import { useHistory } from "react-router-dom";
+
+const client = generateClient();
 
 function convertAwsDateTime(awsDateTime) {
   // Parse AWS datetime string into a Date object
@@ -315,7 +317,7 @@ function View(props) {
   }
 
   function approveEvent() {
-    API.graphql(graphqlOperation(onUpdateRequests)).subscribe({
+    client.graphql({ query: onUpdateRequests }).subscribe({
       next: () => {
        views();
       },

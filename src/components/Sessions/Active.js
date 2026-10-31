@@ -22,7 +22,7 @@ import {
 import { useCollection } from "@awsui/collection-hooks";
 import { useHistory } from "react-router-dom";
 import { getActiveSessions, updateStatus, getSetting} from "../Shared/RequestService";
-import { API, graphqlOperation } from "aws-amplify";
+import { generateClient } from "aws-amplify/api";
 import { onUpdateRequests } from "../../graphql/subscriptions";
 import Status from "../Shared/Status";
 import Details from "../Shared/Details";
@@ -30,6 +30,8 @@ import "../../index.css";
 import { Divider } from "antd";
 import Logs from "../Sessions/Logs"
 import Timer from "../Sessions/Timer";
+
+const client = generateClient();
 
 function convertAwsDateTime(awsDateTime) {
   // Parse AWS datetime string into a Date object
@@ -308,10 +310,10 @@ function Active(props) {
   }
 
   function approveEvent() {
-    API.graphql(graphqlOperation(onUpdateRequests)).subscribe({
-      next: ({ value }) => {
+    client.graphql({ query: onUpdateRequests }).subscribe({
+      next: ({ data }) => {
         // eslint-disable-next-line default-case
-        switch (value.data.onUpdateRequests.status) {
+        switch (data.onUpdateRequests.status) {
           case "in progress":
           case "ended":
           case "revoked":

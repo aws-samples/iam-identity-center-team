@@ -8,7 +8,7 @@ import "../../index.css";
 import "antd/dist/antd.css";
 import { Menu, Dropdown, Typography } from "antd";
 import { DownOutlined } from "@ant-design/icons";
-import { Auth } from "aws-amplify";
+import { signOut as amplifySignOut } from "aws-amplify/auth";
 import { useHistory } from "react-router-dom";
 
 const { Text } = Typography;
@@ -44,7 +44,7 @@ function Logout(props) {
 
   async function signOut() {
     try {
-      await Auth.signOut();
+      await amplifySignOut();
     } catch (error) {
       console.log("error signing out");
     }
