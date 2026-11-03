@@ -6,7 +6,7 @@
     },
     "CloudTrailAuditLogs":{
       "Type":"String",
-      "AllowedPattern": "(read_write|read|write|none|arn.*)"
+      "AllowedPattern": "(read_write|read|write|none|arn.*|cwlogs://[A-Za-z0-9_./#-]+)"
     }
   },
   "Conditions":{

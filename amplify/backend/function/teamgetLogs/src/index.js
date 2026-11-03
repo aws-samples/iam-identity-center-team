@@ -20,10 +20,19 @@ import {
   StartQueryCommand,
   DescribeQueryCommand,
 } from "@aws-sdk/client-cloudtrail"
+import {
+  CloudWatchLogsClient,
+  StartQueryCommand as CWLogsStartQueryCommand,
+  GetQueryResultsCommand as CWLogsGetQueryResultsCommand,
+} from "@aws-sdk/client-cloudwatch-logs"
+import { STSClient, AssumeRoleCommand } from "@aws-sdk/client-sts"
 
 const { Sha256 } = crypto;
 const REGION = process.env.REGION;
-const EventDataStore = (process.env.EVENT_DATA_STORE).split("/").pop();
+const RAW_EVENT_DATA_STORE = process.env.EVENT_DATA_STORE;
+const IS_CWLOGS = RAW_EVENT_DATA_STORE.startsWith("cwlogs://");
+const EventDataStore = IS_CWLOGS ? RAW_EVENT_DATA_STORE : RAW_EVENT_DATA_STORE.split("/").pop();
+const CWLOGS_ASSUME_ROLE_ARN = process.env.CWLOGS_ASSUME_ROLE_ARN || "";
 const GRAPHQL_ENDPOINT = process.env.API_TEAM_GRAPHQLAPIENDPOINTOUTPUT;
 
 // const {
@@ -151,11 +160,111 @@ const start_query = async (event) => {
   }
 };
 
+// cwlogs:// URIs are validated by the CloudTrailAuditLogs AllowedPattern, but the
+// values interpolated into the query below (accountId, username, role) come from
+// a user-supplied request record, so they are wrapped as literal strings using
+// CloudWatch Logs Insights' `like "..."` substring-match syntax.
+const escapeCwlogsStringLiteral = (value) => `"${String(value).replace(/["\\]/g, "\\$&")}"`;
+
+const parseCwlogsTarget = (target) => target.slice("cwlogs://".length);
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// When CWLOGS_ASSUME_ROLE_ARN is set, run the query using temporary credentials
+// from the role in the log-group's account rather than the Lambda's own role.
+// This is how TEAM supports cross-account setups (e.g. querying Control Tower's
+// aws-controltower/CloudTrailLogs in the management account from a delegated
+// TEAM account) without requiring CloudWatch Observability Access Manager.
+const getCwlogsClient = async () => {
+  if (!CWLOGS_ASSUME_ROLE_ARN) {
+    return new CloudWatchLogsClient({ region: REGION });
+  }
+  const sts = new STSClient({ region: REGION });
+  const response = await sts.send(new AssumeRoleCommand({
+    RoleArn: CWLOGS_ASSUME_ROLE_ARN,
+    RoleSessionName: "team-audit-query",
+    DurationSeconds: 900,
+  }));
+  return new CloudWatchLogsClient({
+    region: REGION,
+    credentials: {
+      accessKeyId: response.Credentials.AccessKeyId,
+      secretAccessKey: response.Credentials.SecretAccessKey,
+      sessionToken: response.Credentials.SessionToken,
+    },
+  });
+};
+
+const start_query_cwlogs = async (event, cwlogsClient) => {
+  const startTime = event["startTime"]["S"];
+  const endTime = event["endTime"]["S"];
+  const username = event["username"]["S"].replace('idc_', '');
+  const accountId = event["accountId"]["S"];
+  const role = event["role"]["S"];
+
+  if (!/^\d{12}$/.test(accountId)) {
+    console.log("Error", new Error(`Invalid accountId for CloudWatch Logs query: ${accountId}`));
+    return;
+  }
+
+  const logGroupName = parseCwlogsTarget(EventDataStore);
+  const startEpoch = Math.floor(new Date(startTime).getTime() / 1000);
+  const endEpoch = Math.floor(new Date(endTime).getTime() / 1000);
+
+  try {
+    const input = {
+      logGroupName,
+      startTime: startEpoch,
+      endTime: endEpoch,
+      queryString: `fields eventID, eventName, eventSource, eventTime | filter recipientAccountId = ${escapeCwlogsStringLiteral(accountId)} | filter userIdentity.principalId like ${escapeCwlogsStringLiteral(":" + username)} | filter userIdentity.sessionContext.sessionIssuer.arn like ${escapeCwlogsStringLiteral(role)} | sort @timestamp desc | limit 10000`,
+    };
+    const command = new CWLogsStartQueryCommand(input);
+    const response = await cwlogsClient.send(command);
+    return response.queryId;
+  } catch (err) {
+    console.log("Error", err);
+  }
+};
+
+const get_query_status_cwlogs = async (queryId, cwlogsClient) => {
+  try {
+    const command = new CWLogsGetQueryResultsCommand({ queryId });
+    const response = await cwlogsClient.send(command);
+    return response.status;
+  } catch (err) {
+    console.log("Error", err);
+  }
+};
+
+const poll_query_cwlogs = async (queryId, cwlogsClient) => {
+  let status = await get_query_status_cwlogs(queryId, cwlogsClient);
+  while (status === "Scheduled" || status === "Running") {
+    console.log(status);
+    await sleep(1000);
+    status = await get_query_status_cwlogs(queryId, cwlogsClient);
+  }
+  return status;
+};
+
 export const handler = async (event) => {
   let data = event["Records"].pop()
   data = data["dynamodb"]["NewImage"]
   const id = data["id"]["S"]
   console.log("Event", data);
+
+  if (IS_CWLOGS) {
+    const cwlogsClient = await getCwlogsClient();
+    const queryId = await start_query_cwlogs(data, cwlogsClient);
+    const status = await poll_query_cwlogs(queryId, cwlogsClient);
+    if (status === "Complete") {
+      console.log("CloudWatch Logs Insights query succeeded - queryId:", queryId);
+      const response = await updateItem(id, queryId);
+      return response;
+    }
+    console.log("CloudWatch Logs Insights query did not succeed - status:", status);
+    return;
+  }
+
   const queryId = await start_query(data);
   let status = await get_query_status(queryId);
   while (status) {
