@@ -95,10 +95,44 @@ def list_idc_group_membership(userId):
         print(e.response['Error']['Message'])
 
 
+class UnauthorizedError(Exception):
+    """Raised when token generation is attempted for a non-federated user."""
+
+
+def get_federated_identifier(event):
+    """Return the Identity Center identifier for a federated user.
+
+    TEAM authorization (Admin/Auditor claims) is derived from AWS IAM Identity
+    Center group membership and is only meaningful for users that authenticate
+    through the external (SAML) identity provider. Native Cognito users, such as
+    self-registered accounts, must never receive these claims.
+
+    Federation is verified by requiring the Cognito ``identities`` attribute,
+    which is populated only for users linked to an external identity provider.
+    We fail closed if it is absent rather than inferring trust from the shape of
+    the Cognito username.
+    """
+    user_attributes = event.get("request", {}).get("userAttributes", {})
+    if not user_attributes.get("identities"):
+        raise UnauthorizedError(
+            "Token generation denied: user is not federated through the "
+            "external identity provider."
+        )
+
+    user_name = event.get("userName", "")
+    federated_identifier = user_name.split("_", 1)[1] if "_" in user_name else ""
+    if not federated_identifier:
+        raise UnauthorizedError(
+            "Token generation denied: unexpected username format for a "
+            "federated user: '{}'.".format(user_name)
+        )
+    return federated_identifier
+
+
 def handler(event, context):
     team_admin_group, team_auditor_group = get_team_groups()
-    
-    user = event["userName"].split("_", 1)[1]
+
+    user = get_federated_identifier(event)
     userId = get_user(user)
     admin = get_group(team_admin_group)
     auditor = get_group(team_auditor_group)
