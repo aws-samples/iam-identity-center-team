@@ -15,6 +15,7 @@ def get_identiy_store_id():
         return response['Instances'][0]['IdentityStoreId']
     except ClientError as e:
         print(e.response['Error']['Message'])
+        return ""
 
 
 sso_instance = get_identiy_store_id()
@@ -40,8 +41,12 @@ def list_idc_group_membership(groupId):
             all_groups.extend(page["GroupMemberships"])
         return all_groups
     except ClientError as e:
-        print(e.response['Error']['Message'])
-        return []
+        error_code = e.response.get('Error', {}).get('Code')
+        error_message = e.response.get('Error', {}).get('Message', str(e))
+        print(f"{error_code}: {error_message}")
+        if error_code == 'ResourceNotFoundException':
+            return []
+        raise
 
 def handler(event, context):
     members = []

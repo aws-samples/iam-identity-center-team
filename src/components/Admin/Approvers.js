@@ -2,7 +2,7 @@
 // This AWS Content is provided subject to the terms of the AWS Customer Agreement available at
 // http://aws.amazon.com/agreement or other written agreement between Customer and either
 // Amazon Web Services, Inc. or Amazon Web Services EMEA SARL or both.
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Box,
   Button,
@@ -21,7 +21,8 @@ import {
   Select,
   ColumnLayout,
   Input,
-  Spinner
+  Spinner,
+  Alert
 } from "@awsui/components-react";
 import { useCollection } from "@awsui/collection-hooks";
 import Ous from "../Shared/Ous";
@@ -252,10 +253,63 @@ function Approvers(props) {
 
   const [approverList, setApproverList] = useState([]);
   const [approverStatus, setApproverStatus] = useState("finished");
+  const [staleApproverPolicies, setStaleApproverPolicies] = useState([]);
+  const [snsNotificationsEnabled, setSnsNotificationsEnabled] = useState(false);
+  const notificationSentRef = useRef(false);
 
   const [approver, setApprover] = useState([]);
   const [ticketRequired, setTicketRequired] = useState(true);
 
+  function findStaleApproverPolicies(items, groups) {
+    if (!Array.isArray(items) || !Array.isArray(groups)) {
+      return [];
+    }
+    const validGroupIds = new Set(groups.map((group) => group.GroupId));
+    const stale = [];
+
+    items.forEach((policy) => {
+      const staleGroupIds = (policy.groupIds || []).filter(
+        (groupId) => groupId && !validGroupIds.has(groupId)
+      );
+
+      if (staleGroupIds.length > 0) {
+        stale.push({
+          id: policy.id,
+          name: policy.name,
+          type: policy.type,
+          staleGroupIds,
+        });
+      }
+    });
+
+    return stale;
+  }
+
+  function updateStaleApproverPolicies(items, groups, notifyEnabled) {
+    const stale = findStaleApproverPolicies(items, groups);
+    setStaleApproverPolicies(stale);
+
+    if (stale.length > 0 && notifyEnabled && !notificationSentRef.current) {
+      const details = stale
+        .slice(0, 3)
+        .map((policy) => `${policy.name || policy.id} (${policy.staleGroupIds.join(", ")})`)
+        .join("; ");
+
+      props.addNotification([
+        {
+          type: "warning",
+          content: `Stale IAM Identity Center group(s) detected in approver policy: ${details}`,
+          dismissible: true,
+          onDismiss: () => props.addNotification([]),
+        },
+      ]);
+      notificationSentRef.current = true;
+    }
+
+    if (stale.length === 0) {
+      notificationSentRef.current = false;
+    }
+  }
 
   useEffect(() => {
     views();
@@ -272,7 +326,11 @@ function Approvers(props) {
       setVisible(false);
       setDeleteVisible(false);
       handleDismiss();
-      getSettings();
+      getSetting("settings").then((settings) => {
+        const enabled = settings?.snsNotificationsEnabled ?? false;
+        setSnsNotificationsEnabled(enabled);
+        updateStaleApproverPolicies(items, approverList, enabled);
+      });
     });
   }
 
@@ -284,7 +342,9 @@ function Approvers(props) {
     getSetting("settings").then((data) => {
       if (data !== null) {
         setTicketRequired(data.ticketNo);
-        }
+      }
+      const enabled = data?.snsNotificationsEnabled ?? false;
+      setSnsNotificationsEnabled(enabled);
     });
   }
 
@@ -373,6 +433,7 @@ function Approvers(props) {
     fetchIdCGroups().then((data) => {
       setApproverList(data);
       setApproverStatus("finished");
+      updateStaleApproverPolicies(allItems, data, snsNotificationsEnabled);
     });
   }
 
@@ -401,6 +462,10 @@ function Approvers(props) {
     if (approver.length < 1) {
       valid = false;
       setApproverError("Select Valid Approver email");
+    }
+    if (selectedItems?.[0] && staleApproverPolicies.some((policy) => policy.id === selectedItems[0].id)) {
+      valid = false;
+      setApproverError("This approver policy contains stale IAM Identity Center groups and must be fixed before saving.");
     }
     if ((!ticketNo && ticketRequired) || !(/^[a-zA-Z0-9]+$/.test(ticketNo[0]))) {
       setTicketError("Enter valid change management ticket number");
@@ -470,6 +535,21 @@ function Approvers(props) {
 
   return (
     <div className="container">
+      {staleApproverPolicies.length > 0 && (
+        <Alert
+          type="warning"
+          header="Stale IAM Identity Center groups detected"
+          visible
+        >
+          <SpaceBetween size="xs">
+            {staleApproverPolicies.map((policy) => (
+              <Box key={policy.id}>
+                <strong>{policy.name || policy.id}</strong>: stale group(s) {policy.staleGroupIds.join(", ")} no longer exist in IAM Identity Center.
+              </Box>
+            ))}
+          </SpaceBetween>
+        </Alert>
+      )}
       <Table
         {...collectionProps}
         resizableColumns="true"
