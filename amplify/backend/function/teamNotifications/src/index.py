@@ -257,7 +257,7 @@ def lambda_handler(event: dict, context):
         event.get("grant", {})
         .get("AccountAssignmentCreationStatus", {})
         .get("Status", "")
-        == "IN_PROGRESS"
+        == "SUCCEEDED"
     )
     ended = (
         event.get("revoke", {})
@@ -276,6 +276,9 @@ def lambda_handler(event: dict, context):
         request_status = "granted"
     if not granted and not approval_required:
         request_status = "scheduled"
+    # statusError always wins: Grant-SM/Revoke-SM only set it on a terminal failure
+    if "statusError" in event:
+        request_status = "error"
     event.update(
         {
             "status": request_status,

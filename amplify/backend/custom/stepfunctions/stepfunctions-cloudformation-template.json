@@ -77,7 +77,7 @@
                   "ResultPath": "$.statusError"
                 }
               ],
-              "Next": "Update Request Status - in progress",
+              "Next": "Initialize Grant Poll Count",
               "Parameters": {
                 "InstanceArn.$": "$.instanceARN",
                 "PermissionSetArn.$": "$.roleId",
@@ -97,6 +97,93 @@
                 }
               ],
               "Type": "Task"
+            },
+            "Initialize Grant Poll Count": {
+              "Next": "Wait For Account Assignment Status",
+              "Result": {
+                "count": 0
+              },
+              "ResultPath": "$.grantPoll",
+              "Type": "Pass"
+            },
+            "Wait For Account Assignment Status": {
+              "Next": "Describe Account Assignment Creation Status",
+              "Seconds": 5,
+              "Type": "Wait"
+            },
+            "Describe Account Assignment Creation Status": {
+              "Catch": [
+                {
+                  "ErrorEquals": [
+                    "States.ALL"
+                  ],
+                  "Next": "Update Request Status - in progress",
+                  "ResultPath": "$.statusError"
+                }
+              ],
+              "Next": "Account Assignment Provisioned?",
+              "Parameters": {
+                "AccountAssignmentCreationRequestId.$": "$.grant.AccountAssignmentCreationStatus.RequestId",
+                "InstanceArn.$": "$.instanceARN"
+              },
+              "Resource": "arn:aws:states:::aws-sdk:ssoadmin:describeAccountAssignmentCreationStatus",
+              "ResultPath": "$.grant",
+              "Retry": [
+                {
+                  "ErrorEquals": ["SsoAdmin.ConflictException", "ConflictException", "SsoAdmin.ThrottlingException", "ThrottlingException", "ServiceUnavailable", "InternalServerError"],
+                  "IntervalSeconds": 3,
+                  "BackoffRate": 2,
+                  "MaxAttempts": 5
+                }
+              ],
+              "Type": "Task"
+            },
+            "Account Assignment Provisioned?": {
+              "Choices": [
+                {
+                  "Variable": "$.grant.AccountAssignmentCreationStatus.Status",
+                  "StringEquals": "SUCCEEDED",
+                  "Next": "Update Request Status - in progress"
+                },
+                {
+                  "Variable": "$.grant.AccountAssignmentCreationStatus.Status",
+                  "StringEquals": "FAILED",
+                  "Next": "Set Grant Failure"
+                },
+                {
+                  "Variable": "$.grantPoll.count",
+                  "NumericGreaterThanEquals": 120,
+                  "Next": "Set Grant Timeout Failure"
+                }
+              ],
+              "Default": "Increment Grant Poll Count",
+              "Type": "Choice"
+            },
+            "Increment Grant Poll Count": {
+              "Next": "Wait For Account Assignment Status",
+              "Parameters": {
+                "count.$": "States.MathAdd($.grantPoll.count, 1)"
+              },
+              "ResultPath": "$.grantPoll",
+              "Type": "Pass"
+            },
+            "Set Grant Failure": {
+              "Next": "Update Request Status - in progress",
+              "Parameters": {
+                "Cause.$": "States.JsonToString($.grant.AccountAssignmentCreationStatus)",
+                "Error": "AccountAssignmentCreationFailed"
+              },
+              "ResultPath": "$.statusError",
+              "Type": "Pass"
+            },
+            "Set Grant Timeout Failure": {
+              "Next": "Update Request Status - in progress",
+              "Parameters": {
+                "Cause": "Timed out waiting for CreateAccountAssignment to reach a terminal state (SUCCEEDED or FAILED).",
+                "Error": "AccountAssignmentCreationTimeout"
+              },
+              "ResultPath": "$.statusError",
+              "Type": "Pass"
             },
             "Notify Error": {
               "End": true,
@@ -1073,7 +1160,7 @@
                 },
                 {
                   "Effect": "Allow",
-                  "Action": ["sso:CreateAccountAssignment"],
+                  "Action": ["sso:CreateAccountAssignment", "sso:DescribeAccountAssignmentCreationStatus"],
                   "Resource": "*"
                 },
                 {
