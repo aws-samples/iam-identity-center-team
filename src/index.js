@@ -5,7 +5,18 @@ import App from "./App";
 import "@awsui/global-styles/index.css";
 import { Amplify } from "aws-amplify";
 import awsconfig from "./aws-exports";
-Amplify.configure(awsconfig);
+
+// Amplify JS v6 only redirects to URLs on the current origin, but TEAM can be
+// served from a custom domain (deployment/cognito.sh) not listed in aws-exports.
+const origin = `${window.location.origin}/`;
+Amplify.configure({
+  ...awsconfig,
+  oauth: {
+    ...awsconfig.oauth,
+    redirectSignIn: `${awsconfig.oauth.redirectSignIn},${origin}`,
+    redirectSignOut: `${awsconfig.oauth.redirectSignOut},${origin}`,
+  },
+});
 
 ReactDOM.render(
   <React.StrictMode>

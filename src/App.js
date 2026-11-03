@@ -3,17 +3,15 @@
 // http://aws.amazon.com/agreement or other written agreement between Customer and either
 // Amazon Web Services, Inc. or Amazon Web Services EMEA SARL or both.
 import React, { useEffect, useState } from "react";
-import { Amplify, Auth, Hub } from "aws-amplify";
+import { fetchAuthSession, signInWithRedirect } from "aws-amplify/auth";
+import { Hub } from "aws-amplify/utils";
 import { Spin, Layout } from "antd";
-import awsconfig from "./aws-exports";
 import Nav from "./components/Navigation/Nav";
 import home from "./media/Home.svg";
 import "./index.css";
 import { Button } from "@awsui/components-react";
 
 const { Header, Content } = Layout;
-
-Amplify.configure(awsconfig);
 
 function Home(props) {
   return (
@@ -24,7 +22,7 @@ function Home(props) {
           <Button
             className="homebutton"
             variant="primary"
-            onClick={() => Auth.federatedSignIn()}
+            onClick={() => signInWithRedirect()}
           >
             Federated Sign In
           </Button>
@@ -46,21 +44,18 @@ function App() {
     Hub.listen("auth", ({ payload: { event, data } }) => {
       // eslint-disable-next-line default-case
       switch (event) {
-        case "signIn":
+        case "signedIn":
           console.log("User signed in");
           break;
         // eslint-disable-next-line no-fallthrough
-        case "cognitoHostedUI":
+        case "signInWithRedirect":
           setData();
           break;
-        case "signOut":
+        case "signedOut":
           console.log("User signed out");
           setLoading(false);
           break;
-        case "signIn_failure":
-          console.log("User sign in failure");
-          break;
-        case "cognitoHostedUI_failure":
+        case "signInWithRedirect_failure":
           console.log("Sign in failure");
           break;
       }
@@ -70,9 +65,8 @@ function App() {
   }, []);
 
   function setData() {
-    getUser().then((userData) => {
-      setUser(userData);
-      const payload = userData.signInUserSession.idToken.payload;
+    getUser().then((payload) => {
+      setUser(payload);
       setcognitoGroups(payload["cognito:groups"]);
       setUserId(payload.userId);
       setGroupIds((payload.groupIds).split(','));
@@ -83,9 +77,16 @@ function App() {
 
   async function getUser() {
     try {
-      const userData = await Auth.currentAuthenticatedUser();
-      return userData;
+      const { tokens } = await fetchAuthSession();
+      if (!tokens?.idToken) throw new Error("Not signed in");
+      return tokens.idToken.payload;
     } catch {
+      // IdP-initiated sign-in from the IAM Identity Center access portal returns
+      // ?code= without Amplify's state, which v6 ignores; restart from Amplify.
+      const params = new URLSearchParams(window.location.search);
+      if (params.has("code") && !params.has("state")) {
+        return signInWithRedirect({ provider: { idpIdentifier: "team" } });
+      }
       setLoading(false);
       return console.log("Not signed in");
     }
