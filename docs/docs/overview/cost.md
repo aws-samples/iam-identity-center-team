@@ -16,7 +16,7 @@ The TEAM solution consists of numerous AWS serverless services. As cost is accru
 - [AWS Lambda](https://aws.amazon.com/lambda/pricing)
 - [AWS Step Functions](https://aws.amazon.com/step-functions/pricing)
 - [Amazon Cognito](https://aws.amazon.com/cognito/pricing)
-- [AWS CloudTrail Lake](https://aws.amazon.com/cloudtrail/pricing/)
+- [AWS CloudTrail Lake](https://aws.amazon.com/cloudtrail/pricing/) (only when `CLOUDTRAIL_AUDIT_LOGS` is `read`/`write`/`read_write` or an existing event data store ARN; not billed when set to `none`)
 - [AWS IAM Identity Center](https://aws.amazon.com/iam/identity-center/) (free)
 - [AWS Secret Manager](https://aws.amazon.com/secrets-manager/)
 
