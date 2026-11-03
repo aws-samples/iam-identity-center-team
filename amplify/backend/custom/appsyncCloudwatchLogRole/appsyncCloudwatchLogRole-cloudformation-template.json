@@ -63,7 +63,7 @@
               ],
               "Resource": {
                 "Fn::Sub": [
-                  "arn:aws:logs:${region}:${account}:log-group:/aws/appsync/apis/*",
+                  "arn:${AWS::Partition}:logs:${region}:${account}:log-group:/aws/appsync/apis/*",
                   {
                     "region": {
                       "Ref": "AWS::Region"

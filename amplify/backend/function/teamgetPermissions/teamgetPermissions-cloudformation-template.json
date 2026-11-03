@@ -159,7 +159,7 @@
               ],
               "Resource": {
                 "Fn::Sub": [
-                  "arn:aws:logs:${region}:${account}:log-group:/aws/lambda/${lambda}:log-stream:*",
+                  "arn:${AWS::Partition}:logs:${region}:${account}:log-group:/aws/lambda/${lambda}:log-stream:*",
                   {
                     "region": {
                       "Ref": "AWS::Region"
@@ -244,7 +244,9 @@
                   "Fn::Join": [
                     "",
                     [
-                      "arn:aws:lambda:",
+                      {
+                        "Fn::Sub": "arn:${AWS::Partition}:lambda:"
+                      },
                       {
                         "Ref": "AWS::Region"
                       },

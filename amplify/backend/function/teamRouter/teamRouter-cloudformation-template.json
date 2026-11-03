@@ -398,7 +398,9 @@
                   "Fn::Join": [
                     "",
                     [
-                      "arn:aws:appsync:",
+                      {
+                        "Fn::Sub": "arn:${AWS::Partition}:appsync:"
+                      },
                       {
                         "Ref": "AWS::Region"
                       },
@@ -418,7 +420,9 @@
                   "Fn::Join": [
                     "",
                     [
-                      "arn:aws:appsync:",
+                      {
+                        "Fn::Sub": "arn:${AWS::Partition}:appsync:"
+                      },
                       {
                         "Ref": "AWS::Region"
                       },
@@ -438,7 +442,9 @@
                   "Fn::Join": [
                     "",
                     [
-                      "arn:aws:appsync:",
+                      {
+                        "Fn::Sub": "arn:${AWS::Partition}:appsync:"
+                      },
                       {
                         "Ref": "AWS::Region"
                       },
@@ -479,7 +485,9 @@
                   "Fn::Join": [
                     "",
                     [
-                      "arn:aws:cognito-idp:",
+                      {
+                        "Fn::Sub": "arn:${AWS::Partition}:cognito-idp:"
+                      },
                       {
                         "Ref": "AWS::Region"
                       },
