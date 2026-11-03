@@ -77,6 +77,21 @@ function Details(props) {
       </ColumnLayout>
 
       <div>
+        {props.item.approvers && props.item.approvers.length > 0 && (
+          <div>
+            <Divider style={{ marginBottom: "10px", marginTop: "10px" }} />
+            <ColumnLayout columns={3}>
+              <SpaceBetween size="m">
+                <ValueWithLabel
+                  label="Approvers"
+                  children={`${props.item.approvers.join(", ")}`}
+                />
+              </SpaceBetween>
+            </ColumnLayout>
+          </div>
+        )}
+      </div>
+      <div>
         {props.item.approver && (
           <div>
             <Divider style={{ marginBottom: "10px", marginTop: "10px" }} />

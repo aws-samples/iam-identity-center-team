@@ -437,6 +437,31 @@ def get_approver_group_ids(accountId):
         approvers.extend(list_approvers(ou["Id"]))
     return approvers
 
+def list_individual_approvers(id):
+    try:
+        response = approver_table.get_item(
+            Key={
+                'id': id
+            }
+        )
+        if "Item" in response.keys():
+            return response['Item'].get('individualApproverIds', [])
+        else:
+            return []
+    except ClientError as e:
+        print(e.response['Error']['Message'])
+        return []
+
+def get_individual_approver_ids(accountId):
+    # Mirrors get_approver_group_ids: an account inherits individual approvers
+    # set on its parent OU, same as it does for approver groups.
+    individual_ids = []
+    individual_ids.extend(list_individual_approvers(accountId))
+    ou = get_ou(accountId)
+    if ou:
+        individual_ids.extend(list_individual_approvers(ou["Id"]))
+    return individual_ids
+
 def get_approvers(userId):
     client = boto3.client('identitystore')
     response = client.describe_user(
@@ -465,18 +490,33 @@ def list_group_membership(groupId):
         print(e.response['Error']['Message'])
         
 async def get_approvers_details(accountId):
-    approver_groups = get_approver_group_ids(accountId)
+    # An approver policy may combine both approver groups and individual approvers;
+    # both are valid simultaneously (union), one is never a fallback for the other.
     approvers = []
     approver_ids = []
+
+    def add_approver(data):
+        if data["approver"] not in approvers:
+            approvers.append(data["approver"])
+            approver_ids.append(data["approver_id"].lower())
+
+    # Individual (per-person) approvers, in addition to group-based approvers below.
+    for user_id in get_individual_approver_ids(accountId):
+        try:
+            add_approver(get_approvers(user_id))
+        except ClientError as e:
+            # Stale/removed IDC user shouldn't break approver resolution for the account.
+            print(f"Skipping individual approver {user_id}: {e.response['Error']['Message']}")
+
+    approver_groups = get_approver_group_ids(accountId)
     if approver_groups:
         for group in approver_groups:
             approvers_data = [get_approvers(result["MemberId"]["UserId"])
                 for result in list_group_membership(group)]
             for data in approvers_data:
-                if data["approver"] not in approvers:
-                    approvers.append(data["approver"])
-                    approver_ids.append(data["approver_id"].lower())
-    return {"approvers":approvers, "approver_ids":approver_ids}
+                add_approver(data)
+
+    return {"approvers": approvers, "approver_ids": approver_ids}
 
 async def updateRequestDetails(request_id, username, accountId, roleId):
     email = get_email(username)
