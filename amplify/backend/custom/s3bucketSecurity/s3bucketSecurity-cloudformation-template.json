@@ -79,31 +79,58 @@
                     "logs:CreateLogStream",
                     "logs:PutLogEvents"
                   ],
-                  "Resource": {
-                    "Fn::Sub": [
-                      "arn:aws:logs:${region}:${account}:log-group:/aws/lambda/${lambda}:log-stream:*",
-                      {
-                        "region": {
-                          "Ref": "AWS::Region"
-                        },
-                        "account": {
-                          "Ref": "AWS::AccountId"
-                        },
-                        "lambda": {
-                          "Fn::Join": [
-                            "",
-                            [
-                              "team-amplify-bucket-lambda",
-                              "-",
-                              {
-                                "Ref": "env"
-                              }
+                  "Resource": [
+                    {
+                      "Fn::Sub": [
+                        "arn:aws:logs:${region}:${account}:log-group:/aws/lambda/${lambda}:log-stream:*",
+                        {
+                          "region": {
+                            "Ref": "AWS::Region"
+                          },
+                          "account": {
+                            "Ref": "AWS::AccountId"
+                          },
+                          "lambda": {
+                            "Fn::Join": [
+                              "",
+                              [
+                                "team-amplify-bucket-lambda",
+                                "-",
+                                {
+                                  "Ref": "env"
+                                }
+                              ]
                             ]
-                          ]
+                          }
                         }
-                      }
-                    ]
-                  }
+                      ]
+                    },
+                    {
+                      "Fn::Sub": [
+                        "arn:aws:logs:${region}:${account}:log-group:/aws/lambda/${lambda}",
+                        {
+                          "region": {
+                            "Ref": "AWS::Region"
+                          },
+                          "account": {
+                            "Ref": "AWS::AccountId"
+                          },
+                          "lambda": {
+                            "Fn::Join": [
+                              "",
+                              [
+                                "team-amplify-bucket-lambda",
+                                "-",
+                                {
+                                  "Ref": "env"
+                                }
+                              ]
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  ]
                 },
                 {
                   "Action": [
